@@ -1,0 +1,36 @@
+@import "../gc-widget-base/gc-widget-base";
+
+:host {
+    transition: 0.3s;
+    border-radius: 2px;
+    width: 36px;
+    height: 36px;
+    margin: 3px;
+    cursor: pointer;
+
+    #element-container {
+        margin: auto;
+    }
+
+    gc-widget-icon {
+        fill: $gc-color-gray-8;
+    }
+}
+
+:host(.checked) {
+    background-color: var(--gc-background-color-checked, rgba(0, 0, 0, 0.15));
+    box-shadow: 1px 1px 2px var(--gc-box-shadow-color-checked, #{$gc-color-gray-6}) inset;
+}
+
+:host(:hover:not([disabled])) {
+    background: $gc-color-gray-8;
+
+    gc-widget-icon {
+        fill: $gc-color-gray-1;
+    }
+}
+
+:host([disabled]) {
+    filter: opacity(0.5);
+    cursor: not-allowed;
+}

@@ -1,0 +1,49 @@
+{
+    "widgetBindings": [
+        {
+            "widgetId": "demo_element",
+            "serverBindName": "widget.file_paths.value",
+            "propertyName": "filePaths"
+        },
+        {
+            "widgetId": "demo_element",
+            "serverBindName": "widget.folder_path.value",
+            "propertyName": "folderPath"
+        },
+        {
+            "widgetId": "demo_element",
+            "serverBindName": "widget.lock_aspect_ratio.checked",
+            "propertyName": "lockAspectRatio"
+        },
+        {
+            "widgetId": "demo_element",
+            "serverBindName": "widget.hover_effect.selectedLabel",
+            "propertyName": "hoverEffect"
+        },
+        {
+            "widgetId": "demo_element",
+            "serverBindName": "widget.selected_index.value",
+            "propertyName": "selectedIndex"
+        },
+        {
+            "widgetId": "demo_element",
+            "serverBindName": "widget.values.value",
+            "propertyName": "values"
+        },
+        {
+            "widgetId": "demo_element",
+            "serverBindName": "widget.values.value",
+            "propertyName": "values"
+        },
+        {
+            "widgetId": "demo_element",
+            "serverBindName": "widget.selected_value.value",
+            "propertyName": "selectedValue"
+        },
+        {
+            "widgetId": "demo_element",
+            "serverBindName": "widget.disabled.checked",
+            "propertyName": "disabled"
+        }
+    ]
+}

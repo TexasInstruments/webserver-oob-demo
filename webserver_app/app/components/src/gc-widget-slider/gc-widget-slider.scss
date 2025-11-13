@@ -1,0 +1,8 @@
+@import "../gc-widget-base/gc-widget-base";
+:host {
+    width: 200px;
+    ti-range-slider {
+        width: 100%;
+        --ti-range-slider-font-size: var(--gc-font-size, $gc-font-size);
+    }
+}

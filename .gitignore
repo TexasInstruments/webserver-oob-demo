@@ -1,0 +1,30 @@
+# Node.js
+node_modules/
+npm-debug.log*
+package-lock.json
+
+# Build artifacts
+*.o
+*.d
+webserver_app/linux_app/cpu_stats
+webserver_app/linux_app/audio_utils
+
+# Runtime files
+/tmp/
+*.pid
+*.log
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Backup files
+*.bak
+*.backup

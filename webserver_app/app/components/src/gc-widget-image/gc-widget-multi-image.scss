@@ -1,0 +1,9 @@
+@import "../gc-widget-base/gc-widget-base-image.scss";
+
+:host {
+    gc-widget-image {
+        margin: 0;
+        width: 100%;
+        height: 100%;
+    }
+}

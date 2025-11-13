@@ -1,0 +1,168 @@
+@import "../gc-widget-base/gc-widget-base";
+
+:host {
+    // override so document text is selectable
+    margin: 0;
+    display: flex;
+    justify-content: center;
+}
+
+#topContainer {
+    display: flex;
+    justify-content: center;
+    height: 100vh;
+
+    @media only screen and (max-width: 1280px) {
+        width: 100%;
+        #sidebar {
+            min-width: 13vw;
+            width: 13vw;
+        }
+    }
+    @media only screen and (min-width: 1280px) {
+        width: 80%;
+        #documentation {
+            min-width: 969px;
+            max-width: 2000px;
+        }
+        #sidebar {
+            min-width: 231px;
+            width: 231px;
+        }
+    }
+
+    #sidebar {
+        overflow-y: scroll;
+        padding: 0 20px 20px;
+        background: $gc-color-gray-1;
+
+        h3 {
+            color: $gc-color-gray-8;
+        }
+
+        .component-header {
+            cursor: pointer;
+            display: flex;
+            text-transform: uppercase;
+        }
+
+        .component-label {
+            color: $gc-secondary-color;
+            font-weight: 500;
+            cursor: pointer;
+            list-style: none;
+            padding-bottom: 8px;
+            white-space: nowrap;
+            display: flex;
+
+            .component-text {
+                padding-right: 10px;
+            }
+        }
+
+        .component-label gc-widget-icon{
+            visibility: hidden;
+        }
+        .component-label:hover gc-widget-icon{
+            //set label hover
+            visibility: visible;
+        }
+    }
+
+    #documentation {
+        flex: 1 1 auto;
+        padding: 0 20px;
+        overflow: auto;
+        iframe {
+            width: 100%;
+        }
+
+        section {
+            margin-top: 32px;
+        }
+                
+        #methods {
+            margin-bottom: 20px;
+
+            .method {
+                margin-left: 32px;
+
+                h3 {
+                    font-weight: normal;
+                }
+            }
+        }
+
+        #usage {
+            width: 100%;
+            margin: 0;
+            overflow: auto;
+        }
+    }
+}
+
+gc-widget-icon {
+    margin: 0;
+    color: $gc-color-gray-8;
+}
+
+a:link,
+a:visited,
+a:hover,
+a:active {
+    text-decoration: none;
+    color: $gc-color-gray-8;
+}
+
+.open-in-new{
+    display: flex;
+    align-items: center;
+    a {
+        display: flex;
+        align-items: center;
+    }
+    gc-widget-icon {
+        margin: 0px 0px 0px 5px;
+    }
+}
+
+a:link,
+a:visited,
+a:hover,
+a:active {
+    text-decoration: none;
+    color: $gc-color-gray-8;
+}
+
+code {
+    font-family: monospace;
+}
+
+footer {
+    text-align: right;
+    color: $gc-color-gray-7;
+    font-style: italic;
+    font-size: small;
+}
+
+// TABLE CSS
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+    text-align: left;
+}
+
+table thead th,
+table td {
+    padding: 12px;
+    word-break: keep-all;
+}
+
+table thead {
+    background-color: #f9f9f9;
+}
+
+table tr {
+    border-bottom: 1px solid #e8e8e8;
+}

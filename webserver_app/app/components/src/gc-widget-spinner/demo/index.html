@@ -1,0 +1,97 @@
+<!--
+    Copyright (c) 2020, 2021 Texas Instruments Incorporated
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions
+    are met:
+
+    *   Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    *   Neither the name of Texas Instruments Incorporated nor the names of
+    its contributors may be used to endorse or promote products derived
+    from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+    THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+    PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+    CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+    EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+    PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+    OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+    WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+    OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+    EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>gc-widget-spinner Demo</title>
+	<script nomodule="" src="../../../@ti/build/gc-components.js"></script>
+    <script type="module" src="../../../@ti/build/gc-components.esm.js"></script>
+    <script type="module" src="../../gc-core-databind/lib/CoreDatabind"></script>
+    <link rel="stylesheet" type="text/css" href="../../../assets/stylesheets/gc-demo-stylesheet.css">
+</head>
+
+<body>
+    <div id="demo_container">
+        <gc-widget-spinner id="demo_element"></gc-widget-spinner>
+    </div>
+    <div id="demo_properties_container">
+        <table>
+            <tr>
+                <th><gc-widget-label label="Property"></gc-widget-label></th>
+                <th><gc-widget-label label="Value"></gc-widget-label></th>
+            </tr>
+            <tr>
+                <td><gc-widget-label label="value"></gc-widget-label></td>
+                <td><gc-widget-input id="value" value="42" select-on-focus></gc-widget-input></td>
+            </tr>
+            <tr>
+                <td><gc-widget-label label="format"></gc-widget-label></td>
+                <td><gc-widget-select caption="" id="format" labels="binary|dec|exp|hex|q" selected-index="3"></gc-widget-select></td>
+            </tr>
+            <tr>
+                <td><gc-widget-label label="increment"></gc-widget-label></td>
+                <td><gc-widget-input id="increment" value="1" select-on-focus></gc-widget-input></td>
+            </tr>
+            <tr>
+                <td><gc-widget-label label="precision"></gc-widget-label></td>
+                <td><gc-widget-input id="precision" value="0" select-on-focus></gc-widget-input></td>
+            </tr>
+            <tr>
+                <td><gc-widget-label label="minValue"></gc-widget-label></td>
+                <td><gc-widget-input id="min_value" value="-100" select-on-focus></gc-widget-input></td>
+            </tr>
+            <tr>
+                <td><gc-widget-label label="maxValue"></gc-widget-label></td>
+                <td><gc-widget-input id="max_value" value="100" select-on-focus></gc-widget-input></td>
+            </tr>
+            <tr>
+                <td><gc-widget-label label="selectOnFocus"></gc-widget-label></td>
+                <td><gc-widget-checkbox id="select_on_focus" checked></gc-widget-checkbox></td>
+            </tr>
+            <tr>
+                <td><gc-widget-label label="intermediateChanges"></gc-widget-label></td>
+                <td><gc-widget-checkbox id="intermediate_changes"></gc-widget-checkbox></td>
+            </tr>
+            <tr>
+                <td><gc-widget-label label="disabled"></gc-widget-label></td>
+                <td><gc-widget-checkbox id="disabled"></gc-widget-checkbox></td>
+            </tr>
+            <tr>
+                <td><gc-widget-label label="readonly"></gc-widget-label></td>
+                <td><gc-widget-checkbox id="readonly"></gc-widget-checkbox></td>
+            </tr>
+            <tr>
+                <td><gc-widget-label label="--gc-text-align"></gc-widget-label></td>
+                <td><gc-widget-select id="text_align" labels="|center|left|right" initial-index="0"></gc-widget-select></td>
+            </tr>
+        </table>
+    </div>
+</body>
+</html>

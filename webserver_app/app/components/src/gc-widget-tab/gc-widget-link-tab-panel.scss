@@ -1,0 +1,8 @@
+@import "./gc-widget-tab-panel";
+
+:host {
+    iframe {
+        border: none;
+        width: 100%;
+    }
+}

@@ -1,0 +1,147 @@
+<!--
+    Copyright (c) 2020, 2021 Texas Instruments Incorporated
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions
+    are met:
+
+    *   Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    *   Neither the name of Texas Instruments Incorporated nor the names of
+    its contributors may be used to endorse or promote products derived
+    from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+    THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+    PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+    CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+    EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+    PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+    OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+    WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+    OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+    EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>gc-widget-toolbar Demo</title>
+	<script nomodule="" src="../../../@ti/build/gc-components.js"></script>
+    <script type="module" src="../../../@ti/build/gc-components.esm.js"></script>
+    <script type="module" src="../../gc-core-databind/lib/CoreDatabind"></script>
+    <link rel="stylesheet" type="text/css" href="../../../assets/stylesheets/gc-demo-stylesheet.css">
+
+    <style>
+        #viewport {
+            width: 100%;
+            height: 100%;
+            min-height: 200px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            margin: 10px;
+        }
+
+        #output {
+            margin-top: 30px;
+            padding: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="demo_container">
+        <gc-widget-toolbar>
+            <gc-widget-toolbar-action tooltip="Cut" icon="content:content_cut" action-id="cmd_cut"></gc-widget-toolbar-action>
+            <gc-widget-toolbar-action tooltip="Copy" icon="content:content_copy" action-id="cmd_copy"></gc-widget-toolbar-action>
+            <gc-widget-toolbar-action tooltip="Paste" icon="content:content_paste" action-id="cmd_paste"></gc-widget-toolbar-action>
+            <gc-widget-toolbar-separator></gc-widget-toolbar-separator>
+            <gc-widget-toolbar-action id="demo_element" tooltip="Press Me!" action-id="cmd_press_me" icon="content:add_circle"></gc-widget-toolbar-action>
+        </gc-widget-toolbar>
+
+        <div id="viewport">
+            <div>This is the view port.</div>
+            <div id="output" class="highlight">Click toolbar action to see output here.</div>
+        </div>
+    </div>
+    <div id="demo_properties_container">
+        <table>
+            <tr>
+                <th><gc-widget-label label="ToolbarAction Property"></gc-widget-label></th>
+                <th><gc-widget-label label="Value"></gc-widget-label></th>
+            </tr>
+            <tr>
+                <td><gc-widget-label label="icon"></gc-widget-label></td>
+                <td><gc-widget-input id="icon" value="content:add_circle"></gc-widget-input></td>
+            </tr>
+            <tr>
+                <td><gc-widget-label label="tooltip"></gc-widget-label></td>
+                <td><gc-widget-input id="tooltip" value="Press Me!"></gc-widget-input></td>
+            </tr>
+            <tr>
+                <th><gc-widget-label label="ToolbarAction State"></gc-widget-label></th>
+                <th><gc-widget-label label="Value"></gc-widget-label></th>
+            </tr>
+            <tr>
+                <td><gc-widget-label label="isEnabled"></gc-widget-label></td>
+                <td><gc-widget-checkbox id="enabled" checked></gc-widget-checkbox></td>
+            </tr>
+            <tr>
+                <td><gc-widget-label label="isVisible"></gc-widget-label></td>
+                <td><gc-widget-checkbox id="visible" checked></gc-widget-checkbox></td>
+            </tr>
+        </table>
+    </div>
+</body>
+
+<script type="module">
+    import { ActionRegistry } from '../../gc-widget-menu/lib/ActionRegistry';
+
+    const output = document.querySelector('#output');
+    const ACTION = {
+        run: detail => output.innerHTML = `Command "${detail.id}" executed`,
+        isEnabled: () => true,
+    };
+
+    let hasClipboard = false;
+    ActionRegistry.registerAction('cmd_cut', Object.assign({}, ACTION, {
+        run: detail => {
+            hasClipboard = true;
+            ACTION.run(detail);
+        }
+    }));
+    ActionRegistry.registerAction('cmd_copy', Object.assign({}, ACTION, {
+        run: detail => {
+            hasClipboard = true;
+            ACTION.run(detail);
+        }
+    }));
+    ActionRegistry.registerAction('cmd_paste', Object.assign({}, ACTION, {
+        isEnabled: () => hasClipboard
+    }));
+
+    let isEnabled = true;
+    let isVisible = true;
+    ActionRegistry.registerAction('cmd_press_me', Object.assign({}, ACTION, {
+        isVisible: () => isVisible,
+        isEnabled: () => isEnabled
+    }));
+
+    const demoElement = document.querySelector('#demo_element');
+    document.querySelector('#enabled').addEventListener('checked-changed', () => {
+        isEnabled = !isEnabled;
+        demoElement.updateStates();
+    });
+    document.querySelector('#visible').addEventListener('checked-changed', () => {
+        isVisible = !isVisible;
+        demoElement.updateStates();
+    });
+</script>
+</html>

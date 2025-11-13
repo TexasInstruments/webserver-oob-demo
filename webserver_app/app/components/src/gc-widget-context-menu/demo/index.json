@@ -1,0 +1,39 @@
+{
+    "widgetBindings": [
+        {
+            "widgetId": "demo_element",
+            "serverBindName": "widget.anchor_id.selectedValue",
+            "propertyName": "anchorId"
+        },
+        {
+            "widgetId": "demo_element_menuitem",
+            "serverBindName": "widget.menuitem_label.value",
+            "propertyName": "label"
+        },
+        {
+            "widgetId": "demo_element_menuitem",
+            "serverBindName": "widget.menuitem_icon.value",
+            "propertyName": "icon"
+        },
+        {
+            "widgetId": "demo_element_menuitem",
+            "serverBindName": "widget.menuitem_icon_folder_path.value",
+            "propertyName": "iconFolderPath"
+        },
+        {
+            "widgetId": "demo_element_menuaction",
+            "serverBindName": "widget.menuaction_label.value",
+            "propertyName": "label"
+        },
+        {
+            "widgetId": "demo_element_menuaction",
+            "serverBindName": "widget.menuaction_icon.value",
+            "propertyName": "icon"
+        },
+        {
+            "widgetId": "demo_element_menuaction",
+            "serverBindName": "widget.menuaction_icon_folder_path.value",
+            "propertyName": "iconFolderPath"
+        }
+    ]
+}

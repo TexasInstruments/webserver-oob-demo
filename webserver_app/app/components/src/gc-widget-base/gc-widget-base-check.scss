@@ -1,0 +1,26 @@
+@import "gc-widget-base";
+
+:host {
+    .label, .labelWhenChecked {
+        white-space: nowrap;
+    }
+}
+
+:host([label-when-checked]:not([label-when-checked=""])) {
+    .labelContainer {
+        display: grid;
+    }
+
+    .label, .labelWhenChecked {
+        grid-row-start: 1;
+        grid-column-start: 1;
+    }
+}
+
+:host([label-when-checked]:not([label-when-checked=""])[checked]) .label {
+    visibility: hidden;
+}
+
+:host([label-when-checked]:not([label-when-checked=""]):not([checked])) .labelWhenChecked {
+    visibility: hidden;
+}

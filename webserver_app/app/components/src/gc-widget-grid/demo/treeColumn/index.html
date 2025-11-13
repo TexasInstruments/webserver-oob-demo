@@ -1,0 +1,196 @@
+<!--
+    Copyright (c) 2021, Texas Instruments Incorporated
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions
+    are met:
+
+    *   Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    *   Neither the name of Texas Instruments Incorporated nor the names of
+    its contributors may be used to endorse or promote products derived
+    from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+    THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+    PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+    CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+    EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+    PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+    OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+    WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+    OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+    EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+-->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>gc-widget-tree-column Demo</title>
+    <script nomodule src="../../../build/gc-components.js"></script>
+    <script type="module" src="../../../build/gc-components.esm.js"></script>
+    <script type="module" src="../../../gc-core-databind/lib/CoreDatabind"></script>
+    <link rel="stylesheet" type="text/css" href="../../../../assets/stylesheets/gc-demo-stylesheet.css">
+    <link rel="stylesheet" type="text/css" href="../../../../assets/stylesheets/gc-core-stylesheet.css">
+    <style>
+        body {
+            width: 100%;
+            height: 100%;
+            margin: 0px;
+        }
+
+        #grid {
+            height: calc(100% - 44px);
+            position: absolute;
+            margin: 0px;
+        }
+
+        #editModeLabel {
+            position: absolute;
+            bottom: 0px;
+            margin: 0px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="demo_container" style="justify-content: start; width: 300px">
+        <gc-widget-grid id="grid">
+            <gc-widget-grid-tree-column id="tree" heading="Tree Column" name="name">
+            </gc-widget-grid-tree-column>
+        </gc-widget-grid>
+    </div>
+    <div id="demo_properties_container" style="padding: 0 10px 0 20px">
+        <table>
+            <tr>
+                <th>
+                    <gc-widget-label label="Property"></gc-widget-label>
+                </th>
+                <th>
+                    <gc-widget-label label="Value"></gc-widget-label>
+                </th>
+            </tr>
+            <tr>
+                <td>
+                    <gc-widget-label label="heading"></gc-widget-label>
+                </td>
+                <td>
+                    <gc-widget-input id="heading"></gc-widget-input>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <gc-widget-label label="showInfoIcon"></gc-widget-label>
+                </td>
+                <td>
+                    <gc-widget-checkbox id="showInfoIcon"></gc-widget-checkbox>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <gc-widget-label label="hideMinimizeAction"></gc-widget-label>
+                </td>
+                <td>
+                    <gc-widget-checkbox id="hideMinimizeAction"></gc-widget-checkbox>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <gc-widget-label label="minimized"></gc-widget-label>
+                </td>
+                <td>
+                    <gc-widget-checkbox id="minimized"></gc-widget-checkbox>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <gc-widget-label label="hidden"></gc-widget-label>
+                </td>
+                <td>
+                    <gc-widget-checkbox id="hidden"></gc-widget-checkbox>
+                </td>
+            </tr>
+        </table>
+        <table>
+            <tr>
+                <th>
+                    <gc-widget-label label="Style"></gc-widget-label>
+                </th>
+                <th>
+                    <gc-widget-label label="Value"></gc-widget-label>
+                </th>
+            </tr>
+            <tr>
+                <td>
+                    <gc-widget-label label="--gc-column-width"></gc-widget-label>
+                </td>
+                <td>
+                    <gc-widget-input id="columnWidth" format="text" value="260px"></gc-widget-input>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <gc-widget-label label="--gc-heading-text-align"></gc-widget-label>
+                </td>
+                <td>
+                    <gc-widget-select id="headingAlign" labels="start,center,end" initial-index="1"></gc-widget-select>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <script type="module">
+        import('../../../gc-widget-base/lib/GcWidget').then(({ GcWidget }) => {
+            return GcWidget.querySelector('#grid');
+        }).then((table) => {
+            class TreeDataProvider {
+                constructor(level) {
+                    this.level = level;
+                    this.children = new Array(this.rowCount).fill(null);
+                }
+                get rowCount() {
+                    return 4 * this.level;
+                }
+                setValue() {
+                }
+                getValue(row, column) {
+                    if (column === 'name') {
+                        if (this.level > 2) {
+                            return `Category ${row}`;
+                        } else if (this.level > 1) {
+                            return `Sub-category ${String.fromCharCode(65 + row)}`;
+                        } else {
+                            const romanNumbers = ['i', 'ii', 'iii', 'iv', 'v', 'vi', 'vii', 'viii'];
+                            return `Item ${romanNumbers[row]}`;
+                        }
+                    }
+                    return undefined;
+                }
+                isExpandable(row) {
+                    return this.level > 1;
+                }
+                async getChildDataProvider(row) {
+                    if (!this.children[row]) {
+                        await new Promise( (resolve) => {
+                            setTimeout(resolve, 500 * this.level);
+                        });
+                        this.children[row] = new TreeDataProvider(this.level - 1);
+                    }
+                    return this.children[row];
+                }
+                getIconName(row, expanded) {
+                    return this.level > 1 ? expanded ? 'outlined:file:topic' : 'file:topic' : 'action:description';
+                }
+            }
+            table.setDataProvider(new TreeDataProvider(3));
+        });
+    </script>
+
+</body>
+
+</html>

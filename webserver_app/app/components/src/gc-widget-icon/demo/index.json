@@ -1,0 +1,29 @@
+{
+    "widgetBindings": [
+        {
+            "widgetId": "demo_element",
+            "serverBindName": "widget.icon.selectedLabel",
+            "propertyName": "icon"
+        },
+        {
+            "widgetId": "demo_element",
+            "serverBindName": "widget.path.value",
+            "propertyName": "path"
+        },
+        {
+            "widgetId": "demo_element",
+            "serverBindName": "widget.size.selectedLabel",
+            "propertyName": "size"
+        },
+        {
+            "widgetId": "demo_element",
+            "serverBindName": "widget.circle.checked",
+            "propertyName": "circle"
+        },
+        {
+            "widgetId": "demo_element",
+            "serverBindName": "widget.appearance.selectedLabel",
+            "propertyName": "appearance"
+        }
+    ]
+}

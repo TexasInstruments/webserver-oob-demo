@@ -1,0 +1,22 @@
+{
+	"extends": "../../../.configs/tsconfig.json",
+	"compilerOptions": {
+		"module": "commonjs",
+		"rootDirs": [
+			"src"
+		],
+		"outDir": "./@ti-migrator",
+		"typeRoots": [
+			"../node_modules/@types",
+		],
+		"types": [
+			"node",
+			"mocha",
+			"chai"
+		]
+	},
+	"include": [
+        "./src/**/migration",
+        "./src/**/test/*-migrator.spec.ts",
+	]
+}

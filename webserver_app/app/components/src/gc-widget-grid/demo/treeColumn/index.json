@@ -1,0 +1,39 @@
+{
+    "widgetBindings": [
+        {
+            "widgetId": "tree",
+            "serverBindName": "widget.columnWidth.value",
+            "propertyName": "style['--gc-column-width']"
+        },
+        {
+            "widgetId": "heading",
+            "serverBindName": "widget.tree.heading",
+            "propertyName": "value"
+        },
+        {
+            "widgetId": "showInfoIcon",
+            "serverBindName": "widget.tree.showInfoIcon",
+            "propertyName": "checked"
+        },
+        {
+            "widgetId": "hideMinimizeAction",
+            "serverBindName": "widget.tree.hideMinimizeAction",
+            "propertyName": "checked"
+        },
+        {
+            "widgetId": "minimized",
+            "serverBindName": "widget.tree.minimized",
+            "propertyName": "checked"
+        },
+        {
+            "widgetId": "hidden",
+            "serverBindName": "widget.tree.hidden",
+            "propertyName": "checked"
+        },
+        {
+            "widgetId": "tree",
+            "serverBindName": "widget.headingAlign.selectedLabel",
+            "propertyName": "style['--gc-heading-text-align']"
+        }
+    ]
+}

@@ -1,0 +1,49 @@
+@import "../gc-widget-input/gc-widget-input";
+
+:host {
+    background: #{$gc-background-color};
+
+    #root-container {
+        gc-widget-icon {
+            fill: $gc-color-gray-5;
+            opacity: 0.5;
+
+            &#clear {
+                cursor: pointer;
+                &:hover {
+                    opacity: 1;
+                }
+            }
+
+            &#search {
+                margin: 0px;
+            }
+        }
+
+        gc-widget-input {
+            margin: 0;
+            width: 100%;
+            border: none;
+            height: 100%;
+
+            background: var(--gc-background-color, #{$gc-background-color});
+            --ti-input-text-align: var(--gc-text-align);
+        }
+    }
+}
+
+:host([disabled]) {
+    #root-container {
+        gc-widget-icon {
+            cursor: not-allowed;
+
+            &:hover {
+                opacity: 0.5;
+            }
+        }
+
+        gc-widget-input {
+            color: $gc-font-color-disabled;
+        }
+    }
+}

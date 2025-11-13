@@ -1,0 +1,153 @@
+@import "../../gc-widget-base/gc-widget-base";
+
+$plus-fade-distance: 5px;
+$minus-fade-distance: -5px;
+$animation: 0.15s cubic-bezier(0, 0, 0.2, 1) forwards;
+
+:host {
+    margin: 0;
+    position: fixed;
+    pointer-events: none;
+    z-index: 9900; //reserved
+    max-width: 600px;
+
+    gc-widget-container {
+        background-color: var(--gc-background-color, #{$gc-background-color});
+        color: var(--gc-color, #{$gc-font-color});
+        padding: 5px;
+    }
+
+    &:after {
+        content: " ";
+        position: absolute;
+        transform: rotate(180deg);
+        top: 8px;
+        left: -10px;
+        height: 0;
+        width: 0;
+        border: solid transparent;
+        border-left-color: var(--gc-background-color, #{$gc-background-color});
+        border-width: 8px;
+    }
+
+    &:before {
+        z-index: -1;
+        content: " ";
+        position: absolute;
+        transform: rotate(45deg);
+        top: 12px;
+        left: 1px;
+        width: 8px;
+        height: 8px;
+        bottom: 0px;
+        box-shadow: 0px 0px 1px 1px rgb(0 0 0 / 5%);
+    }
+}
+
+:host(.gc-tooltip-right) {
+    animation: tooltip-fade-right $animation;
+    @keyframes tooltip-fade-right {
+        from {
+            z-index: -1;
+            transform: translate($plus-fade-distance, 0);
+            opacity: 0;
+        }
+
+        to {
+            z-index: 2;
+            transform: translate(0, 0);
+            opacity: 1;
+        }
+    }
+}
+
+:host(.gc-tooltip-left) {
+    animation: tooltip-fade-left $animation;
+    @keyframes tooltip-fade-left {
+        from {
+            z-index: -1;
+            transform: translate($minus-fade-distance, 0);
+            opacity: 0;
+        }
+
+        to {
+            z-index: 2;
+            transform: translate(0, 0);
+            opacity: 1;
+        }
+    }
+
+    &::after {
+        left: calc(100% - 7px);
+        transform: rotate(0deg);
+    }
+
+    &::before {
+        left: calc(100% - 9px);
+        transform: rotate(45deg);
+        box-shadow: 0px 0px 2px 0px rgb(0 0 0 / 20%);
+    }
+}
+
+:host(.gc-tooltip-top) {
+    animation: tooltip-fade-top $animation;
+    @keyframes tooltip-fade-top {
+        from {
+            z-index: -1;
+            transform: translate(0, $minus-fade-distance);
+            opacity: 0;
+        }
+
+        to {
+            z-index: 2;
+            transform: translate(0, 0);
+            opacity: 1;
+        }
+    }
+
+    &::after {
+        top: calc(100% - 5px);
+        left: 16px;
+        transform: rotate(90deg);
+    }
+
+    &::before {
+        top: calc(100% - 16px);
+        left: 16px;
+        width: 16px;
+        height: 16px;
+        transform: rotate(45deg);
+        box-shadow: 0px 0px 2px 1px rgb(0 0 0 / 20%);
+    }
+}
+
+:host(.gc-tooltip-bottom) {
+    animation: tooltip-fade-bottom $animation;
+    @keyframes tooltip-fade-bottom {
+        from {
+            z-index: -1;
+            transform: translate(0, $plus-fade-distance);
+            opacity: 0;
+        }
+
+        to {
+            z-index: 2;
+            transform: translate(0, 0);
+            opacity: 1;
+        }
+    }
+
+    &::after {
+        top: -11px;
+        left: 16px;
+        transform: rotate(-90deg);
+    }
+
+    &::before {
+        top: 0px;
+        left: 16px;
+        width: 16px;
+        height: 16px;
+        transform: rotate(45deg);
+    }
+}

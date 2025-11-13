@@ -1,0 +1,143 @@
+<!--
+    Copyright (c) 2021, Texas Instruments Incorporated
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions
+    are met:
+
+    *   Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    *   Neither the name of Texas Instruments Incorporated nor the names of
+    its contributors may be used to endorse or promote products derived
+    from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+    THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+    PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+    CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+    EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+    PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+    OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+    WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+    OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+    EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+-->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>gc-widget-theme Demo</title>
+    <script nomodule="" src="../../build/gc-components.js"></script>
+    <script type="module" src="../../build/gc-components.esm.js"></script>
+    <script type="module" src="../../gc-core-databind/lib/CoreDatabind"></script>
+    <link rel="stylesheet" type="text/css" href="../../../assets/stylesheets/gc-demo-stylesheet.css">
+    <style>
+        #primaryColor {
+            color: var(--theme-primary-color, #cc0000);
+        }
+
+        #secondaryColor {
+            color: var(--theme-secondary-color, #118899);
+        }
+
+        #tertiaryColor {
+            color: var(--theme-tertiary-color, #63666a);
+        }
+
+        #backgroundColor {
+            color: var(--theme-background-color, #ffffff);
+        }
+
+        #backgroundColorDisabled {
+            color: var(--theme-background-color-disabled, #e5e5e5);
+            background: grey;
+        }
+
+        #fontColor {
+            color: var(--theme-font-color, #555555);
+        }
+
+        #headerFontColor {
+            color: var(--theme-header-font-color);
+        }
+
+        #scrollThumbColor {
+            color: var(--theme-scroll-thumb-color, rgba(#231f20, 0.65));
+        }
+
+        #scrollTrackColor {
+            color: var(--theme-scroll-track-color, rgba(#231f20, 0.2));
+        }
+
+        #scrollThumbColorHover {
+            color: var(--theme-scroll-thumb-color-hover, rgba(#231f20, 0.8));
+        }
+
+        #demo_container {
+            background: var(--theme-background-color-disabled, #f7f7f7);
+        }
+
+        .widget_area {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <gc-widget-theme id="demo_element"
+        theme-file-paths="$gc-theme-light | $gc-theme-dark | ./custom-theme-blue.css | ./custom-partial-css-change.css | theme-file-missing.css">
+    </gc-widget-theme>
+    <div id="demo_container">
+        <div class="widget_area">
+            <gc-widget-label id="label" label="gc-widget-label text"></gc-widget-label>
+        </div>
+        <div class="widget_area">
+            <div class="no-theme">
+                <gc-widget-label id="label" label="inside div class='no-theme'"></gc-widget-label>
+            </div>
+        </div>
+        <div id="theme_variables" style="text-align: left; font-family: monospace; font-weight: bold;">
+            Defined Theme Variables:
+            <div id="primaryColor">--theme-primary-color </div>
+            <div id="secondaryColor"> --theme-secondary-color </div>
+            <div id="tertiaryColor">--theme-tertiary-color </div>
+            <div id="backgroundColor">--theme-background-color</div>
+            <div id="backgroundColorDisabled">--theme-background-color-disabled</div>
+            <div id="fontColor">--theme-font-color</div>
+            <div id="headerFontColor">--theme-header-font-color</div>
+            <div id="scrollTrackColor">--theme-scroll-track-color</div>
+            <div id="scrollThumbColor">--theme-scroll-thumb-color</div>
+            <div id="scrollThumbColorHover">--theme-scroll-thumb-color-hover</div>
+        </div>
+
+    </div>
+    <div id="demo_properties_container" class="no-theme">
+        <table><tr><th>
+            <gc-widget-label label="Property"></gc-widget-label>
+        </th> <th>
+            <gc-widget-label label="Value"></gc-widget-label>
+        </th></tr><tr><td>
+            <gc-widget-label label="selectedThemeIndex"></gc-widget-label>
+        </td><td>
+            <!-- <gc-widget-select id="theme_index" labels="GClight=0|GCdark=1|blue=2|partial=3|missing=4" values="0|1|2|3|4" type="select" initial-index="1"></gc-widget-select> -->
+            <gc-widget-select id="theme_index" labels="0|1|2|3|4" type="select" initial-index="0"></gc-widget-select>
+        </td></tr><tr><td>
+            <gc-widget-label label="themeFilePaths"></gc-widget-label>
+        </td>
+        <td><pre style="
+            white-space: pre-wrap;
+        ">$gc-theme-light | $gc-theme-dark | ./custom-theme-blue.css |
+            ./custom-partial-css-change.css | theme-file-missing.css</pre></td>
+        </tr>
+        </table>
+    </div>
+</body>
+
+</html>

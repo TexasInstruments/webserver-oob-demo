@@ -1,0 +1,85 @@
+@import '../gc-widget-base/gc-widget-base';
+
+$font-color: $gc-color-white;
+$progress-bar-background-color: $gc-color-white;
+$progress-label-font-color: $gc-color-gray-9;
+$progress-bar-color: $gc-color-green-3;
+
+$item-margin: 5px;
+
+:host {
+    margin: 0;
+    overflow: hidden;
+    font-family: $gc-font-family;
+    font-weight: $gc-font-weight-normal;
+    font-size: $gc-font-size;
+    color: $font-color;
+    width: 100%;
+}
+
+#status-container {
+    display: flex;
+    height: 30px;
+    width: 100%;
+    background-color: $gc-tertiary-color;
+    --gc-font-color: #{$font-color};
+
+    > * {
+        display: flex;
+        align-items: center;
+
+        > * {
+            fill: $gc-color-white;
+            margin: 0 $item-margin;
+            display: flex;
+        }
+    }
+
+    .center {
+        flex: 1;
+        align-items: center;
+    }
+
+    .left {
+        #event-log-icon {
+            cursor: pointer;
+        }
+
+        #app-status-text {
+            white-space: nowrap;
+            --gc-color: $gc-color-white;
+        }
+    }
+
+    .right {
+        #progress-container {
+            display: inline-block;
+            position: relative;
+            width: 40px;
+            height: 24px;
+            background: $progress-bar-background-color;
+
+            > #progress-bar {
+                height: 100%;
+                background: $progress-bar-color;
+            }
+        }
+        #branding {
+            svg {
+                fill: $font-color;
+                height: 100%;
+                width: 150px;
+            }
+        }
+    }
+
+    slot {
+        margin: 0;
+        align-items: center;
+    }
+
+    ::slotted(*) {
+        margin: 0 $item-margin;
+    }
+}
+

@@ -1,0 +1,19 @@
+{
+    "widgetBindings": [
+        {
+            "widgetId": "autoReadSelectorLabels",
+            "serverBindName": "widget.demo_element.autoReadSelectorLabels",
+            "propertyName": "value"
+        },
+        {
+            "widgetId": "autoReadSelectorValues",
+            "serverBindName": "widget.demo_element.autoReadSelectorValues",
+            "propertyName": "value"
+        },
+        {
+            "widgetId": "hideDeviceName",
+            "serverBindName": "widget.demo_element.hideDeviceName",
+            "propertyName": "checked"
+        }
+    ]
+}

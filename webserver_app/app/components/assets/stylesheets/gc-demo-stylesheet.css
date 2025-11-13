@@ -1,0 +1,73 @@
+body {
+    display: flex;
+    font-family: 'roboto';
+    font-size: 14px;
+    color: #231f20;
+    margin: 10px 20px;
+    background: initial !important;
+}
+
+.highlight {
+    background-color: #f3cd34;
+    border: 2px solid #63666a;
+    border-radius: 5px;
+}
+
+#demo_container {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #f7f7f7;
+    border: 2px dotted #98999b;
+    padding: 20px;
+    margin-right: 20px;
+}
+
+#demo_properties_container {
+    flex: 1;
+    padding-bottom: 15px; /* spacing for 'Powered By GUI Composer' */
+}
+
+table {
+    border-spacing: 0px;
+}
+
+th {
+    background: #f7f7f7;
+}
+
+th, td {
+    text-align: left;
+    height: 45px;
+    border-bottom: 1px solid #eeeeee;
+    white-space: nowrap;
+    padding: 0 5px;
+}
+
+th gc-widget-label {
+    font-size: 14px;
+    font-weight: 800;
+}
+
+td:nth-child(1) {
+    padding-right: 20px;
+}
+
+td:nth-child(2) {
+    width: 100%;
+}
+
+td:nth-child(2) > *:not(input) {
+    width: 100%;
+}
+
+td > * {
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+#powered-by-gc {
+    display: none;
+}

@@ -1,0 +1,58 @@
+@import "../gc-widget-base/gc-widget-base-dialog";
+
+:host {
+    margin: 0;
+    min-width: 350px;
+    min-height: 220px;
+}
+
+#header {
+    background-color: $gc-primary-color;
+    color: $gc-color-white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    margin: 0px;
+    cursor: move;
+    min-height: 58px; // icon height
+    #title-stack {
+        display: flex;
+        flex-direction: column;
+        width: calc(100% - 64px);
+        #heading,
+        #desc {
+            margin: 0;
+            font-weight: normal;
+            text-shadow: 1px 1px rgb(0 0 0 / 48%);
+        }
+        #heading {
+            font-size: x-large;
+            height: 34px;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+    }
+    gc-widget-icon {
+        margin-left: 15px;
+    }
+}
+
+slot[name=action-bar] {
+    padding: 5px 10px 5px 10px;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    min-height: 48px;
+    border-top: 1px solid $gc-border-color;
+}
+
+::slotted(gc-widget-button) {
+    --gc-background-color: #{$gc-background-color};
+    --gc-background-color-hover: #{$gc-primary-color-hover};
+    --gc-border-color: transparent;
+    --gc-border-color-hover: transparent;
+    --gc-color: #{$gc-primary-color};
+    --gc-color-hover: #{$gc-primary-color};
+}

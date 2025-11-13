@@ -1,0 +1,29 @@
+@import "../gc-widget-base/gc-widget-base-dialog";
+
+:host {
+    margin: 0;
+    position: unset;
+
+    gc-widget-dialog {
+        width: 400px;
+        min-height: auto;
+    }
+}
+
+#content-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 60px;
+    margin: 10px 0 10px 0;
+
+    #content-message {
+        display: flex;
+        align-items: center;
+    }
+
+    gc-widget-progressbar {
+        margin: 0;
+        padding: 20px 0 10px 0;
+    }
+}

@@ -1,0 +1,26 @@
+@import "../gc-widget-base/gc-widget-base";
+
+:host {
+    label {
+        display: inline-block;
+        width: 100%;
+        color: var(--gc-color, inherit);
+        font-size: var(--gc-font-size, inherit);
+        font-style: var(--gc-font-style, inherit);
+        font-weight: var(--gc-font-weight, inherit);
+        text-align: var(--gc-text-align, inherit);
+        text-decoration: var(--gc-text-decoration, inherit);
+    }
+
+    label:hover {
+        color: var(--gc-color-hover, var(--gc-color, inherit));
+        text-decoration: var(--gc-text-decoration-hover, var(--gc-text-decoration, inherit));
+        cursor: var(--gc-cursor-hover, default);
+    }
+}
+
+:host([disabled]) label {
+    pointer-events: none;
+    cursor: not-allowed !important;
+    opacity: 0.5;
+}

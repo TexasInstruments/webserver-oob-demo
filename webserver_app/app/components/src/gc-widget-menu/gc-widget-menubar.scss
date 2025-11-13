@@ -1,0 +1,96 @@
+@import "../gc-widget-base/gc-widget-base-menu";
+
+:host {
+    margin: 0;
+    z-index: 1;
+    width: 100%;
+    background-color: $gc-primary-color;
+    color: $gc-menu-color;
+    font-family: $gc-font-family;
+    font-size: $gc-menu-font-size;
+    font-weight: $gc-menu-font-weight;
+    white-space: nowrap;
+}
+
+.v-separator {
+    border-left: 1px solid $gc-border-color;
+    height: 70%;
+    margin: 10px;
+}
+
+.h-separator {
+    border-top: 1px solid $gc-border-color;
+    width: 70%;
+    margin: 10px;
+}
+
+#menubar-container {
+    display: flex;
+    flex: 1;
+    flex-flow: row;
+    height: inherit;
+}
+
+#product-container {
+    height: inherit;
+    font-size: $gc-menu-product-family-font-size;
+    font-weight: $gc-menu-product-family-font-weight;
+    cursor: pointer;
+}
+
+#product-icon {
+    margin-left: 10px;
+    fill: $gc-menu-color;
+}
+
+#product-name {
+    margin-left: 10px;
+}
+
+#win-buttons-container {
+    display: flex;
+
+    gc-widget-icon {
+        margin: 0;
+        padding: 10px;
+        --gc-color: #{$gc-menu-color};
+    }
+
+    gc-widget-icon.hover {
+        background-color: $gc-menu-background-color-hover;
+        --gc-color: #{$gc-menu-color-hover};
+    }
+}
+
+#drag-area {
+    -webkit-app-region: drag;  /* see https://github.com/nwjs/nw.js/wiki/Frameless-window */
+    flex: 1 1 100%;
+    min-width: 50px;
+    height: 100%;
+}
+
+#tool-list, #menu-list {
+    display: flex;
+    flex-direction: row;
+    height: inherit;
+}
+
+#tool-list {
+    ::slotted(:not(gc-widget-menuitem)) {
+        margin: 0 5px;
+        color: $gc-menu-color;
+    }
+}
+
+#tool-list {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+#more-list {
+    > gc-widget-menuitem {
+        padding: 0;
+    }
+}

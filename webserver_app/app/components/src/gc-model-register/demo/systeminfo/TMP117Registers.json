@@ -1,0 +1,661 @@
+{
+	"info":
+	{
+		"name": "TMP117",
+		"desc": "",
+		"regsize": 16,
+		"urls": "http://www.ti.com/product/tmp117",
+		"tags": ""
+    },
+    "calculatedBindings": {
+        "_temperature_C": "TEMP_RESULT.TEMP",
+        "_temperature_F": "TEMP_RESULT.TEMP*9/5+32"
+    },
+	"regblocks":
+	[
+	    {
+	      "name": "TEMPERATURE",
+	      "expanded": true,
+	      "desc": "",
+	      "anchor": "",
+	      "registers": [
+	        {
+	          "name": "TEMP_RESULT",
+	          "size": 16,
+	          "addr": "0x00",
+	          "mode": "R",
+	          "value": "0x8000",
+	          "default": "0x8000",
+	          "title": "Temperature Register",
+	          "fields": [
+	            {
+	              "start": "0",
+	              "stop": "15",
+	              "name": "TEMP",
+	              "default": "0",
+				  "type": "q7",
+	              "desc": "16-bit, read-only register that stores the most recent temperature conversion results. The temperature value is given in 2's complement format, ranging from  [-256°C, +255.9921°C] with a resolution of 7.8125m°C.",
+	              "mode": "R",
+	              "anchor": "",
+	              "attrs": {
+	                "isHidden": "0",
+	                "isReserved": "0",
+	                "isLocked": "0"
+                  },
+                  "widget": {
+                      "type": "value",
+                      "format": "dec",
+                      "units": "°C"
+                  },
+	              "comments": ""
+	            }
+	          ]
+	        }
+	      ]
+	    },
+	    {
+	      "name": "CONFIGURATION",
+	      "expanded": true,
+	      "desc": "",
+	      "anchor": "",
+	      "registers": [
+	        {
+	          "name": "CONFIG_REG",
+	          "size": 16,
+	          "addr": "0x01",
+	          "mode": "RW",
+	          "value": "0x0000",
+	          "default": "0x0000",
+	          "title": "Configuration Register",
+	          "fields": [
+	            {
+	              "start": "15",
+	              "stop": "15",
+	              "name": "ALERT_HIGH",
+	              "default": "0",
+	              "desc": "<b>Alert Mode:</b>\n1: Set when the conversion result is higher than the high limit\n0: Cleared on read of configuration register\n<b>Therm mode:</b>\n1: Set when the conversion result is higher than the therm limit\n0: Cleared when the conversion result is lower than the hysteresis",
+	              "mode": "R",
+	              "anchor": "",
+	              "attrs": {
+	                "isHidden": "0",
+	                "isReserved": "0",
+	                "isLocked": "0"
+	              },
+	              "comments": ""
+	            },
+	            {
+	              "start": "14",
+	              "stop": "14",
+	              "name": "ALERT_LOW",
+	              "default": "0",
+	              "desc": "<b>Alert Mode:</b>\n1: Set when the conversion result is lower than the low limit\n0:Cleared when the configuration register is read\n<b>Therm Mode:</b>\nAlways set to 0",
+	              "mode": "R",
+	              "anchor": "",
+	              "attrs": {
+	                "isHidden": "0",
+	                "isReserved": "0",
+	                "isLocked": "0"
+	              },
+	              "comments": ""
+	            },
+	            {
+	              "start": "13",
+	              "stop": "13",
+	              "name": "CONV_RDY",
+	              "default": "0",
+	              "desc": "<b>Conversion Ready (ConvRDY):</b>\nThis flag indicates that the conversion is complete and the result can be read. Every time the result register or configuration registers are read, this bit is cleared. This bit is set at the end of the next conversion when the temperature register is updated. Data ready can be monitored on the ALERT pin by using bit 2 of the configuration register.",
+	              "mode": "R",
+	              "anchor": "",
+	              "attrs": {
+	                "isHidden": "0",
+	                "isReserved": "0",
+	                "isLocked": "0"
+	              },
+	              "comments": ""
+	            },
+	            {
+	              "start": "12",
+	              "stop": "12",
+	              "name": "EEPROM_BUSY",
+	              "default": "0",
+	              "desc": "<b>EEPROM Busy:</b>\n0: Indicates that the EEPROM is ready. This means that the EEPROM has finished the last operation and is ready to accept new commands. The same as bit 14 in EEPROM Unlock register,\n1: Indicates that the EEPROM is busy. This means that the EEPROM is currently busy completing a programming or power-up sequence. ",
+	              "mode": "R",
+	              "anchor": "",
+	              "attrs": {
+	                "isHidden": "0",
+	                "isReserved": "0",
+	                "isLocked": "0"
+	              },
+	              "comments": ""
+	            },
+	            {
+	              "start": "10",
+	              "stop": "11",
+	              "name": "CONV_MODE",
+	              "default": "0",
+	              "desc": "<b>Set Conversion Mode:</b>\n00: Continuous Conversion (CC)\n01: Shutdown (SD)\n10: Continuous Conversion (read back = 00)\n11: One-shot Conversion (OS)",
+	              "mode": "RW",
+	              "anchor": "",
+	              "attrs": {
+	                "isHidden": "0",
+	                "isReserved": "0",
+	                "isLocked": "0"
+	              },
+	              "comments": "",
+	              "options": [
+				  	{
+						"display": "Continuous conversion",
+						"value" : 0
+					},
+					{
+						"display": "Shutdown",
+						"value" : 1
+					}
+	              ]
+	            },
+	            {
+	              "start": "7",
+	              "stop": "9",
+	              "name": "CONV_CYCLE",
+	              "default": "0",
+	              "desc": "<b>Conversion Cycle (CONV2:CONV0):</b>\nDetermines update rate of result register. Controls duty cycling of conversion rate for lower power consumption. Duty cycling modes with update rates shorter than the averaging rate will not be available and will result in CC mode. These bits along with the AVG bits of this register decide the conversion rate.",
+	              "mode": "RW",
+	              "anchor": "",
+	              "attrs": {
+	                "isHidden": "0",
+	                "isReserved": "0",
+	                "isLocked": "0"
+	              },
+	              "comments": "",
+	              "options": [
+					{
+						"display": "15.5ms",
+						"value": 0
+					},
+								  {
+					"display": "125ms",
+					"value": 1
+				   },
+								  {
+					"display": "250ms",
+					"value": 2
+				   },
+								  {
+					"display": "500ms",
+					"value": 3
+				   },
+				   {
+					"display": "1s",
+					"value": 4
+				   },
+				   {
+					"display": "4s",
+					"value": 5
+				   },
+				   {
+					"display": "8s",
+					"value": 6
+				   },
+				   {
+					"display": "16s",
+					"value": 7
+				   }
+	              ]
+	            },
+	            {
+	              "start": "5",
+	              "stop": "6",
+	              "name": "AVG_MODE",
+	              "default": "0",
+	              "desc": "<b>Conversion Averaging Modes (AVG1:AVG0):</b>\nDetermines the number of conversion results that are averaged before updating the result register. The average is an accumulated average and not a running average.",
+	              "mode": "RW",
+	              "anchor": "",
+	              "attrs": {
+	                "isHidden": "0",
+	                "isReserved": "0",
+	                "isLocked": "0"
+	              },
+	              "comments": "",
+	              "options": [
+				  	{
+						"display": "No avg: 15.5ms minimum",
+						"value" : 0
+					},
+					{
+						"display": "8 avg: 125ms minimum",
+						"value" : 1
+					},
+				 	{
+						"display": "32 avg: 500ms minimum",
+						"value" : 2
+					},
+					{
+						"display": "64 avg: 1s minimum",
+						"value" : 3
+					}
+	              ]
+	            },
+	            {
+	              "start": "4",
+	              "stop": "4",
+	              "name": "T_n_A",
+	              "default": "0",
+	              "desc": "<b>Therm/nAlert Mode select (T/nA):</b>\n1: Thermal Mode\n0: Alert Mode",
+	              "mode": "RW",
+	              "anchor": "",
+	              "attrs": {
+	                "isHidden": "0",
+	                "isReserved": "0",
+	                "isLocked": "0"
+	              },
+	              "comments": "",
+	              "options":[
+					{
+						"display": "Alert Mode",
+						"value" : 0
+					},
+					{
+						"display": "Thermal Mode",
+						"value" : 1
+					}
+					]
+	            },
+	            {
+	              "start": "3",
+	              "stop": "3",
+	              "name": "ALERT_POL",
+	              "default": "0",
+	              "desc": "<b>Alert Pin Polarity bit(POL):</b>\n1: Active High (Alert/Therm pin is high when asserted)\n0: Active Low (Alert/Therm pin is low when asserted)",
+	              "mode": "RW",
+	              "anchor": "",
+	              "attrs": {
+	                "isHidden": "0",
+	                "isReserved": "0",
+	                "isLocked": "0"
+	              },
+	              "comments": "",
+	              "options":[
+					{
+						"display": "Active Low",
+						"value" : 0
+					},
+					{
+						"display": "Active High",
+						"value" : 1
+					}
+					]
+	            },
+	            {
+	              "start": "2",
+	              "stop": "2",
+	              "name": "CRDY_EN",
+	              "default": "0",
+	              "desc": "<b>Alert pin select bit</b>:\n1: ALERT pin reflects the status of the data ready flag\n0: ALERT pin reflects the status of the alert flags",
+	              "mode": "RW",
+	              "anchor": "",
+	              "attrs": {
+	                "isHidden": "0",
+	                "isReserved": "0",
+	                "isLocked": "0"
+	              },
+	              "comments": "",
+	              "options":[
+					{
+						"display": "Alert",
+						"value" : 0
+					},
+					{
+						"display": "Data Ready",
+						"value" : 1
+					}
+					]
+	            },
+	            {
+	              "start": "1",
+	              "stop": "1",
+	              "name": "SOFT_RESET",
+	              "default": "0",
+	              "desc": "<b>Software Reset Bit:</b>\nWhen set it 1 this bit triggers a software reset with a duration of 2ms. This bit always reads back 0.",
+	              "mode": "RW",
+	              "anchor": "",
+	              "attrs": {
+	                "isHidden": "0",
+	                "isReserved": "0",
+	                "isLocked": "0"
+	              },
+	              "comments": ""
+	            },
+	            {
+	              "start": "0",
+	              "stop": "0",
+	              "name": "Reserved",
+	              "default": "0",
+	              "desc": "Not used",
+	              "mode": "R",
+	              "anchor": "",
+	              "attrs": {
+	                "isHidden": "0",
+	                "isReserved": "1",
+	                "isLocked": "0"
+	              },
+	              "comments": ""
+	            }
+	          ]
+	        }
+	      ]
+	    },
+	    {
+	      "name": "ALERT LIMITS",
+	      "expanded": true,
+	      "desc": "",
+	      "anchor": "",
+	      "registers": [
+	        {
+	          "name": "ALERT_HI_LIMIT",
+	          "size": 16,
+	          "addr": "0x02",
+	          "mode": "RW",
+	          "value": "0x6000",
+	          "default": "0x6000",
+	          "title": "Alert High Limit",
+	          "fields": [
+	            {
+	              "start": "0",
+	              "stop": "15",
+	              "name": "Alert High Limit",
+	              "default": "0",
+				  "type": "q7",
+	              "desc": "Alert High Limit: The Alert High Limit register of the TMP116 is configured as a 16-bit, read/write register that stores the high limit for comparison with temperature result. One LSB equals 7.8125m°C. Range of the result is +/-256°C. Negative numbers are represented in binary two's complement format. Following power-up or reset, the High Limit register will be loaded with the stored value from the EEPROM.",
+	              "mode": "RW",
+	              "anchor": "",
+	              "attrs": {
+	                "isHidden": "0",
+	                "isReserved": "0",
+	                "isLocked": "0"
+	              },
+                  "widget": {
+                    "type": "value",
+                    "format": "dec",
+                    "units": "°C"
+                },
+                "comments": ""
+	            }
+	          ]
+	        },
+	        {
+	          "name": "ALERT_LO_LIMIT",
+	          "size": 16,
+	          "addr": "0x03",
+	          "mode": "RW",
+	          "value": "0x8000",
+	          "default": "0x8000",
+	          "title": "Alert Low Limit",
+	          "fields": [
+	            {
+	              "start": "0",
+	              "stop": "15",
+	              "name": "Alert Low Limit",
+	              "default": "0",
+	              "desc": "Alert Low Limit: The Alert Low Limit register of the TMP116 is configured as a 16-bit, read/write register that stores the low limit for comparison with temperature result. One LSB equals 7.8125m°C. Range of the result is +/-256°C. Negative numbers are represented in binary two's complement format. Following power-up or reset, the Low Limit register will be loaded with the stored value from the EEPROM.",
+	              "mode": "RW",
+				  "type": "q7",
+	              "anchor": "",
+	              "attrs": {
+	                "isHidden": "0",
+	                "isReserved": "0",
+	                "isLocked": "0"
+	              },
+                  "widget": {
+                    "type": "value",
+                    "format": "dec",
+                    "units": "°C"
+                },
+                "comments": ""
+	            }
+	          ]
+	        }
+	      ]
+	    },
+
+	    {
+	      "name": "EEPROM LOCK ENABLE",
+	      "expanded": true,
+	      "desc": "",
+	      "anchor": "",
+	      "registers": [
+	        {
+	          "name": "EEPROM",
+	          "size": 16,
+	          "addr": "0x04",
+	          "mode": "RW",
+	          "value": "0x0000",
+	          "default": "0x0000",
+	          "title": "Configuration Register",
+	          "fields": [
+	            {
+	              "start": "15",
+	              "stop": "15",
+	              "name": "EUN",
+	              "default": "0",
+	              "desc": "<b>EEPROM Unlock (EUN):</b>\n0: NVM locations locked for programming. (Writes to all NVM addresses(Config, Limits, NVM locations0-3) will be written to registers in digital logic and not programmed in NVM.),\n1: NVM locations unlocked for programming. (All writes to writable registers will program the respective EEPROM location)",
+	              "mode": "RW",
+	              "anchor": "",
+	              "attrs": {
+	                "isHidden": "0",
+	                "isReserved": "0",
+	                "isLocked": "0"
+	              },
+	              "comments": ""
+	            },
+	            {
+	              "start": "14",
+	              "stop": "14",
+	              "name": "EEPROM_BUSY",
+	              "default": "0",
+	              "desc": "<b>EEPROM Busy (EEPROM_Busy):</b>This flag is the mirror of the EEPROM busy flag (bit 12) in the configuration register.\n0: Indicates that the EEPROM is ready. This means that the EEPROM has finished the last transaction and is ready to accept new commands. \n1: Indicates that the EEPROM is busy, which means that the EEPROM is currently completing a program or power-up on reset load. ",
+	              "mode": "R",
+	              "anchor": "",
+	              "attrs": {
+	                "isHidden": "0",
+	                "isReserved": "0",
+	                "isLocked": "0"
+	              },
+	              "comments": ""
+	            },
+	            {
+	              "start": "0",
+	              "stop": "13",
+	              "name": "RESERVED",
+	              "default": "0",
+	              "desc": "Reserved",
+	              "mode": "R",
+	              "anchor": "",
+	              "attrs": {
+	                "isHidden": "0",
+	                "isReserved": "1",
+	                "isLocked": "0"
+	              },
+	              "comments": ""
+	            }
+	          ]
+	        }
+	      ]
+	    },
+	    {
+	      "name": "EEPROM",
+	      "expanded": true,
+	      "desc": "",
+	      "anchor": "",
+	      "registers": [
+	        {
+	          "name": "EEPROM1",
+	          "size": 16,
+	          "addr": "0x05",
+	          "mode": "RW",
+	          "value": "0x0000",
+	          "default": "0x0000",
+	          "title": "EEPROM 1",
+	          "fields": [
+	            {
+	              "start": "0",
+	              "stop": "15",
+	              "name": "EEPROM1",
+	              "default": "0",
+	              "desc": "The EEPROM1 register is a 16-bit register that can be used as a scratch pad to store general purpose data. This register has a corresponding EEPROM location. Writes to this address when the EEPROM is locked write data into the register and not to the EEPROM. Writes to this register when the EEPROM is unlocked causes the corresponding EEPROM location to be programmed; see the Programming the EEPROM section of the datasheet. EEPROM[4:1] are preprogrammed during manufacturing with a unique ID that can be overwritten. In order to support NIST traceability, do not delete or reprogram the EEPROM[1] register.",
+	              "mode": "RW",
+	              "anchor": "",
+	              "attrs": {
+	                "isHidden": "0",
+	                "isReserved": "0",
+	                "isLocked": "0"
+	              },
+	              "comments": ""
+	            }
+	          ]
+	        },
+	        {
+	          "name": "EEPROM2",
+	          "size": 16,
+	          "addr": "0x06",
+	          "mode": "RW",
+	          "value": "0x0000",
+	          "default": "0x0000",
+	          "title": "EEPROM 2",
+	          "fields": [
+	            {
+	              "start": "0",
+	              "stop": "15",
+	              "name": "EEPROM2",
+	              "default": "0",
+	              "desc": "This register has the same function as the EEPROM1 register.",
+	              "mode": "RW",
+	              "anchor": "",
+	              "attrs": {
+	                "isHidden": "0",
+	                "isReserved": "0",
+	                "isLocked": "0"
+	              },
+	              "comments": ""
+	            }
+	          ]
+	        },
+	        {
+	          "name": "EEPROM3",
+	          "size": 16,
+	          "addr": "0x08",
+	          "mode": "RW",
+	          "value": "0x0000",
+	          "default": "0x0000",
+	          "title": "EEPROM 3",
+	          "fields": [
+	            {
+	              "start": "0",
+	              "stop": "15",
+	              "name": "EEPROM3",
+	              "default": "0",
+	              "desc": "This register has the same function as the EEPROM1 register.",
+	              "mode": "RW",
+	              "anchor": "",
+	              "attrs": {
+	                "isHidden": "0",
+	                "isReserved": "0",
+	                "isLocked": "0"
+	              },
+	              "comments": ""
+	            }
+	          ]
+	        }
+	      ]
+	    },
+	    {
+	      "name": "TEMPERATURE CORRECTION",
+	      "expanded": true,
+	      "desc": "",
+	      "anchor": "",
+	      "registers": [
+	        {
+	          "name": "OFFSET_TEMP",
+	          "size": 16,
+	          "addr": "0x07",
+	          "mode": "RW",
+	          "value": "0x0000",
+	          "default": "0x8000",
+	          "title": "Temperature Offset",
+	          "fields": [
+	            {
+	              "start": "0",
+	              "stop": "15",
+	              "name": "OFFSETTEMP",
+	              "default": "0",
+				  "type": "q7",
+	              "desc": "This 16 bit register is to be used as a user-defined temperature offset register during system calibration. The offset will be added to the temperature result after linearization. It has the same resolution of 7.8125m°C and same range of [-256°C, +255.9921°C] as the temperature result register. If the resulting temperature after offset is out of these bounds, then the temperature result will show as the maximum or minimum possible value.",
+	              "mode": "RW",
+	              "anchor": "",
+	              "attrs": {
+	                "isHidden": "0",
+	                "isReserved": "0",
+	                "isLocked": "0"
+	              },
+                  "widget": {
+                    "type": "value",
+                    "format": "dec",
+                    "units": "°C"
+                },
+                "comments": ""
+	            }
+	          ]
+	        }
+	      ]
+	    },
+
+	    {
+	      "name": "ID",
+	      "expanded": true,
+	      "desc": "",
+	      "anchor": "",
+	      "registers": [
+	        {
+	          "name": "ID_REG",
+	          "size": 16,
+	          "addr": "0x0F",
+	          "mode": "R",
+	          "value": "0x0000",
+	          "default": "0x0000",
+	          "title": "Die ID Register",
+	          "fields": [
+	            {
+	              "start": "12",
+	              "stop": "15",
+	              "name": "DIE_ID",
+	              "default": "0",
+	              "desc": "Die ID: These bits indicate the die revision. ",
+	              "mode": "R",
+	              "anchor": "",
+	              "attrs": {
+	                "isHidden": "0",
+	                "isReserved": "0",
+	                "isLocked": "0"
+	              },
+	              "comments": ""
+	            },
+	            {
+	              "start": "0",
+	              "stop": "11",
+	              "name": "DID",
+	              "default": "0",
+	              "desc": "Device ID (DID): These bits indicate device ID. For the TMP117 this value will be 0x117.",
+	              "mode": "R",
+	              "anchor": "",
+	              "attrs": {
+	                "isHidden": "0",
+	                "isReserved": "0",
+	                "isLocked": "0"
+	              },
+	              "comments": ""
+	            }
+	          ]
+	        }
+	      ]
+	    }
+	]
+}

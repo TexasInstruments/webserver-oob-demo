@@ -1,0 +1,19 @@
+{
+  "name": "webserver-oob",
+  "version": "1.0.0",
+  "description": "Webserver for the AM335x OOB Demo",
+  "main": "webserver-oob.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node webserver-oob.js"
+  },
+  "license": "BSD-3-Clause",
+  "dependencies": {
+    "express": "^4.17.1",
+    "ws": "^8.14.2"
+  },
+  "private": true,
+  "bin": {
+    "webserver-oob": "webserver-oob.js"
+  }
+}

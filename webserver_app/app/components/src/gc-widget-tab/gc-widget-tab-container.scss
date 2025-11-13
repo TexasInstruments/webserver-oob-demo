@@ -1,0 +1,171 @@
+@import "../gc-widget-base/gc-widget-base";
+
+$tab-selector-width: 40px;
+
+:host {
+    box-sizing: border-box;
+    width: 300px;
+    height: 200px;
+    overflow: hidden;
+    background-color: var(--gc-background-color, $gc-background-color);
+
+    #root-container {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        display: flex;
+
+        &.top {
+            flex-direction: column;
+
+            #tab-selector-container {
+                height: $tab-selector-width;
+                flex-direction: row;
+                margin-bottom: 3px;
+                border-bottom: 1px solid $gc-border-color;
+
+                div {
+                    border-bottom: 2px solid transparent;
+                    height: 100%;
+                    padding: 0 5px;
+                }
+
+                div.active {
+                    border-bottom: 2px solid $gc-primary-color;
+                }
+
+                div:hover:not(.active) {
+                    border-bottom: 2px solid $gc-tertiary-color;
+                }
+            }
+        }
+
+        &.bottom {
+            flex-direction: column-reverse;
+
+            #tab-selector-container {
+                height: $tab-selector-width;
+                flex-direction: row;
+                margin-top: 3px;
+                border-top: 1px solid $gc-border-color;
+
+                div {
+                    border-top: 2px solid transparent;
+                    height: 100%;
+                    padding: 0 5px;
+                }
+
+                div.active {
+                    border-top: 2px solid $gc-primary-color;
+                }
+
+                div:hover:not(.active) {
+                    border-top: 2px solid $gc-tertiary-color;
+                }
+            }
+        }
+
+        &.left {
+            flex-direction: row;
+
+            #tab-selector-container {
+                width: $tab-selector-width;
+                flex-direction: column;
+                margin-right: 3px;
+                border-right: 1px solid $gc-border-color;
+
+                > div {
+                    border-right: 2px solid transparent;
+                    width: 100%;
+                    padding: 5px 0;
+                    writing-mode: vertical-lr;
+
+                    gc-widget-tooltip {
+                        writing-mode: initial;
+                    }
+                }
+
+                > div.active {
+                    border-right: 2px solid $gc-primary-color;
+                }
+
+                > div:hover:not(.active) {
+                    border-right: 2px solid $gc-tertiary-color;
+                }
+            }
+        }
+
+        &.right {
+            flex-direction: row-reverse;
+
+            #tab-selector-container {
+                width: $tab-selector-width;
+                flex-direction: column;
+                margin-left: 3px;
+                border-left: 1px solid $gc-border-color;
+
+                > div {
+                    border-left: 2px solid transparent;
+                    width: 100%;
+                    padding: 5px 0;
+                    writing-mode: vertical-lr;
+
+                    gc-widget-tooltip {
+                        writing-mode: initial;
+                    }
+                }
+
+                > div.active {
+                    border-left: 2px solid $gc-primary-color;
+                }
+
+                > div:hover:not(.active) {
+                    border-left: 2px solid $gc-tertiary-color;
+                }
+            }
+        }
+
+        #tab-selector-container {
+            display: flex;
+            align-items: center;
+            box-sizing: border-box;
+            white-space: nowrap;
+
+            div {
+                display: flex;
+                align-items: center;
+                margin: 2px;
+                transition: border-color 0.2s ease-out;
+                cursor: pointer;
+            }
+
+            div gc-widget-label {
+                --gc-hover-cursor: pointer;
+            }
+        }
+
+        #tab-panel-container {
+            flex: 1;
+            display: flex;
+
+            /* prevent inheriting css var styles */
+            --gc-background-color: #{$gc-background-color};
+
+            slot {
+                position: relative;
+                flex: 1;
+                display: flex;
+            }
+
+            ::slotted(gc-widget-tab-panel),
+            ::slotted(gc-widget-link-tab-panel)  {
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                margin: 0;
+            }
+        }
+    }
+}

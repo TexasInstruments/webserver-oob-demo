@@ -1,0 +1,21 @@
+{
+    "id": "custom-widget-led",
+    "label": "Custom LED Switch",
+    "group": "Custom",
+    "__isHidden__": false,
+    "__isContainer__": false,
+    "archetype": "<custom-widget-led label=\"Custom LED Switch\"></custom-widget-led>",
+    "metaProperties": {
+        "label": {
+            "name": "label",
+            "kind": "string",
+            "__isHidden__": false,
+            "title": "The toggle switch label"
+        },
+        "on": {
+            "name": "on",
+            "kind": "boolean",
+            "title": "Led on value"
+        }
+    }
+}

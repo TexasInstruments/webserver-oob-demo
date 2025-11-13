@@ -1,0 +1,64 @@
+@import "../gc-widget-base/gc-widget-base";
+
+:host {
+    width: 100%;
+
+    #progress-container {
+        width: 100%;
+
+        #message {
+            padding: 2px 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        #progress-indicator {
+            background-color: var(--gc-color, $gc-primary-color);
+        }
+
+        #bar, #bar:before {
+            height: 6px;
+            width: 100%;
+            padding: 0;
+            margin: 0;
+        }
+
+        #bar {
+            background-color: var(--gc-background-color, $gc-primary-color-hover);
+            display: flex;
+        }
+
+        #bar.indeterminate:before {
+            background-color: var(--gc-color, $gc-primary-color);
+            content: '';
+            -webkit-animation: expand-shrink 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+            animation: expand-shrink 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        }
+    }
+}
+
+
+:host([disabled]) {
+    #bar {
+        filter: grayscale(1);
+    }
+
+    #bar.indeterminate:before {
+        background-color: unset;
+        -webkit-animation: unset;
+        animation: unset;
+    }
+
+    #message {
+        color: #{$gc-font-color-disabled};
+    }
+}
+
+
+// bar animation from Stack Overflow Harshal Lonare: https://stackoverflow.com/a/60572715
+@keyframes expand-shrink {
+    0% { transform: translateX(-45%) scaleX(0.1); }
+    50% { transform: translateX(10%) scaleX(0.5); }
+    100% { transform: translateX(50%) scaleX(0); }
+}

@@ -1,0 +1,8 @@
+{
+    "boolean": true,
+    "string": "abc",
+    "number": 1,
+    "object": {
+        "foobar": 1
+    }
+}

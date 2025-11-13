@@ -1,0 +1,5 @@
+@import '../gc-widget-base/gc-widget-base';
+
+:host([appearance="custom"]) ti-svg-icon {
+    fill: var(--gc-color, inherit);
+}

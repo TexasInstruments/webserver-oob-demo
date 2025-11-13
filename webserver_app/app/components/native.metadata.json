@@ -1,0 +1,31 @@
+{
+    "xy-layout": {
+        "id": "xy_layout",
+        "label": "Absolute XY ",
+        "group": "Layouts",
+        "container": true,
+        "archetype": "<gc-widget-container style=\"width: 200px; height: 100px; border: 1px solid #ccc;\"></gc-widget-container>"
+    },
+    "flex-row-layout": {
+        "id": "flex_row_layout",
+        "label": "Flex Row",
+        "group": "Layouts",
+        "container": true,
+        "archetype": "<gc-widget-container layout horizontal style=\"width: 200px; height: 100px; border: 1px solid #ccc;\"></gc-widget-container>"
+    },
+    "flex-col-layout": {
+        "id": "flex_col_layout",
+        "label": "Flex Column",
+        "group": "Layouts",
+        "container": true,
+        "archetype": "<gc-widget-container layout vertical style=\"width: 200px; height: 100px; border: 1px solid #ccc;\"></gc-widget-container>"
+    },
+    "gc-widget-context-menuitem": {
+        "id": "gc_widget_context_menuitem",
+        "label": "Context Menu Item",
+        "group": "Menus & Toolbars",
+        "isHidden": false,
+        "isContainer": true,
+        "archetype": "<gc-widget-menuitem label=\"Context Menu Item\" layout vertical></gc-widget-menuitem>"
+    }
+}

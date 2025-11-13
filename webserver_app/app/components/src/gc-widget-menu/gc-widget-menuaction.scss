@@ -1,0 +1,30 @@
+@import "../gc-widget-base/gc-widget-base-menu";
+
+:host {
+    padding: 0 15px;
+    margin: 0;
+    background-color: $gc-sub-menu-background-color;
+    color: $gc-sub-menu-color;
+    fill: $gc-sub-menu-color;
+    cursor: default;
+}
+
+:host(:not(.disabled):hover) {
+    background-color: $gc-sub-menu-background-color-hover;
+    color: $gc-sub-menu-color-hover;
+    fill: $gc-sub-menu-color-hover;
+}
+
+:host(.disabled) {
+    opacity: 0.25;
+}
+
+:host(.checked) {
+    .icon {
+        background-color: $gc-menu-background-color-checked;
+    }
+}
+
+:host([toggle]:not(.checked)) div.icon .checkmark {
+    display: none;
+}

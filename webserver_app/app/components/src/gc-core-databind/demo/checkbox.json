@@ -1,0 +1,14 @@
+{
+    "widgetBindings": [
+        {
+            "widgetId": "greenCheck",
+            "serverBindName": "usb.LEDs.Green",
+            "propertyName": "value"
+        },
+        {
+            "widgetId": "redCheck",
+            "serverBindName": "usb.LEDs.Red",
+            "propertyName": "value"
+        }
+    ]
+}

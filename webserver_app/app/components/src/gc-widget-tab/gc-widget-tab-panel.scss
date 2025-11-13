@@ -1,0 +1,66 @@
+@import "../gc-widget-base/gc-widget-base";
+@import "../gc-widget-base/gc-widget-layout-mixin.scss";
+@include apply-layout-styles("#content");
+
+:host {
+    overflow: hidden !important;
+    padding: none !important;
+    min-width: 100px;
+    min-height: 50px;
+    background-color: var(--gc-background-color, $gc-background-color);
+
+    #root-container {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+
+        #heading {
+            position: relative;
+            display: flex;
+            align-items: center;
+            align-self: start;
+            white-space: nowrap;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            padding-left: 10px;
+
+            #label {
+                font-size: $gc-header-font-size;
+                font-weight: $gc-header-font-weight;
+            }
+
+            #desc {
+                font-size: $gc-sub-header-font-size;
+                font-weight: $gc-sub-header-font-weight;
+            }
+        }
+
+        #heading:before {
+            content: "";
+            position: absolute;
+            width: 40%;
+            height: 1px;
+            bottom: 2px;
+            border-bottom: 2px solid $gc-primary-color;
+        }
+
+        #content {
+            width: 100%;
+            height: calc(100% - 46px);
+            position: relative;
+            overflow: var(--gc-overflow);
+            padding: var(--gc-padding);
+        }
+    }
+}
+
+:host(:not([has-heading])) {
+    #root-container {
+        #content {
+            height: 100%;
+        }
+    }
+}

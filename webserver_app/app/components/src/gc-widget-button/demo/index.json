@@ -1,0 +1,24 @@
+{
+    "widgetBindings": [
+        {
+            "widgetId": "demo_element",
+            "serverBindName": "widget.button_type.selectedLabel",
+            "propertyName": "buttonType"
+        },
+        {
+            "widgetId": "demo_element",
+            "serverBindName": "widget.label.value",
+            "propertyName": "label"
+        },
+        {
+            "widgetId": "demo_element",
+            "serverBindName": "widget.icon.value",
+            "propertyName": "icon"
+        },
+        {
+            "widgetId": "demo_element",
+            "serverBindName": "widget.disabled.checked",
+            "propertyName": "disabled"
+        }
+    ]
+}

@@ -1,0 +1,32 @@
+{
+    "info": {
+        "name": "custom"
+    },
+    "regblocks": [{
+        "name": "all",
+        "registers": [
+            {
+                "name": "blink",
+                "size": 8,
+                "fields": [
+                    {
+                        "start": "0",
+                        "stop": "0",
+                        "name": "enabled"
+                    }
+                ]
+            },
+            {
+                "name": "on",
+                "size": 8,
+                "fields": [
+                    {
+                        "start": 0,
+                        "stop": 0,
+                        "name": "yes"
+                    }
+                ]
+            }
+        ]
+    }]
+}

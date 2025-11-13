@@ -1,0 +1,15 @@
+@import "../gc-widget-base/gc-widget-base";
+
+:host {
+    margin: 0;
+    padding: 0 1px;
+    background: $gc-color-gray-2;
+    width: 100%;
+    min-height: 42px;
+
+    slot {
+        display: flex;
+        flex-wrap: wrap;
+        width: 100%;
+    }
+}

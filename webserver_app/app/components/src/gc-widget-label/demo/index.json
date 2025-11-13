@@ -1,0 +1,45 @@
+{
+    "widgetBindings": [
+        {
+            "widgetId": "demo_element",
+            "serverBindName": "widget.label.value",
+            "propertyName": "label"
+        },
+        {
+            "widgetId": "demo_element",
+            "serverBindName": "text_align.selectedLabel",
+            "propertyName": "style['--gc-text-align']"
+        },
+        {
+            "widgetId": "demo_element",
+            "serverBindName": "font_size.value",
+            "propertyName": "style['--gc-font-size']"
+        },
+        {
+            "widgetId": "demo_element",
+            "serverBindName": "font_style.selectedLabel",
+            "propertyName": "style['--gc-font-style']"
+        },
+        {
+            "widgetId": "demo_element",
+            "serverBindName": "font_weight.selectedLabel",
+            "propertyName": "style['--gc-font-weight']"
+        },
+        {
+            "widgetId": "demo_element",
+            "serverBindName": "text_decoration.selectedLabel",
+            "propertyName": "style['--gc-text-decoration']"
+        },
+        {
+            "widgetId": "demo_element",
+            "serverBindName": "hover_text_decoration.selectedLabel",
+            "propertyName": "style['--gc-text-decoration-hover']"
+        },
+        {
+            "widgetId": "demo_element",
+            "serverBindName": "hover_cursor.selectedLabel",
+            "propertyName": "style['--gc-cursor-hover']"
+        }
+    ]
+}
+

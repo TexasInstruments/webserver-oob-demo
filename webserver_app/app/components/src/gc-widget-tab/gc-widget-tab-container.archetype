@@ -1,0 +1,4 @@
+<gc-widget-tab-container layout horizontal>
+    <gc-widget-tab-panel label="Tab 1"></gc-widget-tab-panel>
+    <gc-widget-tab-panel label="Tab 2"></gc-widget-tab-panel>
+</gc-widget-tab-container>

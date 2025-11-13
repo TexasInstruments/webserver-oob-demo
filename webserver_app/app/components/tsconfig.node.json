@@ -1,0 +1,35 @@
+{
+	"extends": "../../../.configs/tsconfig.json",
+	"compilerOptions": {
+		"module": "commonjs",
+		"rootDirs": [
+			"src"
+		],
+        "allowJs": false,
+		"outDir": "./@ti-NLibs",
+		"typeRoots": [
+			"../node_modules/@types",
+		],
+		"types": [
+			"node",
+			"mocha",
+			"chai"
+		]
+	},
+	"exclude": [
+		"./node_modules",
+		"./src/**/lib/vaadin*",
+        "./src/decorators",
+        "./src/gc-widget-*",
+        "./src/gc-core-webcomponent",
+        "./src/gc-core-migration",
+        "./src/**/*.tsx"
+	],
+	"include": [
+		"./src/**/N_*.ts",
+        "./src/**/lib",
+        "./src/**/demo",
+		"./src/**/test/*.spec.ts",
+		"./src/**/test/*.d.ts"
+	]
+}

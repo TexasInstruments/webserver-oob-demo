@@ -1,0 +1,54 @@
+{
+    "widgetBindings": [
+        {
+            "widgetId": "demo_element",
+            "serverBindName": "widget.value.value",
+            "propertyName": "value"
+        },
+        {
+            "widgetId": "demo_element",
+            "serverBindName": "widget.placeholder.value",
+            "propertyName": "placeholder"
+        },
+        {
+            "widgetId": "demo_element",
+            "serverBindName": "widget.select_on_focus.checked",
+            "propertyName": "selectOnFocus"
+        },
+        {
+            "widgetId": "demo_element",
+            "serverBindName": "widget.has_clear_icon.checked",
+            "propertyName": "hasClearIcon"
+        },
+        {
+            "widgetId": "demo_element",
+            "serverBindName": "widget.has_search_icon.checked",
+            "propertyName": "hasSearchIcon"
+        },
+        {
+            "widgetId": "demo_element",
+            "serverBindName": "widget.intermediate_changes.checked",
+            "propertyName": "intermediateChanges"
+        },
+        {
+            "widgetId": "demo_element",
+            "serverBindName": "widget.disabled.checked",
+            "propertyName": "disabled"
+        },
+        {
+            "widgetId": "demo_element",
+            "serverBindName": "widget.readonly.checked",
+            "propertyName": "readonly"
+        },
+        {
+            "widgetId": "demo_element",
+            "serverBindName": "text_align.selectedLabel",
+            "propertyName": "style['--gc-text-align']"
+        },
+        {
+            "widgetId": "demo_element",
+            "serverBindName": "widget.pattern.value",
+            "propertyName": "pattern"
+        }
+    ]
+}

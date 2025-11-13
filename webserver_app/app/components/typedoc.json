@@ -1,0 +1,27 @@
+{
+    "name": "GUI Composer Core Library",
+    "entryPoints":[
+        "./src"
+    ],
+    "exclude": [
+        "**/node_modules/**",
+        "**/**.spec.ts",
+        "**/**.tsx",
+        "**/internal/**",
+        "**/test/**",
+        "gc-core-migration/**",
+        "**/migration/**",
+        "**/demo/**",
+        "**/NodeJSEnv.ts"
+    ],
+    "out": "./docs",
+    "readme": "./library.readme.md",
+    "includeVersion": true,
+    "categorizeByGroup": true,
+    "excludePrivate": true,
+    "excludeProtected": true,
+    "excludeExternals": true,
+    "excludeInternal": true,
+    "disableSources": false,
+    "hideGenerator": true
+}

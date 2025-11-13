@@ -1,0 +1,184 @@
+<!--
+* Copyright (c) 2021, Texas Instruments Incorporated
+* All rights reserved.
+*
+* Redistribution and use in source and binary forms, with or without
+* modification, are permitted provided that the following conditions
+* are met:
+*
+* Redistributions of source code must retain the above copyright
+* notice, this list of conditions and the following disclaimer.
+* notice, this list of conditions and the following disclaimer in the
+* documentation and/or other materials provided with the distribution.
+* Neither the name of Texas Instruments Incorporated nor the names of
+* its contributors may be used to endorse or promote products derived
+* from this software without specific prior written permission.
+*
+* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+* AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+* THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+* PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+* CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+* EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+* PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+* OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+* WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+* OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+* EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>gc-widget-context-menu Demo</title>
+    <script nomodule="" src="../../build/gc-components.js"></script>
+    <script type="module" src="../../build/gc-components.esm.js"></script>
+    <link rel="stylesheet" type="text/css" href="../../../assets/stylesheets/gc-demo-stylesheet.css">
+</head>
+
+<style>
+    .example-div {
+        border-style: dotted;
+        border-color: lightgray;
+        border-width: 2px;
+        color: #acacac;
+        text-align: center;
+        height: 100px;
+        font-family: monospace;
+        font-style: italic;
+        width: 100%;
+        margin: 10px 0px;
+    }
+
+    #output {
+        margin-top: 30px;
+        padding: 20px;
+    }
+</style>
+
+<body>
+    <div id="demo_container">
+        <div id="top" class="example-div">[id='top'] Right click in this space!</div>
+        <div id="bottom" class="example-div">[id='bottom']</div>
+        <gc-widget-context-menu id="demo_element">
+            <gc-widget-menuitem id="demo_element_menuitem" label="New" icon="action:list">
+                <gc-widget-menuitem label="Documents" icon="file:text_snippet">
+                    <gc-widget-menuaction label="JavaScript"></gc-widget-menuaction>
+                    <gc-widget-menuaction label="JSON"></gc-widget-menuaction>
+                    <gc-widget-menuaction label="CSS"></gc-widget-menuaction>
+                </gc-widget-menuitem>
+                <gc-widget-menuaction label="New Window"></gc-widget-menuaction>
+                <gc-widget-menuaction label="New Terminal"></gc-widget-menuaction>
+            </gc-widget-menuitem>
+            <gc-widget-menuseparator></gc-widget-menuseparator>
+            <gc-widget-menuitem label="Font Size" icon="content:text_format" layout vertical>
+                <gc-widget-menuaction action-id="cmd_font_small" label="Small" toggle></gc-widget-menuaction>
+                <gc-widget-menuaction action-id="cmd_font_medium" label="Medium" toggle></gc-widget-menuaction>
+                <gc-widget-menuaction action-id="cmd_font_large" label="Large" toggle></gc-widget-menuaction>
+                <gc-widget-menuaction action-id="cmd_font_xlarge" label="x-Large" toggle></gc-widget-menuaction>
+            </gc-widget-menuitem>
+            <gc-widget-menuseparator></gc-widget-menuseparator>
+            <gc-widget-menuaction id="demo_element_auto_save" action-id="cmd_auto_save" label="Auto Save"
+                icon="content:save" toggle></gc-widget-menuaction>
+            <gc-widget-menuaction id="demo_element_print" action-id="cmd_print" label="Print" icon="action:print"></gc-widget-menuaction>
+            <gc-widget-menuseparator></gc-widget-menuseparator>
+            <gc-widget-menuaction id="demo_element_menuaction" id="demo_element_menuaction" label="Exit"
+                icon="action:exit_to_app" action-id="cmd_exit" hotkey="Ctrl+x"></gc-widget-menuaction>
+        </gc-widget-context-menu>
+
+        <div>
+            <div>This is the view port.</div>
+            <div id="output" class="highlight">Select menu action to see output here.</div>
+        </div>
+    </div>
+    <div id="demo_properties_container">
+        <table><tr><th><gc-widget-label label="ContextMenu Property"></gc-widget-label></th>
+                <th><gc-widget-label label="Value"></gc-widget-label></th>
+            </tr>
+            <tr>
+                <td><gc-widget-label label="anchorId"></gc-widget-label></td>
+                <td><gc-widget-select id="anchor_id" labels="top|bottom|unset" values="top|bottom|" initial-index="0"></gc-widget-select></td>
+            </tr>
+            <tr>
+                <th><gc-widget-label label="ContextMenuItem Property"></gc-widget-label></th>
+                <th><gc-widget-label label="Value"></gc-widget-label></th>
+            </tr>
+            <tr>
+                <td><gc-widget-label label="label"></gc-widget-label></td>
+                <td><gc-widget-input id="menuitem_label" value="New"></gc-widget-input></td>
+            </tr>
+            <tr>
+                <td><gc-widget-label label="icon"></gc-widget-label></td>
+                <td><gc-widget-input id="menuitem_icon" value="action:list"></gc-widget-input></td>
+            </tr>
+            <tr>
+                <td><gc-widget-label label="iconFolderPath"></gc-widget-label></td>
+                <td><gc-widget-input id="menuitem_icon_folder_path"></td>
+            </tr>
+            <tr>
+                <th><gc-widget-label label="MenuAction Attribute"></gc-widget-label></th>
+                <th><gc-widget-label label="Value"></gc-widget-label></th>
+            </tr>
+            <tr>
+                <td><gc-widget-label label="label"></gc-widget-label></td>
+                <td><gc-widget-input id="menuaction_label" value="Exit"></gc-widget-input></td>
+            </tr>
+            <tr>
+                <td><gc-widget-label label="icon"></gc-widget-label></td>
+                <td><gc-widget-input id="menuaction_icon" value="action:exit_to_app"></gc-widget-input></td>
+            </tr>
+            <tr>
+                <td><gc-widget-label label="iconFolderPath"></gc-widget-label></td>
+                <td><gc-widget-input id="menuaction_icon_folder_path"></td>
+            </tr>
+            <tr>
+                <td><gc-widget-label label="hotkey"></gc-widget-label></td>
+                <td><gc-widget-input disabled value="Ctrl+X"></gc-widget-input></td>
+            </tr>
+            <tr>
+                <td><gc-widget-label label="toggle"></gc-widget-label></td>
+                <td><gc-widget-checkbox disabled label="(readonly)"></gc-widget-checkbox></td>
+            </tr>
+            <tr>
+                <td><gc-widget-label label="actionId"></gc-widget-label></td>
+                <td><gc-widget-input disabled value="cmd_exit"></gc-widget-input></td>
+            </tr>
+        </table>
+    </div>
+</body>
+<script type="module">
+    import { ActionRegistry } from '../../gc-widget-menu/lib/ActionRegistry';
+
+    const output = document.querySelector('#output');
+    const ACTION = {
+        run: detail => output.innerHTML = `Command "${detail.id}" executed`,
+        isEnabled: () => true
+    };
+
+    let autoSave = true;
+    ActionRegistry.registerAction('cmd_auto_save', Object.assign({}, ACTION, {
+        run: detail => {
+            autoSave = !autoSave;
+            output.innerHTML = `Auto Save enabled = ${autoSave}`;
+        },
+        isChecked: () => autoSave
+    }));
+
+    ActionRegistry.registerAction('cmd_exit', Object.assign({}, ACTION));
+    ActionRegistry.registerAction('cmd_print', Object.assign({}, ACTION, { isEnabled: () => false }));
+
+    let currentFont = 'cmd_font_small';
+    ActionRegistry.registerActionGroup(['cmd_font_small', 'cmd_font_medium', 'cmd_font_large', 'cmd_font_xlarge'], {
+        run: detail => {
+            currentFont = detail.id;
+            output.innerHTML = `Command "${detail.id}" executed`;
+        },
+        isChecked: id => id === currentFont,
+        isEnabled: id => id !== 'cmd_font_medium',
+        isVisible: id => id !== 'cmd_font_xlarge'
+    });
+</script>
+
+</html>

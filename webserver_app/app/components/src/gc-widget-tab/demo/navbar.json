@@ -1,0 +1,14 @@
+{
+    "widgetBindings": [
+        {
+            "widgetId": "demo_element",
+            "serverBindName": "widget.tab_container_id.selectedLabel",
+            "propertyName": "tabContainerId"
+        },
+        {
+            "widgetId": "demo_element",
+            "serverBindName": "widget.excluded_tab_panel_ids.selectedLabel",
+            "propertyName": "excludedTabPanelIds"
+        }
+    ]
+}

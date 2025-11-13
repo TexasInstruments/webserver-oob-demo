@@ -1,0 +1,40 @@
+$gc-primary-color:                          var(--theme-primary-color, $gc-color-red-3);
+$gc-primary-color-hover:                    var(--theme-primary-color-hover, $gc-color-red-1);
+$gc-secondary-color:                        var(--theme-secondary-color, $gc-color-blue-8);
+$gc-tertiary-color:                         var(--theme-tertiary-color, $gc-color-gray-6);
+
+$gc-background-color:                       var(--theme-background-color, $gc-color-white);
+$gc-background-color-disabled:              var(--theme-background-color-disabled, $gc-color-gray-3);
+$gc-background-color-highlighted:           var(--theme-background-color-highlighted, $gc-color-gray-2);
+$gc-background-color-selected:              var(--theme-background-color-selected, $gc-color-blue-2);
+
+$gc-font-color:                             var(--theme-font-color, $gc-color-gray-8);
+$gc-font-color-disabled:                    var(--theme-font-color-disabled, $gc-color-gray-7);
+$gc-font-color-highlighted:                 var(--theme-font-color-highlighted, $gc-color-gray-8);
+$gc-font-color-selected:                    var(--theme-font-color-selected, $gc-color-gray-8);
+$gc-font-size:                              14px;
+$gc-font-family:                            'Roboto', 'Open Sans', 'Segoe UI', Tahoma, sans-serif;
+
+$gc-font-weight-lightest:                   200;
+$gc-font-weight-light:                      300;
+$gc-font-weight-normal:                     400;
+$gc-font-weight-bold:                       500;
+
+$gc-margin:                                 5px;
+$gc-border-color:                           var(--theme-border-color, $gc-color-gray-3);
+$gc-focus-color-highlight:                  var(--theme-focus-color-highlight, $gc-color-blue-12);
+
+$gc-header-font-size:                       21px;
+$gc-header-font-weight:                     $gc-font-weight-bold;
+$gc-sub-header-font-size:                   14px;
+$gc-sub-header-font-weight:                 $gc-font-weight-lightest;
+
+$gc-caption-font-size:                      14px;
+$gc-caption-font-weight:                    $gc-font-weight-normal;
+$gc-caption-font-color:                     var(--theme-caption-font-color, $gc-color-gray-7);
+$gc-caption-info-color:                     var(--theme-caption-info-color, $gc-color-gray-5);
+
+$gc-scrollbar-width:                        8px;
+$gc-scrollbar-track-background-color:       var(--theme-scroll-track-color, rgba($gc-color-gray-9, 0.2));
+$gc-scrollbar-thumb-background-color:       var(--theme-scroll-thumb-color, rgba($gc-color-gray-9, 0.65));
+$gc-scrollbar-thumb-background-color-hover: var(--theme-scroll-thumb-color-hover, rgba($gc-color-gray-9, 0.8));

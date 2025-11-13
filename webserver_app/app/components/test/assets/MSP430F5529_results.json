@@ -1,0 +1,11 @@
+{
+    "myStruct": "0x002446",
+    "_charArray": "0x00242A",
+    "_charPtr": "0x002428",
+    "_charPtr_value": "0x242A",
+    "_int": "0x00240A",
+    "_bool": "0x002442",
+    "connectionName": "TI MSP430 USB1",
+    "debugPath": "TI MSP430 USB1/MSP430",
+    "coreName": "MSP430"
+}

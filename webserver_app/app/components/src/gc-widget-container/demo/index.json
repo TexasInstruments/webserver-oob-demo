@@ -1,0 +1,14 @@
+{
+    "widgetBindings": [
+        {
+            "widgetId": "demo_element",
+            "serverBindName": "widget.heading.value",
+            "propertyName": "heading"
+        },
+        {
+            "widgetId": "demo_element",
+            "serverBindName": "widget.elevation.selectedLabel",
+            "propertyName": "elevation"
+        }
+    ]
+}

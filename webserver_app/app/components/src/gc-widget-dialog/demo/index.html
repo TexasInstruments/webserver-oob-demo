@@ -1,0 +1,186 @@
+<!--
+    Copyright (c) 2021, Texas Instruments Incorporated
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions
+    are met:
+
+    *   Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    *   Neither the name of Texas Instruments Incorporated nor the names of
+    its contributors may be used to endorse or promote products derived
+    from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+    THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+    PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+    CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+    EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+    PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+    OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+    WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+    OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+    EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+-->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>gc-widget-dialog Demo</title>
+    <script nomodule="" src="../../build/gc-components.js"></script>
+    <script type="module" src="../../build/gc-components.esm.js"></script>
+    <script type="module" src="../../gc-core-databind/lib/CoreDatabind"></script>
+    <link rel="stylesheet" type="text/css" href="../../../assets/stylesheets/gc-demo-stylesheet.css">
+    <style>
+        #demo_container {
+            height: 500px;
+        }
+    </style>
+</head>
+
+<body>
+    <gc-widget-dialog id="demo_element">
+        <!-- content -->
+        <div>
+            <gc-widget-label id="gc_widget_label" label="Value:"></gc-widget-label>
+            <gc-widget-input id="gc_widget_textbox" placeholder="gc_widget_textbox"></gc-widget-input>
+        </div>
+        <gc-widget-button id="gc_widget_button" label="hello there" button-type="secondary"></gc-widget-button>
+        <gc-widget-button id="gc_widget_button1" label="testing"></gc-widget-button>
+        <h1>Information:</h1>
+        <div>All information in this section is automatically put into the content slot.</div>
+
+        <!-- action bar -->
+        <gc-widget-button slot="action-bar" class="dialog-dismiss" label="Cancel" button-type="secondary" id="closeBtn"></gc-widget-button>
+        <gc-widget-button slot="action-bar" class="dialog-confirm" label="Ok"></gc-widget-button>
+    </gc-widget-dialog>
+
+    <!-- ALT IMAGE -->
+    <gc-widget-dialog id="image-dialog" heading="Heading" modal="false" icon-path="../../assets/icons/two-tone/"
+        icon="action:add_shopping_cart">
+        <h1>Custom path:</h1>
+        <code>icon-path="../../assets/icons/two-tone/" icon="action:add_shopping_cart"</code>
+
+        <!-- action bar -->
+        <gc-widget-button slot="action-bar" class="dialog-dismiss" label="Close" button-type="secondary"></gc-widget-button>
+    </gc-widget-dialog>
+
+    <!-- BASIC -->
+    <gc-widget-dialog id="basic-dialog" close-on-esc>
+        <!-- content -->
+        <h1>Information:</h1>
+        <div>Press Esc key to dismiss dialog.</div>
+    </gc-widget-dialog>
+
+    <div id="demo_container">
+        <gc-widget-button label="Open Demo Dialog" id="demoBtn"></gc-widget-button>
+        <br />
+        <gc-widget-button label="Open Image Dialog" id="demoImageBtn" button-type="secondary"></gc-widget-button>
+        <gc-widget-button label="Open Basic Dialog" id="demoBasicBtn" button-type="secondary"></gc-widget-button>
+    </div>
+    <div id="demo_properties_container">
+        <table>
+            <tr><th><gc-widget-label label="Property"></gc-widget-label></th><th><gc-widget-label label="Value"></gc-widget-label></th>
+            </tr>
+            <tr>
+                <td>
+                    <gc-widget-label label="heading"></gc-widget-label>
+                </td>
+                <td>
+                    <gc-widget-input id="heading" select-on-focus placeholder="heading here" value="Header Title">
+                    </gc-widget-input>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <gc-widget-label label="desc"></gc-widget-label>
+                </td>
+                <td>
+                    <gc-widget-input id="desc" select-on-focus placeholder="description here"
+                        value="Drag me around to move the dialog box"></gc-widget-input>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <gc-widget-label label="icon"></gc-widget-label>
+                </td>
+                <td>
+                    <gc-widget-input id="icon" select-on-focus placeholder="icon selection here"
+                        value="two-tone:action:face"></gc-widget-input>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <gc-widget-label label="modal"></gc-widget-label>
+                </td>
+                <td>
+                    <gc-widget-checkbox id="modal"></gc-widget-checkbox>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <gc-widget-label label="resizable"></gc-widget-label>
+                </td>
+                <td>
+                    <gc-widget-checkbox id="resizable" checked></gc-widget-checkbox>
+                </td>
+            </tr>
+            <tr><td><gc-widget-label label="closeOnEsc"></gc-widget-label></td><td><gc-widget-checkbox id="close_on_esc" checked></gc-widget-checkbox></td>
+            </tr>
+            <tr>
+                <th>
+                    <gc-widget-label label="CSS Property"></gc-widget-label>
+                </th>
+                <th>
+                    <gc-widget-label label="Value"></gc-widget-label>
+                </th>
+            </tr>
+            <tr>
+                <td>
+                    <gc-widget-label label="--gc-modal-opacity"></gc-widget-label>
+                </td>
+                <td>
+                    <gc-widget-spinner id="modal-opacity" select-on-focus precision="1" increment="0.1" minValue="0"
+                        maxValue="1" caption="Choose a number between 0 to 1" value="0.3"></gc-widget-spinner>
+            </tr>
+            <tr>
+                <td>
+                    <gc-widget-label label="--gc-modal-color"></gc-widget-label>
+                </td>
+                <td><input type="color" id="modal-color"></td>
+            </tr>
+        </table>
+    </div>
+</body>
+<script>
+    window.addEventListener('DOMContentLoaded', () => {
+        const demoElement = document.querySelector('#demo_element');
+        const demoBtn = document.querySelector('#demoBtn');
+        demoBtn.addEventListener('click', (event) => {
+            event.preventDefault();
+            document.querySelector('#demo_element').open();
+        });
+        const demoImageBtn = document.querySelector('#demoImageBtn');
+        demoImageBtn.addEventListener('click', () => document.querySelector('#image-dialog').open());
+        const demoBasicBtn = document.querySelector('#demoBasicBtn');
+        demoBasicBtn.addEventListener('click', () => document.querySelector('#basic-dialog').open());
+        // css-properties
+        const backgroundColor = document.querySelector('#modal-color');
+        demoElement.setCSSProperty('--gc-modal-color', 'black');
+        backgroundColor.addEventListener('change', event => {
+            demoElement.setCSSProperty('--gc-modal-color', event.target.value);
+        });
+        const backgroundOpacity = document.querySelector('#modal-opacity');
+        demoElement.setCSSProperty('--gc-modal-opacity', '0.3');
+        backgroundOpacity.addEventListener('value-changed', event => {
+            demoElement.setCSSProperty('--gc-modal-opacity', event.target.value);
+        });
+    });
+</script>
+
+</html>

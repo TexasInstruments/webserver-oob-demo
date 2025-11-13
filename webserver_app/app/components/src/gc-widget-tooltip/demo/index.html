@@ -1,0 +1,115 @@
+<!--
+    Copyright (c) 2019, 2021 Texas Instruments Incorporated
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions
+    are met:
+
+    *   Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    *   Neither the name of Texas Instruments Incorporated nor the names of
+    its contributors may be used to endorse or promote products derived
+    from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+    THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+    PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+    CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+    EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+    PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+    OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+    WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+    OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+    EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>gc-widget-tooltip Demo</title>
+
+    <script nomodule="" src="../../build/gc-components.js"></script>
+    <script type="module" src="../../build/gc-components.esm.js"></script>
+    <link rel="stylesheet" type="text/css" href="../../../assets/stylesheets/gc-demo-stylesheet.css">
+
+    <style>
+        #demo_container {
+            display: flex;
+            flex-direction: column;
+        }
+
+        #demo_container>div {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #demo_container gc-widget-label {
+            width: 90px;
+            height: 50px;
+            margin: 10px;
+            font-weight: 600;
+            white-space: nowrap;
+            border-radius: 5px;
+            --gc-color: #f7f7f7;
+            --gc-hover-color: #f7f7f7;
+            --gc-text-align: center;
+            background-color: #f43b55;
+        }
+
+        #demo_container #builtin {
+            background-color: #1c99c4;
+        }
+
+        #row2 {
+            display: flex;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="demo_container">
+        <div id="row1">
+            <gc-widget-label id="top" label="id = top"></gc-widget-label>
+        </div>
+
+        <div id="row2">
+            <gc-widget-label id="left" label="id = left"></gc-widget-label>
+            <gc-widget-label id="builtin" label="Built-In" tooltip="Hello, I am a built-in tooltip!">
+            </gc-widget-label>
+            <gc-widget-label id="right" label="id = right"></gc-widget-label>
+        </div>
+
+        <div id="row3">
+            <gc-widget-label id="bottom" label="id = bottom"></gc-widget-label>
+        </div>
+
+        <gc-widget-tooltip id="demo_element"></gc-widget-tooltip>
+    </div>
+
+    <div id="demo_properties_container">
+        <table>
+            <tr>
+                <th><gc-widget-label label="Property"></gc-widget-label></th>
+                <th><gc-widget-label label="Value"></gc-widget-label></th>
+            </tr>
+            <tr>
+                <td><gc-widget-label label="anchorId"></gc-widget-label></td>
+                <td><gc-widget-select id="anchor_id" labels="right|left|top|bottom" initial-index="1"></gc-widget-select></td>
+            </tr>
+            <tr>
+                <td><gc-widget-label label="position"></gc-widget-label></td>
+                <td><gc-widget-select id="position" labels="right|left|top|bottom" initial-index="0"></gc-widget-select></td>
+            </tr>
+            <tr>
+                <td><gc-widget-label label="text"></gc-widget-label></td>
+                <td><gc-widget-input id="text" select-on-focus value="anchored tooltip!"></gc-widget-input></td>
+            </tr>
+        </table>
+    </div>
+</body>
+</html>

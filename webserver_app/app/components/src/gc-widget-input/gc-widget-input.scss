@@ -1,0 +1,43 @@
+@import "../gc-widget-base/gc-widget-base";
+
+:host {
+    background-color: var(--gc-background-color, #{$gc-background-color});
+    border: 1px solid $gc-border-color;
+    width: 200px;
+    height: 32px;
+
+    #root-container {
+        display: flex;
+        height: inherit;
+        width: inherit;
+        align-items: center;
+
+        ti-input {
+            width: inherit;
+            height: inherit;
+
+            --ti-input-outline-focus: none;
+            --ti-input-border: none;
+            --ti-input-cursor-readonly: var(--gc-cursor-readonly, not-allowed);
+            --ti-input-background-color: var(--gc-background-color);
+            --ti-input-background-color-disabled: #{$gc-background-color-disabled};
+            --ti-input-text-align: var(--gc-text-align);
+
+            font-family: $gc-font-family;
+            font-size: $gc-font-size;
+            font-weight: $gc-font-weight-normal;
+            color: $gc-font-color;
+        }
+    }
+}
+
+:host([disabled]) {
+    background-color: $gc-background-color-disabled;
+
+    #root-container {
+       ti-input {
+            --ti-input-background-color-disabled: #{$gc-background-color-disabled};
+            color: $gc-font-color-disabled;
+        }
+    }
+}

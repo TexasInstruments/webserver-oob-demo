@@ -1,0 +1,6 @@
+@import '../gc-widget-base/gc-widget-base';
+
+:host {
+    border-top: 1px solid $gc-border-color;
+    margin: 2px 12px;
+}

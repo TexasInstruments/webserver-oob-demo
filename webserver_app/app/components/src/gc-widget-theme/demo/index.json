@@ -1,0 +1,9 @@
+{
+    "widgetBindings": [
+        {
+            "widgetId": "demo_element",
+            "serverBindName": "widget.theme_index.selectedLabel",
+            "propertyName": "selectedThemeIndex"
+        }
+    ]
+}

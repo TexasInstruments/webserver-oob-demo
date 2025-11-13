@@ -1,0 +1,34 @@
+{
+    "widgetBindings": [
+        {
+            "widgetId": "demo_element",
+            "serverBindName": "widget.heading.value",
+            "propertyName": "heading"
+        },
+        {
+            "widgetId": "demo_element",
+            "serverBindName": "widget.desc.value",
+            "propertyName": "desc"
+        },
+        {
+            "widgetId": "demo_element",
+            "serverBindName": "widget.icon.value",
+            "propertyName": "icon"
+        },
+        {
+            "widgetId": "demo_element",
+            "serverBindName": "widget.modal.checked",
+            "propertyName": "modal"
+        },
+        {
+            "widgetId": "demo_element",
+            "serverBindName": "widget.resizable.checked",
+            "propertyName": "resizable"
+        },
+        {
+            "widgetId": "demo_element",
+            "serverBindName": "widget.close_on_esc.checked",
+            "propertyName": "closeOnEsc"
+        }
+    ]
+}

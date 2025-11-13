@@ -1,0 +1,104 @@
+@import "../gc-widget-input/gc-widget-input";
+
+:host {
+    #root-container {
+        flex-direction: column;
+
+        &.dirty {
+            gc-widget-input-filter {
+                --gc-background-color: #{$gc-color-yellow-5};
+            }
+        }
+
+        #input-container {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            height: 100%;
+
+            #arrow-icon-wrapper {
+                height: 100%;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                cursor: pointer;
+            }
+
+            gc-widget-input-filter {
+                margin: 0;
+                width: 100%;
+                border: none;
+                height: 100%;
+
+                &[class*="select"] {
+                    --gc-cursor-readonly: default;
+                }
+
+                --ti-input-text-align: var(--gc-text-align);
+            }
+
+            gc-widget-icon {
+                height: 100%;
+                margin: 0;
+                padding: 0 3px;
+            }
+
+            #warning-icon {
+                fill: $gc-color-yellow-4;
+            }
+
+            #menu-icon:hover {
+                background: $gc-color-gray-2;
+            }
+        }
+
+        #menu {
+            display: grid;
+            position: fixed;
+            z-index: 1000;
+            box-sizing: border-box;
+            width: 100%;
+            border: 1px solid $gc-border-color;
+            background: $gc-background-color;
+            overflow: auto;
+
+            .menu-item {
+                white-space: nowrap;
+                padding: 0 10px;
+                height: calc(#{$gc-font-size} + 16px);
+                line-height: calc(#{$gc-font-size} + 16px);
+                border: 2px dotted transparent;
+
+                &.selected {
+                    background-color: var(--gc-menuitem-background-color-selected, $gc-primary-color);
+                    color: var(--gc-menuitem-color-selected, $gc-color-white);
+                }
+            }
+
+            .menu-item:hover {
+                background-color: var(--gc-menuitem-background-color-hover, $gc-background-color-highlighted);
+                color: var(--gc-menuitem-color-hover, $gc-font-color);
+            }
+        }
+    }
+}
+
+:host([type="filter"]) {
+    #root-container {
+        #menu {
+            .menu-item {
+                &.highlighted {
+                    border: 2px dotted var(--gc-menuitem-border-color-selected, $gc-border-color);
+                }
+            }
+        }
+    }
+}
+
+:host([disabled]) {
+    #input-container {
+        gc-widget-icon {
+            opacity: 0.5;
+        }
+    }
+}

@@ -1,0 +1,94 @@
+@import "../gc-widget-base/gc-widget-base";
+
+$font-color: var(--gc-font-color, $gc-font-color);
+$outline-color-focus: var(--gc-outline-color-focus, $font-color);
+$border-color: var(--gc-border-color, $gc-border-color);
+
+gc-widget-grid-tree-column {
+    --gc-column-width: minmax(220px, 1fr);
+}
+gc-widget-grid-data-column {
+    --gc-text-align: center;
+}
+
+:host {
+    border: 2px solid $border-color;
+}
+
+#grid {
+    width: 100%;
+    height: 100%;
+    margin: 0px;
+    border: none;
+}
+
+#grid::part(open) {
+    font-style: italic;
+}
+
+#grid::part(branch) {
+    font-weight: $gc-font-weight-bold;
+    font-size: 93%;
+}
+
+#grid::part(leaf) {
+    font-size: 86%;
+}
+
+#bitsHeader::part(bit-cell) {
+    border: 1px solid var(--gc-background-color, $gc-background-color);
+    border-bottom-width: 0px;
+    border-right-width: 0px;
+    font-weight: $gc-font-weight-normal;
+}
+
+#bitsHeader::part(bit-cell first-child) {
+    border-left-color: transparent;
+}
+
+#bitsHeader::part(bit-cell),
+#grid::part(bit-cell) {
+    width: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#grid::part(bit-cell readonly) {
+    background-color: $gc-background-color-disabled;
+    color: $gc-font-color-disabled;
+}
+
+#grid::part(bit-cell selected) {
+    background-color: var(--gc-register-field-background-color-selected, $gc-color-yellow-1);
+}
+
+#grid::part(deferred) {
+    text-decoration: underline;
+    font-style: italic;
+}
+
+#grid::part(bits-container),
+#bitsHeader::part(bits-container) {
+    grid-gap: 0;
+    grid-template-rows: 1fr;
+    justify-items: center;
+    height: 100%;
+}
+
+#grid::part(bits-container) {
+    padding-right: 1px;
+    padding-left: 2px;
+}
+
+#bitsHeader::part(bits-header-padding) {
+    overflow: hidden;
+    width: 0px;
+    display: none; /* remove this if we want header to remain the same height when we hide bits; otherwise header resizes.  */
+}
+
+#grid::part(focused) {
+    outline:  1px dotted $outline-color-focus;
+    outline-offset: -3px;
+}
+

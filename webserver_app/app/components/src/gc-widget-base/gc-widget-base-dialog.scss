@@ -1,0 +1,82 @@
+@import "./gc-widget-base";
+@import "./gc-widget-layout-mixin.scss";
+@include apply-layout-styles("#dialog-div #content");
+
+:host {
+    position: fixed;
+}
+
+:host([resizable]) #dialog-div,
+:host([resizable="true"]) #dialog-div {
+    resize: both;
+    overflow: hidden;
+}
+
+:host([class*="opened"]) #top-container {
+    opacity: 1;
+    display: block;
+    animation: fade 0.15s;
+    .modal-background {
+        pointer-events: auto; // do not allow click through
+        opacity: var(--gc-modal-opacity, 0.3);
+    }
+    #dialog-div {
+        opacity: 1;
+        display: flex;
+    }
+}
+
+#top-container {
+    opacity: 0;
+    display: none;
+}
+
+#dialog-div {
+    opacity: 0;
+    display: none;
+    flex-direction: column;
+    z-index: 2;
+    position: fixed;
+    width: fit-content;
+    height: fit-content;
+
+    background-color: var(
+        --gc-widget-dialog-background-color,
+        $gc-background-color
+    );
+    box-shadow: 2px 2px 9px 0px rgb(0 0 0 / 48%);
+
+    #content {
+        overflow: auto;
+        flex: auto;
+        margin: 0;
+        padding: 0 20px;
+        min-height: 15px;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+    }
+}
+
+.modal-background {
+    position: fixed;
+    pointer-events: none;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    opacity: 0;
+    transition: opacity 0.15s;
+    -webkit-transition: opacity 0.15s;
+    background: var(--gc-modal-color, black);
+}
+
+@keyframes fade {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
