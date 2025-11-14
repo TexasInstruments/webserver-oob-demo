@@ -1,9 +1,0 @@
-{
-    "widgetBindings": [
-        {
-            "widgetId": "rounded_value",
-            "serverBindName": "'Rounded Value = ' + Math.round($.raw_value.value)",
-            "propertyName": "label"
-        }
-    ]
-}

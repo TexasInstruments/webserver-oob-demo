@@ -1,8 +1,0 @@
-{
-  "template": "Analog EVM Application v3",
-  "description": "GUI Composer v3 Template",
-  "version": "3.0.0",
-  "window": {
-      "frame": false
-  }
-}

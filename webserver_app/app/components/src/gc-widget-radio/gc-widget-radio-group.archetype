@@ -1,5 +1,0 @@
-<gc-widget-radio-group layout vertical selected-label="medium">
-    <gc-widget-radio label="small"></gc-widget-radio>
-    <gc-widget-radio label="medium"></gc-widget-radio>
-    <gc-widget-radio label="large"></gc-widget-radio>
-</gc-widget-radio-group>

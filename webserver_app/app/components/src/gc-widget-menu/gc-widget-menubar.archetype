@@ -1,5 +1,0 @@
-<gc-widget-menubar has-window-buttons layout horizontal>
-    <gc-widget-menuitem label="File" slot="menu-item" layout vertical>
-        <gc-widget-menuaction label="Exit"></gc-widget-menuaction>
-    </gc-widget-menuitem>
-</gc-widget-menubar>

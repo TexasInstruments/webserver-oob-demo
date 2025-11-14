@@ -1,5 +1,0 @@
-<gc-widget-dialog heading="Title">
-    <gc-widget-label label="Drop contents here..."></gc-widget-label>
-    <gc-widget-button slot="action-bar" class="dialog-dismiss" label="CANCEL"></gc-widget-button>
-    <gc-widget-button slot="action-bar" class="dialog-confirm" label="OK"></gc-widget-button>
-</gc-widget-dialog>

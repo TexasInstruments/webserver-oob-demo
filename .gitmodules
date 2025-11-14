@@ -1,0 +1,3 @@
+[submodule "webserver_app/app/components"]
+	path = webserver_app/app/components
+	url = https://git.ti.com/git/gui-composer-components/ti-gc-components.git

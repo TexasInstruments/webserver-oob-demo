@@ -1,6 +1,0 @@
-<gc-widget-context-menu layout vertical keep-visible-in-designer>
-    <gc-widget-menuitem label="Menu Item" class="sub-menu" icon="objects:list">
-        <gc-widget-menuaction label="Menu Action"></gc-widget-menuaction>
-    </gc-widget-menuitem>
-    <gc-widget-menuaction label="Menu Action"></gc-widget-menuaction>
-</gc-widget-context-menu>

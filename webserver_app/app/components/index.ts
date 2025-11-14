@@ -1,1 +1,0 @@
-import '@ticom/ui-components';
