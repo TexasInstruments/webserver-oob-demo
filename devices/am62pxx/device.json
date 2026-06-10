@@ -4,21 +4,18 @@
   "boards": [
     {
       "name": "SK-AM62P",
-      "description": "Starter Kit for AM62P processors \u2014 quad Cortex-A53 with MMA accelerator, designed for high-performance HMI.",
+      "description": "Starter Kit for AM62P processors — quad Cortex-A53 with MMA accelerator, designed for high-performance HMI.",
       "image": "images/sk-am62p-angled.png"
     }
   ],
   "soc": "AM62P5 quad Cortex-A53 @ 1.4GHz + MMA",
-  "demos": [
-    "cpu-monitor",
-    "audio-classification"
-  ],
+  "demos": ["cpu-monitor", "audio-classification", "speech-to-text"],
   "demoConfig": {
     "audio-classification": {
-      "model": "/usr/share/oob-demo-assets/models/yamnet_audio_classification.tflite",
-      "labels": "/usr/share/oob-demo-assets/labels/yamnet_label_list.txt",
+      "model":    "/usr/share/oob-demo-assets/models/yamnet_audio_classification.tflite",
+      "labels":   "/usr/share/oob-demo-assets/labels/yamnet_label_list.txt",
       "delegate": "XNNPACK",
-      "threads": 4
+      "threads":  4
     }
   },
   "docs": {
@@ -66,31 +63,11 @@
       }
     ],
     "quickLinks": [
-      {
-        "text": "Datasheet",
-        "url": "https://www.ti.com/lit/ds/symlink/am625p.pdf",
-        "icon": "action:description"
-      },
-      {
-        "text": "Code Composer Studio",
-        "url": "https://www.ti.com/tool/CCSTUDIO",
-        "icon": "action:build"
-      },
-      {
-        "text": "TI Resource Explorer",
-        "url": "https://dev.ti.com/tirex/",
-        "icon": "action:explore"
-      },
-      {
-        "text": "SysConfig Tool",
-        "url": "https://www.ti.com/tool/SYSCONFIG",
-        "icon": "action:settings"
-      },
-      {
-        "text": "E2E Processor Forum",
-        "url": "https://e2e.ti.com/support/processors/",
-        "icon": "communication:chat"
-      }
+      { "text": "Datasheet", "url": "https://www.ti.com/lit/ds/symlink/am625p.pdf", "icon": "action:description" },
+      { "text": "Code Composer Studio", "url": "https://www.ti.com/tool/CCSTUDIO", "icon": "action:build" },
+      { "text": "TI Resource Explorer", "url": "https://dev.ti.com/tirex/", "icon": "action:explore" },
+      { "text": "SysConfig Tool", "url": "https://www.ti.com/tool/SYSCONFIG", "icon": "action:settings" },
+      { "text": "E2E Processor Forum", "url": "https://e2e.ti.com/support/processors/", "icon": "communication:chat" }
     ]
   }
 }
