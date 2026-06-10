@@ -1,0 +1,5 @@
+# Makefile.common — shared compiler settings
+# Include from device Makefiles via: include ../../../common/linux_app/Makefile.common
+
+CC     ?= gcc
+CFLAGS ?= -O2 -Wall

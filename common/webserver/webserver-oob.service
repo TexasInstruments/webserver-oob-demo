@@ -1,0 +1,12 @@
+[Unit]
+Description=Webserver OOB Demo
+After=network.target
+
+[Service]
+EnvironmentFile=/etc/webserver-oob.conf
+ExecStart=/usr/bin/node /usr/lib/node_modules/webserver-oob/server.js
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,8 @@
+{
+  "id": "cpu-monitor",
+  "name": "CPU Monitor",
+  "icon": "icons:assessment",
+  "description": "Real-time CPU load monitoring with history chart",
+  "devices": ["*"],
+  "routes": ["/cpu-load", "/cpu-info", "/run-uname"]
+}

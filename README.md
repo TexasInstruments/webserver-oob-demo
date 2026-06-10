@@ -1,107 +1,71 @@
 # WebServer Out-of-Box Demo
 
-A modern web-based demonstration application featuring real-time audio classification, CPU performance monitoring, and system documentation.
+Web-based demo application for TI Sitara devices. Features real-time audio classification, CPU performance monitoring, and system information — all driven by a plugin architecture that adapts automatically to each target device.
 
-## Features
+## Supported Devices
 
-- **Real-time Audio Classification**: Live audio analysis using GStreamer and TensorFlow Lite
-- **CPU Performance Monitoring**: Real-time CPU usage tracking with historical graphs
-- **System Information**: Hardware and software details display
-- **Documentation Hub**: Quick access to documentation and resources
+| Device | Boards |
+|---|---|
+| AM335x | BeagleBone Green Eco, TMDXEVM3358 |
+| AM62x  | SK-AM62B, SK-AM62-SIP, AM62x LP EVM |
+| AM62Px | SK-AM62P |
+| AM62Lx | SK-AM62L |
+| AM62Dx | AM62Dx EVM |
 
 ## Directory Structure
 
 ```
-webserver-oob-demo/
-├── webserver_app/
-│   ├── app/                  # Frontend web application
-│   │   ├── index.html        # Main HTML file
-│   │   ├── main.js          # Application JavaScript
-│   │   ├── components/      # GUI Composer components
-│   │   └── images/          # Board images and assets
-│   ├── webserver/           # Backend server
-│   │   ├── webserver-oob.js # Express server with WebSocket support
-│   │   └── fifo-reader.js   # FIFO reader for audio classification
-│   └── linux_app/           # Native C utilities
-│       ├── cpu_stats.c      # CPU monitoring utility
-│       ├── audio_utils.c    # Audio device management
-│       └── Makefile         # Build configuration
-└── README.md
+common/
+  app/              Generic frontend (index.html, main.js, components submodule)
+  linux_app/        Shared C utilities: cpu_stats, audio_utils
+  webserver/        Express server + demo plugin loader
+
+demos/
+  cpu-monitor/      CPU load/info demo (all devices)
+  audio-classification/  YAMNet audio classification (all devices)
+
+devices/<id>/
+  device.json       Device metadata, active demos, per-demo config
+  app/images/       Board photos
+  linux_app/        Device-specific Makefile (builds audio_utils)
+
+tools/
+  generate-inc.js   Regenerates webserver-oob-npm.inc from package-lock.json
+
+yocto/
+  webserver-oob_git.bb   Single Yocto recipe for all devices
 ```
-
-## Prerequisites
-
-- GStreamer 1.0 with NNStreamer plugin
-- ALSA audio support
-- C compiler (gcc)
 
 ## Getting Started
 
-This repository uses Git submodules for some of its components. To properly clone the repository with all its submodules, use the following commands:
-
 ```bash
-# Clone the main repository
+# Clone with submodules
 git clone https://github.com/TexasInstruments/webserver-oob-demo.git
-
-# Navigate to the repository directory
 cd webserver-oob-demo
+git submodule update --init --recursive   # requires git.ti.com access
 
-# Initialize and fetch the submodules (components)
-git submodule update --init --recursive
+# Install Node.js deps
+cd common/webserver && npm install && cd ../..
+
+# Run locally (no target board needed)
+make dev DEVICE=am335x MOCK=1
+# Open http://localhost:3000
 ```
 
-This will ensure that all necessary components, including the GUI Composer components, are properly downloaded and initialized.
-
-## Building
-
-### Native Utilities
-
-The project includes two native C utilities that need to be compiled:
-- `cpu_stats`: Utility for monitoring CPU performance
-- `audio_utils`: Utility for audio device management
-
-To build these utilities:
+## Building for Target
 
 ```bash
-cd webserver_app/linux_app
-make
+# Cross-compile native utilities
+make build DEVICE=am62xx CC=aarch64-linux-gnu-gcc
+
+# Deploy to board
+make deploy DEVICE=am62xx BOARD_HOST=root@<ip>
 ```
 
-This will compile both utilities using the provided Makefile.
+## Adding a Demo / Device
 
-Individual utilities can be built separately if needed:
-
-```bash
-# To build only audio_utils
-make audio_utils
-
-# To build only cpu_stats
-make cpu_stats
-```
-
-To clean the build (remove compiled binaries):
-
-```bash
-make clean
-```
-
-## Running the Application
-
-After building the native utilities copy them to `/usr/bin/`. To launch the application and access the demonstration open your web browser and navigate to:
-
-```
-http://<IP-ADDRESS OF THE DEVICE>:3000
-```
-
-This will load the web-based interface that interacts with the native utilities for real-time audio classification and CPU performance monitoring.
-
-## Audio Classification Setup
-
-The audio classification demo requires:
-- TensorFlow Lite model: Models for audio classification
-- Label file: List of classes for classification
-- GStreamer with NNStreamer plugin support
+See `docs/adding-a-demo.md` and `docs/adding-a-device.md`.
 
 ## License
 
-This repository is licensed under the TI-TFL License. See the [LICENSE](LICENSE) file for more information.
+TI Text File License (TI-TFL). See [LICENSE](LICENSE).
