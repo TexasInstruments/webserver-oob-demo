@@ -114,11 +114,15 @@ char* get_arecord_devices() {
                     strncpy(current_card_name, name_start + 1, name_len);
                     current_card_name[name_len] = '\0';
 
-                    // Skip HDMI/playback-only devices
-                    if (strstr(current_card_name, "HDMI") != NULL ||
-                        strstr(current_card_name, "hdmi") != NULL ||
-                        strstr(current_card_name, "cape") != NULL) {
-                        fprintf(stderr, "Skipping playback-only device: %s (card %d)\n",
+                    /* Skip HDMI, playback-only, and USB video capture (webcam) devices */
+                    if (strstr(current_card_name, "HDMI")    != NULL ||
+                        strstr(current_card_name, "hdmi")    != NULL ||
+                        strstr(current_card_name, "cape")    != NULL ||
+                        strstr(current_card_name, "Webcam")  != NULL ||
+                        strstr(current_card_name, "webcam")  != NULL ||
+                        strstr(current_card_name, "Camera")  != NULL ||
+                        strstr(current_card_name, "camera")  != NULL) {
+                        fprintf(stderr, "Skipping non-audio device: %s (card %d)\n",
                                 current_card_name, card_num);
                         continue;
                     }

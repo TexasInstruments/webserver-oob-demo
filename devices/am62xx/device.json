@@ -1,0 +1,83 @@
+{
+  "id": "am62xx",
+  "displayName": "AM62x",
+  "boards": [
+    {
+      "name": "SK-AM62B",
+      "description": "Starter Kit for AM62x processors — quad Cortex-A53, designed for cost-sensitive HMI and industrial applications.",
+      "image": "images/sk-am62b-angled.png"
+    },
+    {
+      "name": "SK-AM62-SIP",
+      "description": "AM62x System-in-Package Starter Kit — integrated LPDDR4 and PMIC, ultra-compact form factor.",
+      "image": "images/sk-am62-sip-angled.png"
+    },
+    {
+      "name": "AM62x LP EVM",
+      "description": "AM62x Low Power Evaluation Module — optimized for low-power operation with LPDDR4.",
+      "image": "images/am62x-lp-evm-angled.png"
+    }
+  ],
+  "soc": "AM625 quad Cortex-A53 @ 1.4GHz",
+  "demos": ["cpu-monitor", "audio-classification"],
+  "demoConfig": {
+    "audio-classification": {
+      "model":    "/usr/share/oob-demo-assets/models/yamnet_audio_classification.tflite",
+      "labels":   "/usr/share/oob-demo-assets/labels/yamnet_label_list.txt",
+      "delegate": "XNNPACK",
+      "threads":  4
+    }
+  },
+  "docs": {
+    "subtitle": "Everything you need to develop with AM62x Sitara processors",
+    "cards": [
+      {
+        "title": "Product Page",
+        "description": "Explore specifications, features, and ordering information for the AM62x Sitara processor family",
+        "url": "https://www.ti.com/product/AM6254",
+        "linkText": "View Product",
+        "badge": "Official",
+        "icon": "hardware:developer_board"
+      },
+      {
+        "title": "Technical Reference Manual",
+        "description": "Complete technical documentation covering all AM62x subsystems, peripherals, and registers",
+        "url": "https://www.ti.com/lit/ug/spruiv7a/spruiv7a.pdf",
+        "linkText": "Download PDF",
+        "badge": "PDF",
+        "icon": "action:book"
+      },
+      {
+        "title": "Processor SDK",
+        "description": "Linux development kit with drivers, libraries, and ready-to-run example applications",
+        "url": "https://www.ti.com/tool/PROCESSOR-SDK-AM62X",
+        "linkText": "Get SDK",
+        "badge": "Latest",
+        "icon": "file:folder"
+      },
+      {
+        "title": "Getting Started Guide",
+        "description": "Step-by-step guides for SDK installation, building applications, and deployment",
+        "url": "https://software-dl.ti.com/processor-sdk-linux/esd/AM62X/latest/exports/docs/linux/Overview/Processor_SDK_Linux_Getting_Started_Guide.html",
+        "linkText": "Browse Docs",
+        "badge": "Guides",
+        "icon": "action:article"
+      },
+      {
+        "title": "Community Forum",
+        "description": "Get help from TI engineers and connect with thousands of embedded developers",
+        "url": "https://e2e.ti.com/support/processors/",
+        "linkText": "Join Discussion",
+        "badge": "Active",
+        "icon": "communication:forum"
+      }
+    ],
+    "quickLinks": [
+      { "text": "Datasheet", "url": "https://www.ti.com/lit/ds/symlink/am6254.pdf", "icon": "action:description" },
+      { "text": "Code Composer Studio", "url": "https://www.ti.com/tool/CCSTUDIO", "icon": "action:build" },
+      { "text": "TI Resource Explorer", "url": "https://dev.ti.com/tirex/", "icon": "action:explore" },
+      { "text": "SysConfig Tool", "url": "https://www.ti.com/tool/SYSCONFIG", "icon": "action:settings" },
+      { "text": "E2E Processor Forum", "url": "https://e2e.ti.com/support/processors/", "icon": "communication:chat" }
+    ]
+  }
+}

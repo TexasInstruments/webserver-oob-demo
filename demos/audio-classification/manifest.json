@@ -1,0 +1,9 @@
+{
+  "id": "audio-classification",
+  "name": "Audio Classification",
+  "icon": "av:mic",
+  "description": "Real-time audio classification using YAMNet TFLite model via GStreamer+NNStreamer",
+  "devices": ["am335x", "am62x"],
+  "routes": ["/audio-devices", "/start-audio-classification", "/stop-audio-classification"],
+  "websocket": "/audio"
+}

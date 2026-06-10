@@ -31,7 +31,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
     <link rel="icon" type="image/png" href="splash/gui_icon.png">
 
-    <title>AM335x Demo</title>
+    <title>TI OOB Demo</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <meta name="mobile-web-app-capable" content="yes">
     <script src="components/webcomponentsjs/webcomponents-lite.js"></script>
@@ -53,19 +53,18 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script>
+        /* Carousel — built dynamically from /device-info after WebComponents ready */
         document.addEventListener('WebComponentsReady', function() {
-            const slides = document.querySelectorAll('.carousel-slide');
-            const dots = document.querySelectorAll('.dot');
             let currentSlide = 0;
             let slideInterval;
+            let slides = [];
+            let dots   = [];
 
             function showSlide(index) {
-                slides.forEach((slide, i) => {
-                    slide.classList.remove('active');
-                    dots[i].classList.remove('active');
+                slides.forEach((s, i) => {
+                    s.classList.toggle('active', i === index);
+                    if (dots[i]) dots[i].classList.toggle('active', i === index);
                 });
-                slides[index].classList.add('active');
-                dots[index].classList.add('active');
                 currentSlide = index;
             }
 
@@ -75,24 +74,121 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
             }
 
             function startSlideShow() {
-                slideInterval = setInterval(nextSlide, 5000); // Change slide every 5 seconds
+                if (slideInterval) clearInterval(slideInterval);
+                slideInterval = setInterval(nextSlide, 5000);
             }
 
-            function stopSlideShow() {
-                clearInterval(slideInterval);
-            }
+            function buildCarousel(boards) {
+                const container = document.getElementById('board-carousel-container');
+                const dotsEl    = document.getElementById('board-carousel-dots');
+                if (!container || !dotsEl) return;
 
-            // Event listeners for dots
-            dots.forEach(dot => {
-                dot.addEventListener('click', (event) => {
-                    stopSlideShow();
-                    showSlide(parseInt(event.target.dataset.slide));
-                    startSlideShow();
+                container.innerHTML = '';
+                dotsEl.innerHTML    = '';
+
+                boards.forEach((board, i) => {
+                    const slide = document.createElement('div');
+                    slide.className = 'carousel-slide' + (i === 0 ? ' active' : '');
+                    slide.innerHTML =
+                        '<ti-widget-image image-path="' + board.image + '" lock-aspect-ratio hover-effect="no" visible lockaspectratio center-justified horizontal layout center></ti-widget-image>' +
+                        '<ti-widget-label label="' + board.name + ': ' + (board.description || '') + '" text-align="center" font-size="medium"></ti-widget-label>';
+                    container.appendChild(slide);
+
+                    const dot = document.createElement('span');
+                    dot.className = 'dot' + (i === 0 ? ' active' : '');
+                    dot.dataset.slide = i;
+                    dot.addEventListener('click', function(event) {
+                        if (slideInterval) clearInterval(slideInterval);
+                        showSlide(parseInt(event.target.dataset.slide));
+                        startSlideShow();
+                    });
+                    dotsEl.appendChild(dot);
                 });
-            });
 
-            showSlide(currentSlide);
-            startSlideShow();
+                slides = Array.from(container.querySelectorAll('.carousel-slide'));
+                dots   = Array.from(dotsEl.querySelectorAll('.dot'));
+
+                showSlide(0);
+                startSlideShow();
+            }
+
+            /* Render device-specific documentation from device.docs */
+            function renderDocs(docs) {
+                var container = document.getElementById('docs-container');
+                if (!container || !docs) return;
+                var h = '';
+                h += '<div class="docs-header">';
+                h += '<h1>Documentation &amp; <span>Resources</span></h1>';
+                h += '<p>' + (docs.subtitle || '') + '</p>';
+                h += '</div>';
+                if (docs.cards && docs.cards.length) {
+                    h += '<div class="docs-grid">';
+                    docs.cards.forEach(function(card) {
+                        h += '<div class="doc-card" onclick="window.open(\'' + card.url + '\', \'_blank\')">';
+                        h += '<div class="doc-card-header">';
+                        h += '<div class="doc-card-icon"><ti-widget-icon icon="' + (card.icon || 'action:description') + '" icon-size="24" icon-color="#666"></ti-widget-icon></div>';
+                        h += '<h3>' + card.title + '</h3>';
+                        h += '</div>';
+                        h += '<p class="doc-card-description">' + card.description + '</p>';
+                        h += '<div class="doc-card-footer">';
+                        h += '<a href="' + card.url + '" target="_blank" class="doc-card-link" onclick="event.stopPropagation()">' + (card.linkText || 'Open') + '</a>';
+                        h += '<span class="doc-card-badge">' + (card.badge || '') + '</span>';
+                        h += '</div></div>';
+                    });
+                    h += '</div>';
+                }
+                if (docs.quickLinks && docs.quickLinks.length) {
+                    h += '<div class="quick-links"><h2>Additional Resources</h2><div class="quick-links-grid">';
+                    docs.quickLinks.forEach(function(link) {
+                        h += '<a href="' + link.url + '" target="_blank" class="quick-link">';
+                        h += '<span class="quick-link-icon"><ti-widget-icon icon="' + (link.icon || 'action:link') + '" icon-size="16" icon-color="#666"></ti-widget-icon></span>';
+                        h += '<span class="quick-link-text">' + link.text + '</span>';
+                        h += '</a>';
+                    });
+                    h += '</div></div>';
+                }
+                container.innerHTML = h;
+            }
+
+            /* Fetch device info and initialize page */
+            fetch('/device-info')
+                .then(r => r.json())
+                .then(function(device) {
+                    /* Page title */
+                    document.title = device.displayName + ' Demo';
+
+                    /* Menubar product name */
+                    var menubar = document.getElementById('ti_widget_menubar');
+                    if (menubar) menubar.setAttribute('product-name', device.displayName + ' Demo');
+
+                    /* Product name label on home tab */
+                    var productLabel = document.getElementById('ti_widget_label_productname');
+                    if (productLabel) productLabel.setAttribute('label', device.displayName);
+
+                    /* Board carousel */
+                    if (device.boards && device.boards.length > 0) {
+                        buildCarousel(device.boards);
+                    }
+
+                    /* Show active demo vtabs by convention:
+                     * vtab ID = ti_widget_vtab_<demo-id with - replaced by _>
+                     * Demo vtabs have visible="false" in HTML as default. */
+                    document.querySelectorAll('[data-demo-vtab]').forEach(function(v) {
+                        v.setAttribute('visible', 'false');
+                    });
+                    (device.activeDemos || []).forEach(function(demoId) {
+                        var vtabId = 'ti_widget_vtab_' + demoId.replace(/-/g, '_');
+                        var vtab = document.getElementById(vtabId);
+                        if (vtab) vtab.setAttribute('visible', 'true');
+                        else console.warn('[nav] No vtab for demo: ' + demoId + ' (expected #' + vtabId + ')');
+                    });
+
+                    /* Render device-specific documentation */
+                    if (device.docs) renderDocs(device.docs);
+                })
+                .catch(function(err) {
+                    console.error('Failed to load /device-info:', err);
+                });
         });
     </script>
     <script type = "text/javascript" src = "jquery-3.5.1.min.js"></script>
@@ -2084,7 +2180,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 <ti-widget-readme background-color="#ffffff" elevation="5" title-text="README.md" id="readmeViewer" pin></ti-widget-readme>
 <ti-core-stylesheets id="ti_core_stylesheets"></ti-core-stylesheets>
 
-<ti-widget-menubar id="ti_widget_menubar" layout class="x-scope ti-widget-menubar-0" horizontal pin product-name="AM335x Demo">
+<ti-widget-menubar id="ti_widget_menubar" layout class="x-scope ti-widget-menubar-0" horizontal pin product-name="TI OOB Demo">
 
 
     <ti-widget-menuitem name="Tools" id="ti_widget_menuitem_tools" layout>
@@ -2109,22 +2205,14 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 <ti-widget-vtabcontainer id="ti_widget_vtabcontainer" vtab-height-in-px="60" selected-index="0" ink-color="#f1f1f1" color-selected="#ffffff" color-unselected="#888" color-disabled="#ccc" color-selection-bar="white" background-color-selected="#148c9c" background-color-hover="#dcdcec" auto-expand auto-zero-htab-index tab-height-in-px="60" vertical layout>
     <ti-widget-vtab id="ti_widget_vtab_home" name="Home" icon="home" icon-style="width:30px;height:30px;padding:5px;" visible no-child-tabs-in-menu font-size="inherit" auto-scroll font-style="normal" font-weight="normal" text-align="left" text-decoration="none" autoscroll title vertical layout>
-        <ti-widget-label id="ti_widget_label_productname" label="AM335X" text-align="center" font-size="custom" custom-font-size="32px" font-color="#ffffff" font-style="normal" font-weight="normal" text-decoration="none" visible></ti-widget-label>
+        <ti-widget-label id="ti_widget_label_productname" label="TI OOB Demo" text-align="center" font-size="custom" custom-font-size="32px" font-color="#ffffff" font-style="normal" font-weight="normal" text-decoration="none" visible></ti-widget-label>
         <ti-widget-label id="ti_widget_label_productdesc" label="Analyze system performance, review documentation, and run demos" text-align="center" font-size="custom" font-color="#ffffff" font-style="normal" font-weight="normal" text-decoration="none" visible></ti-widget-label>
 
-        <div class="carousel-container">
-            <div class="carousel-slide active">
-                <ti-widget-image image-path="images/beagl-bone-grn-eco-angled.png" lock-aspect-ratio hover-effect="no" visible lockaspectratio center-justified horizontal layout center></ti-widget-image>
-                <ti-widget-label label="BeagleBone Green Eco: A low-cost, industrial-grade open-source hardware platform for commercial and industrial applications." text-align="center" font-size="medium"></ti-widget-label>
-            </div>
-            <div class="carousel-slide">
-                <ti-widget-image image-path="images/tmdxevm3358-angled.png" lock-aspect-ratio hover-effect="no" visible lockaspectratio center-justified horizontal layout center></ti-widget-image>
-                <ti-widget-label label="AM335x Evaluation Module: Comprehensive development platform for AM335x processors." text-align="center" font-size="medium"></ti-widget-label>
-            </div>
+        <div class="carousel-container" id="board-carousel-container">
+            <!-- Board carousel slides populated dynamically from /device-info -->
         </div>
-        <div class="carousel-dots">
-            <span class="dot active" data-slide="0"></span>
-            <span class="dot" data-slide="1"></span>
+        <div class="carousel-dots" id="board-carousel-dots">
+            <!-- Dots populated dynamically -->
         </div>
 
         <ti-widget-tabcontainer selected-index="0" show-tab-labels-in-designer-only id="ti_widget_tabcontainer" layout>
@@ -2137,7 +2225,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
             </ti-widget-tab>
         </ti-widget-tabcontainer>
     </ti-widget-vtab>
-    <ti-widget-vtab id="ti_widget_vtab_audio_classification" name="Audio Classification" caption="Live Audio Classification" icon="av:mic" icon-style="width:30px;height:30px;padding:5px;" visible font-size="inherit" auto-scroll font-style="normal" font-weight="normal" text-align="left" text-decoration="none" autoscroll title>
+    <ti-widget-vtab id="ti_widget_vtab_audio_classification" data-demo-vtab name="Audio Classification" caption="Live Audio Classification" icon="av:mic" icon-style="width:30px;height:30px;padding:5px;" visible="false" font-size="inherit" auto-scroll font-style="normal" font-weight="normal" text-align="left" text-decoration="none" autoscroll title>
     <style>
         .audio-classification-container {
             padding: 20px;
@@ -2532,7 +2620,354 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         </div>
     </div>
 </ti-widget-vtab>
-    <ti-widget-vtab id="ti_widget_vtab_cpu_performance" name="CPU Performance" icon="icons:assessment" icon-style="width:30px;height:30px;padding:5px;" visible no-child-tabs-in-menu font-size="inherit" auto-scroll font-style="normal" font-weight="normal" text-align="left" text-decoration="none" autoscroll title vertical layout>
+    <ti-widget-vtab id="ti_widget_vtab_speech_to_text" data-demo-vtab name="Speech to Text" caption="Live Speech Recognition" icon="av:hearing" icon-style="width:30px;height:30px;padding:5px;" visible="false" font-size="inherit" auto-scroll font-style="normal" font-weight="normal" text-align="left" text-decoration="none" autoscroll title>
+    <style>
+        .stt-container {
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .stt-section {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stt-section h3 {
+            color: #148C9C;
+            margin-top: 0;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #148C9C;
+            padding-bottom: 5px;
+        }
+
+        .stt-device-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .stt-device-card {
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .stt-device-card:hover { box-shadow: 0 4px 8px rgba(0,0,0,0.15); transform: translateY(-2px); }
+        .stt-device-card.selected { background-color: #e8f4f5; border: 2px solid #148C9C; }
+
+        .stt-control-section { margin: 20px 0; display: flex; gap: 15px; flex-wrap: wrap; }
+
+        .stt-btn {
+            padding: 10px 24px;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .stt-btn.primary { background-color: #148C9C; color: white; }
+        .stt-btn.primary:hover:not(:disabled) { background-color: #0f6b78; }
+        .stt-btn.danger  { background-color: #dc3545; color: white; }
+        .stt-btn.danger:hover:not(:disabled) { background-color: #b52a37; }
+        .stt-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .stt-status-row { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+
+        .stt-status-dot {
+            width: 12px; height: 12px; border-radius: 50%;
+            background-color: #ccc; display: inline-block;
+        }
+        .stt-status-dot.active { background-color: #28a745; animation: stt-pulse 1.5s infinite; }
+
+        @keyframes stt-pulse {
+            0%, 100% { opacity: 1; }
+            50%       { opacity: 0.4; }
+        }
+
+        .stt-live-display {
+            background-color: white;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            min-height: 80px;
+            font-size: 22px;
+            font-weight: 500;
+            color: #333;
+            transition: border-color 0.3s;
+        }
+
+        .stt-live-display.active { border-color: #148C9C; }
+        .stt-live-display.waiting { color: #aaa; font-size: 16px; font-style: italic; }
+
+        .stt-transcript-log {
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+
+        .stt-log-entry {
+            display: flex;
+            gap: 12px;
+            padding: 6px 0;
+            border-bottom: 1px solid #f0f0f0;
+            animation: stt-fadein 0.4s ease;
+        }
+
+        .stt-log-entry:last-child { border-bottom: none; }
+
+        .stt-log-time { color: #888; white-space: nowrap; flex-shrink: 0; }
+        .stt-log-text { color: #222; }
+
+        @keyframes stt-fadein { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+
+        .stt-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .stt-stat-card {
+            background-color: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .stt-stat-card h4 { margin: 0 0 8px 0; font-size: 12px; color: #666; text-transform: uppercase; }
+        .stt-stat-value { font-size: 24px; font-weight: bold; color: #148C9C; }
+    </style>
+
+    <div class="stt-container">
+        <div class="stt-section">
+            <h3>Audio Input Configuration</h3>
+            <div class="stt-control-section">
+                <button id="stt_fetch_devices" class="stt-btn primary">Refresh Devices</button>
+            </div>
+            <div id="stt_device_list" class="stt-device-grid">
+                <div style="grid-column:1/-1;text-align:center;color:#888;padding:20px;">
+                    Click "Refresh Devices" to load available audio input devices
+                </div>
+            </div>
+            <div class="stt-control-section">
+                <button id="stt_start_btn" class="stt-btn primary" disabled>Start Speech Recognition</button>
+                <button id="stt_stop_btn"  class="stt-btn danger"  disabled>Stop</button>
+            </div>
+        </div>
+
+        <div class="stt-section">
+            <h3>Live Transcript</h3>
+            <div id="stt_live" class="stt-live-display waiting">Waiting to start...</div>
+            <div class="stt-status-row">
+                <span id="stt_status_dot" class="stt-status-dot"></span>
+                <span id="stt_status_text" style="color:#666;">Inactive</span>
+            </div>
+            <div class="stt-stats-grid" style="margin-top:20px;">
+                <div class="stt-stat-card">
+                    <h4>Phrases</h4>
+                    <div id="stt_count" class="stt-stat-value">0</div>
+                </div>
+                <div class="stt-stat-card">
+                    <h4>Words</h4>
+                    <div id="stt_words" class="stt-stat-value">0</div>
+                </div>
+                <div class="stt-stat-card">
+                    <h4>Session Time</h4>
+                    <div id="stt_session_time" class="stt-stat-value">00:00</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="stt-section">
+            <h3>Transcript Log</h3>
+            <div id="stt_log" class="stt-transcript-log">
+                <div style="text-align:center;color:#999;padding:20px;">
+                    No transcriptions yet. Start speech recognition to see results.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    (function() {
+        'use strict';
+
+        var selectedDevice = null;
+        var sttWs          = null;
+        var running        = false;
+        var phraseCount    = 0;
+        var wordCount      = 0;
+        var sessionStart   = null;
+        var sessionTimer   = null;
+        var logEmpty       = true;
+
+        var fetchBtn   = document.getElementById('stt_fetch_devices');
+        var startBtn   = document.getElementById('stt_start_btn');
+        var stopBtn    = document.getElementById('stt_stop_btn');
+        var deviceList = document.getElementById('stt_device_list');
+        var liveEl     = document.getElementById('stt_live');
+        var statusDot  = document.getElementById('stt_status_dot');
+        var statusText = document.getElementById('stt_status_text');
+        var logEl      = document.getElementById('stt_log');
+        var countEl    = document.getElementById('stt_count');
+        var wordsEl    = document.getElementById('stt_words');
+        var timeEl     = document.getElementById('stt_session_time');
+
+        fetchBtn.addEventListener('click', fetchDevices);
+        startBtn.addEventListener('click', startSTT);
+        stopBtn.addEventListener('click',  stopSTT);
+
+        function fetchDevices() {
+            deviceList.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#888;padding:20px;">Loading...</div>';
+            fetch('/speech-devices').then(function(r) { return r.text(); }).then(function(txt) {
+                deviceList.innerHTML = '';
+                var lines = txt.trim().split('\n').filter(function(l) { return l.trim(); });
+                if (!lines.length || lines[0].startsWith('No ') || lines[0].startsWith('Error')) {
+                    deviceList.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#888;padding:20px;">' + (lines[0]||'No devices') + '</div>';
+                    return;
+                }
+                lines.forEach(function(line) {
+                    var parts = line.split('|');
+                    var alsa  = parts[0] || line;
+                    var name  = parts[1] || alsa;
+                    var card  = document.createElement('div');
+                    card.className = 'stt-device-card' + (alsa === selectedDevice ? ' selected' : '');
+                    card.innerHTML = '<div><div style="font-weight:bold;">' + name + '</div><div style="font-size:12px;color:#666;">' + alsa + '</div></div>';
+                    card.addEventListener('click', function() {
+                        document.querySelectorAll('.stt-device-card').forEach(function(c) { c.classList.remove('selected'); });
+                        card.classList.add('selected');
+                        selectedDevice = alsa;
+                        startBtn.disabled = false;
+                    });
+                    deviceList.appendChild(card);
+                });
+                if (!selectedDevice && lines.length) {
+                    deviceList.firstChild.classList.add('selected');
+                    selectedDevice = lines[0].split('|')[0];
+                    startBtn.disabled = false;
+                }
+            }).catch(function(e) {
+                deviceList.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#c00;padding:20px;">Error: ' + e.message + '</div>';
+            });
+        }
+
+        function startSTT() {
+            if (!selectedDevice) return;
+            fetch('/start-speech-to-text?device=' + encodeURIComponent(selectedDevice)).then(function(r) { return r.text(); }).then(function(msg) {
+                console.log('[stt] Start response:', msg);
+                running = true;
+                phraseCount = 0;
+                wordCount   = 0;
+                sessionStart = Date.now();
+                startBtn.disabled = true;
+                stopBtn.disabled  = false;
+                setStatus(true, 'Listening...');
+                liveEl.className  = 'stt-live-display active';
+                liveEl.textContent = '...';
+                startSessionTimer();
+                connectWebSocket();
+            }).catch(function(e) {
+                console.error('[stt] Start error:', e);
+                setStatus(false, 'Error starting');
+            });
+        }
+
+        function stopSTT() {
+            fetch('/stop-speech-to-text').then(function() {
+                running = false;
+                stopBtn.disabled  = true;
+                startBtn.disabled = (selectedDevice === null);
+                setStatus(false, 'Stopped');
+                liveEl.className  = 'stt-live-display waiting';
+                liveEl.textContent = 'Stopped.';
+                stopSessionTimer();
+                if (sttWs) { sttWs.close(); sttWs = null; }
+            });
+        }
+
+        function connectWebSocket() {
+            if (sttWs) { sttWs.close(); sttWs = null; }
+            var proto = (location.protocol === 'https:') ? 'wss' : 'ws';
+            sttWs = new WebSocket(proto + '://' + location.host + '/speech');
+
+            sttWs.onopen = function() { console.log('[stt] WebSocket open'); };
+
+            sttWs.onmessage = function(evt) {
+                try {
+                    var msg = JSON.parse(evt.data);
+                    if (msg.text) {
+                        phraseCount++;
+                        wordCount += msg.text.trim().split(/\s+/).length;
+                        countEl.textContent = phraseCount;
+                        wordsEl.textContent = wordCount;
+                        liveEl.textContent  = msg.text;
+                        liveEl.className    = 'stt-live-display active';
+                        appendLog(msg.text, msg.timestamp);
+                    }
+                } catch (e) { /* ignore non-JSON */ }
+            };
+
+            sttWs.onclose = function() {
+                console.log('[stt] WebSocket closed');
+                if (running) setTimeout(connectWebSocket, 2000);
+            };
+
+            sttWs.onerror = function(e) { console.error('[stt] WebSocket error', e); };
+        }
+
+        function appendLog(text, ts) {
+            if (logEmpty) { logEl.innerHTML = ''; logEmpty = false; }
+            var entry = document.createElement('div');
+            entry.className = 'stt-log-entry';
+            var d = ts ? new Date(ts) : new Date();
+            var time = d.toTimeString().slice(0, 8);
+            entry.innerHTML = '<span class="stt-log-time">' + time + '</span><span class="stt-log-text">' + escHtml(text) + '</span>';
+            logEl.insertBefore(entry, logEl.firstChild);
+        }
+
+        function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+        function setStatus(active, msg) {
+            statusDot.className  = 'stt-status-dot' + (active ? ' active' : '');
+            statusText.textContent = msg;
+        }
+
+        function startSessionTimer() {
+            stopSessionTimer();
+            sessionTimer = setInterval(function() {
+                var secs = Math.floor((Date.now() - sessionStart) / 1000);
+                var m = Math.floor(secs / 60), s = secs % 60;
+                timeEl.textContent = (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+            }, 1000);
+        }
+
+        function stopSessionTimer() {
+            if (sessionTimer) { clearInterval(sessionTimer); sessionTimer = null; }
+        }
+    })();
+    </script>
+</ti-widget-vtab>
+    <ti-widget-vtab id="ti_widget_vtab_cpu_monitor" data-demo-vtab name="CPU Monitor" icon="icons:assessment" icon-style="width:30px;height:30px;padding:5px;" visible="false" no-child-tabs-in-menu font-size="inherit" auto-scroll font-style="normal" font-weight="normal" text-align="left" text-decoration="none" autoscroll title vertical layout>
         <style>
             .cpu-performance-container {
                 padding: 20px;
@@ -2927,10 +3362,10 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
             }
         </style>
 
-        <div class="docs-container">
+        <div class="docs-container" id="docs-container">
             <div class="docs-header">
                 <h1>Documentation & <span>Resources</span></h1>
-                <p>Everything you need to develop with AM335x Sitara processors</p>
+                <p>Loading device documentation...</p>
             </div>
 
             <div class="docs-grid">

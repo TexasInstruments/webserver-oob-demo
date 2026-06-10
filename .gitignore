@@ -6,8 +6,8 @@ package-lock.json
 # Build artifacts
 *.o
 *.d
-webserver_app/linux_app/cpu_stats
-webserver_app/linux_app/audio_utils
+common/linux_app/cpu_stats
+devices/*/linux_app/audio_utils
 
 # Runtime files
 /tmp/
@@ -28,3 +28,5 @@ Thumbs.db
 # Backup files
 *.bak
 *.backup
+
+CLAUDE.md

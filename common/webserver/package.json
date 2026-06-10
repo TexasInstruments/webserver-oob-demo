@@ -1,11 +1,11 @@
 {
   "name": "webserver-oob",
   "version": "1.0.0",
-  "description": "Webserver for the AM335x OOB Demo",
-  "main": "webserver-oob.js",
+  "description": "Webserver for TI Sitara OOB Demo (multi-device)",
+  "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node webserver-oob.js"
+    "start": "node server.js"
   },
   "license": "BSD-3-Clause",
   "dependencies": {
@@ -14,6 +14,6 @@
   },
   "private": true,
   "bin": {
-    "webserver-oob": "webserver-oob.js"
+    "webserver-oob": "server.js"
   }
 }
