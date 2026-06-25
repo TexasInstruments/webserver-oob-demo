@@ -9,7 +9,7 @@
     }
   ],
   "soc": "AM62P5 quad Cortex-A53 @ 1.4GHz + MMA",
-  "demos": ["cpu-monitor", "audio-classification", "speech-to-text"],
+  "demos": ["cpu-monitor", "audio-classification"],
   "demoConfig": {
     "audio-classification": {
       "model":    "/usr/share/oob-demo-assets/models/yamnet_audio_classification.tflite",
