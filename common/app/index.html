@@ -174,14 +174,16 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
                      * vtab ID = ti_widget_vtab_<demo-id with - replaced by _>
                      * Demo vtabs have visible="false" in HTML as default. */
                     document.querySelectorAll('[data-demo-vtab]').forEach(function(v) {
-                        v.setAttribute('visible', 'false');
+                        v.visible = false;
                     });
                     (device.activeDemos || []).forEach(function(demoId) {
                         var vtabId = 'ti_widget_vtab_' + demoId.replace(/-/g, '_');
                         var vtab = document.getElementById(vtabId);
-                        if (vtab) vtab.setAttribute('visible', 'true');
+                        if (vtab) vtab.visible = true;
                         else console.warn('[nav] No vtab for demo: ' + demoId + ' (expected #' + vtabId + ')');
                     });
+                    var container = document.getElementById('ti_widget_vtabcontainer');
+                    if (container && container.refreshTabs) container.refreshTabs(true);
 
                     /* Render device-specific documentation */
                     if (device.docs) renderDocs(device.docs);
