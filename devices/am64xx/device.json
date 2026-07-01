@@ -1,0 +1,70 @@
+{
+  "id": "am64xx",
+  "displayName": "AM64x",
+  "boards": [
+    {
+      "name": "AM64x EVM",
+      "description": "AM64x Evaluation Module — dual Cortex-A53 + quad R5F cores for industrial applications.",
+      "image": "images/tmds64evm-angled.png"
+    }
+  ],
+  "soc": "AM6442 dual Cortex-A53 + quad R5F @ 1GHz",
+  "demos": ["cpu-monitor", "benchmark"],
+  "demoConfig": {
+    "benchmark": {
+      "oobDataPath": "/usr/share/webserver-oob/app/oob_data.json"
+    }
+  },
+  "docs": {
+    "subtitle": "Everything you need to develop with AM64x Sitara processors",
+    "cards": [
+      {
+        "title": "Product Page",
+        "description": "Explore specifications, features, and ordering information for the AM64x Sitara processor family",
+        "url": "https://www.ti.com/product/AM6442",
+        "linkText": "View Product",
+        "badge": "Official",
+        "icon": "hardware:developer_board"
+      },
+      {
+        "title": "Technical Reference Manual",
+        "description": "Complete technical documentation covering all AM64x subsystems, peripherals, and registers",
+        "url": "https://www.ti.com/lit/ug/spruim2b/spruim2b.pdf",
+        "linkText": "Download PDF",
+        "badge": "PDF",
+        "icon": "action:book"
+      },
+      {
+        "title": "Processor SDK",
+        "description": "Linux development kit with drivers, libraries, and ready-to-run example applications",
+        "url": "https://www.ti.com/tool/PROCESSOR-SDK-AM64X",
+        "linkText": "Get SDK",
+        "badge": "Latest",
+        "icon": "file:folder"
+      },
+      {
+        "title": "Getting Started Guide",
+        "description": "Step-by-step guides for SDK installation, building applications, and deployment",
+        "url": "https://software-dl.ti.com/processor-sdk-linux/esd/AM64X/latest/exports/docs/linux/Overview/Processor_SDK_Linux_Getting_Started_Guide.html",
+        "linkText": "Browse Docs",
+        "badge": "Guides",
+        "icon": "action:article"
+      },
+      {
+        "title": "Community Forum",
+        "description": "Get help from TI engineers and connect with thousands of embedded developers",
+        "url": "https://e2e.ti.com/support/processors/",
+        "linkText": "Join Discussion",
+        "badge": "Active",
+        "icon": "communication:forum"
+      }
+    ],
+    "quickLinks": [
+      { "text": "Datasheet", "url": "https://www.ti.com/lit/ds/symlink/am6442.pdf", "icon": "action:description" },
+      { "text": "Code Composer Studio", "url": "https://www.ti.com/tool/CCSTUDIO", "icon": "action:build" },
+      { "text": "TI Resource Explorer", "url": "https://dev.ti.com/tirex/", "icon": "action:explore" },
+      { "text": "SysConfig Tool", "url": "https://www.ti.com/tool/SYSCONFIG", "icon": "action:settings" },
+      { "text": "E2E Processor Forum", "url": "https://e2e.ti.com/support/processors/", "icon": "communication:chat" }
+    ]
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "id": "benchmark",
+  "name": "Benchmark Demo",
+  "icon": "hardware:memory",
+  "description": "Real-time multi-core benchmark metrics via RPMsg IPC on AM64x/AM65x",
+  "devices": ["am64xx"],
+  "routes": ["/benchmark-data", "/benchmark-update"],
+  "websocket": null
+}

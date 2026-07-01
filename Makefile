@@ -63,6 +63,9 @@ deploy-bins:
 	@if [ -f devices/$(DEVICE)/linux_app/audio_utils ]; then \
 	    scp devices/$(DEVICE)/linux_app/audio_utils $(BOARD_HOST):/usr/bin/audio_utils; \
 	fi
+	@if [ -f devices/$(DEVICE)/linux_app/rpmsg_json ]; then \
+	    scp devices/$(DEVICE)/linux_app/rpmsg_json $(BOARD_HOST):/usr/bin/rpmsg_json; \
+	fi
 
 deploy-server:
 	ssh $(BOARD_HOST) "rm -rf $(INSTALL_DIR)/server $(INSTALL_DIR)/demos && \

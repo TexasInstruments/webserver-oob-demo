@@ -1,0 +1,117 @@
+{
+  "core0": {
+    "input": {
+      "application": 0,
+      "frequency": 0,
+      "changed": 0
+    },
+    "output": {
+      "cpu_load": {
+        "current": 0,
+        "average": 0,
+        "max": 0
+      },
+      "int_latency": {
+        "average": 0,
+        "max": 0
+      },
+      "cycles_per_loop": {
+        "average": 0,
+        "max": 0
+      },
+      "sram_label": "OC-SRAM: 0%",
+      "sram": 100
+    }
+  },
+  "core1": {
+    "input": {
+      "application": 0,
+      "frequency": 0,
+      "changed": 0
+    },
+    "output": {
+      "cpu_load": {
+        "current": 0,
+        "average": 0,
+        "max": 0
+      },
+      "int_latency": {
+        "average": 0,
+        "max": 0
+      },
+      "cycles_per_loop": {
+        "average": 0,
+        "max": 0
+      },
+      "sram_label": "OC-SRAM: 0%",
+      "sram": 100
+    }
+  },
+  "core2": {
+    "input": {
+      "application": 0,
+      "frequency": 0,
+      "changed": 0
+    },
+    "output": {
+      "cpu_load": {
+        "current": 0,
+        "average": 0,
+        "max": 0
+      },
+      "int_latency": {
+        "average": 0,
+        "max": 0
+      },
+      "cycles_per_loop": {
+        "average": 0,
+        "max": 0
+      },
+      "sram_label": "OC-SRAM: 0%",
+      "sram": 100
+    }
+  },
+  "core3": {
+    "input": {
+      "application": 0,
+      "frequency": 0,
+      "changed": 0
+    },
+    "output": {
+      "cpu_load": {
+        "current": 0,
+        "average": 0,
+        "max": 0
+      },
+      "int_latency": {
+        "average": 0,
+        "max": 0
+      },
+      "cycles_per_loop": {
+        "average": 0,
+        "max": 0
+      },
+      "sram_label": "OC-SRAM: 0%",
+      "sram": 100
+    }
+  },
+  "a53": {
+    "output": {
+      "cpu_load": {
+        "current": 0,
+        "average": 0,
+        "max": 0
+      },
+      "int_latency": {
+        "average": 0,
+        "max": 0
+      },
+      "cycles_per_loop": {
+        "average": 0,
+        "max": 0
+      },
+      "sram_label": "OC-SRAM: 0%",
+      "sram": 100
+    }
+  }
+}

@@ -1,6 +1,6 @@
 # WebServer Out-of-Box Demo
 
-Web-based demo application for TI Sitara devices. Features real-time audio classification, CPU performance monitoring, and system information — all driven by a plugin architecture that adapts automatically to each target device.
+Web-based demo application for TI Sitara devices. Features real-time audio classification, CPU performance monitoring, multi-core benchmark metrics, and system information — all driven by a plugin architecture that adapts automatically to each target device.
 
 ## Supported Devices
 
@@ -11,6 +11,7 @@ Web-based demo application for TI Sitara devices. Features real-time audio class
 | AM62Px | SK-AM62P |
 | AM62Lx | SK-AM62L |
 | AM62Dx | AM62Dx EVM |
+| AM64x  | AM64x EVM |
 
 ## Directory Structure
 
@@ -23,17 +24,15 @@ common/
 demos/
   cpu-monitor/      CPU load/info demo (all devices)
   audio-classification/  YAMNet audio classification (all devices)
+  benchmark/             Multi-core benchmark via RPMsg IPC (AM64x/AM65x)
 
 devices/<id>/
   device.json       Device metadata, active demos, per-demo config
-  app/images/       Board photos
-  linux_app/        Device-specific Makefile (builds audio_utils)
+  app/              Device-specific frontend overlay (images, config files)
+  linux_app/        Device-specific Makefile (builds audio_utils or rpmsg_json)
 
 tools/
   generate-inc.js   Regenerates webserver-oob-npm.inc from package-lock.json
-
-yocto/
-  webserver-oob_git.bb   Single Yocto recipe for all devices
 ```
 
 ## Getting Started
@@ -50,6 +49,9 @@ cd common/webserver && npm install && cd ../..
 # Run locally (no target board needed)
 make dev DEVICE=am335x MOCK=1
 # Open http://localhost:3000
+
+# Run the benchmark demo locally with mock data
+make dev DEVICE=am64xx MOCK=1
 ```
 
 ## Building for Target

@@ -2969,6 +2969,117 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     })();
     </script>
 </ti-widget-vtab>
+<ti-widget-vtab id="ti_widget_vtab_benchmark" data-demo-vtab name="Benchmark Demo" caption="Configure, capture, and measure data" icon="icons:assessment" icon-style="width:30px;height:30px;padding:5px;" visible="false" font-size="inherit" auto-scroll font-style="normal" font-weight="normal" text-align="left" text-decoration="none" icon-name="build" autoscroll title>
+        <ti-widget-banner id="ti_widget_banner3" custom-font-size="24px" font-style="normal" font-weight="normal" text-align="left" text-decoration="none" visible horizontal layout center start-justified title></ti-widget-banner>
+        <ti-widget-container id="ti_widget_container6" font-size="inherit" auto-scroll font-style="normal" font-weight="normal" text-align="left" text-decoration="none" visible title>
+            <ti-widget-label id="ti_widget_label26" label="Core Loading" text-align="left" font-size="custom" custom-font-size="18px" font-color="#404040" font-style="normal" font-weight="normal" text-decoration="none" visible></ti-widget-label>
+        </ti-widget-container>
+        <ti-tile-container title-text="R5F Core 0" title-style="border-bottom:solid 1px #eee;" tile-body-style="padding:0 1em 1em 1em;" background-color="#ffffff" elevation="3" id="core_load_container_0">
+            <ti-widget-label id="ti_widget_label69" label="Application:" text-align="right" font-size="small" font-color="#4e4e4e" font-weight="700"></ti-widget-label>
+            <ti-widget-droplist id="app_list_0" labels="|CFFT|FIR Filtering|FOC Loop|Position/Speed Loop|ADC and PWM Loop" selected-text="ADC and PWM Loop" selected-value="6" selected-index="5" font-size="small" font-weight="700" disabled></ti-widget-droplist>
+            <ti-widget-label id="ti_widget_label70" label="Options:" text-align="right" font-size="small" font-color="#4e4e4e" font-weight="700"></ti-widget-label>
+            <ti-widget-droplist id="freq_list_0" labels="|8 kHz|16 kHz|32 kHz|50 kHz" selected-value="2" selected-index="1" font-size="small" font-weight="700"></ti-widget-droplist>
+        </ti-tile-container>
+        <ti-tile-container title-text="R5F Core 1" title-style="border-bottom:solid 1px #eee;" tile-body-style="padding:0 1em 1em 1em;" background-color="#ffffff" elevation="3" id="core_load_container_1">
+            <ti-widget-label id="ti_widget_label71" label="Application:" text-align="right" font-size="small" font-color="#4e4e4e" font-weight="700"></ti-widget-label>
+            <ti-widget-droplist id="app_list_1" labels="|CFFT|FIR Filtering|FOC Loop|Position/Speed Loop|ADC and PWM Loop" selected-text="CFFT" selected-value="2" selected-index="1" font-size="small" font-weight="700" disabled></ti-widget-droplist>
+            <ti-widget-label id="ti_widget_label72" label="Options:" text-align="right" font-size="small" font-color="#4e4e4e" font-weight="700"></ti-widget-label>
+            <ti-widget-droplist id="freq_list_1" labels="|128 pt|256 pt|512 pt|1024 pt" selected-value="2" selected-index="1" font-size="small" font-weight="700"></ti-widget-droplist>
+        </ti-tile-container>
+        <ti-tile-container title-text="R5F Core 2" title-style="border-bottom:solid 1px #eee;" tile-body-style="padding:0 1em 1em 1em;" background-color="#ffffff" elevation="3" id="core_load_container_2">
+            <ti-widget-label id="ti_widget_label73" label="Application:" text-align="right" font-size="small" font-color="#4e4e4e" font-weight="700"></ti-widget-label>
+            <ti-widget-droplist id="app_list_2" labels="|CFFT|FIR Filtering|FOC Loop|Position/Speed Loop|ADC and PWM Loop" selected-text="FIR Filtering" selected-value="3" selected-index="2" font-size="small" font-weight="700" disabled></ti-widget-droplist>
+            <ti-widget-label id="ti_widget_label74" label="Options:" text-align="right" font-size="small" font-color="#4e4e4e" font-weight="700"></ti-widget-label>
+            <ti-widget-droplist id="freq_list_2" labels="|1 kHz|2 kHz|4 kHz|8 kHz" selected-value="2" selected-index="1" font-size="small" font-weight="700"></ti-widget-droplist>
+        </ti-tile-container>
+        <ti-tile-container title-text="A53" title-style="border-bottom:solid 1px #eee;" tile-body-style="padding:0 1em 1em 1em;" background-color="#ffffff" elevation="3" id="core_load_container_a53">
+        </ti-tile-container>
+        <ti-tile-container title-text="R5F Core 3" title-style="border-bottom:solid 1px #eee;" tile-body-style="padding:0 1em 1em 1em;" background-color="#ffffff" elevation="3" id="core_load_container_3">
+            <ti-widget-label id="ti_widget_label75" label="Application:" text-align="right" font-size="small" font-color="#4e4e4e" font-weight="700"></ti-widget-label>
+            <ti-widget-droplist id="app_list_3" labels="|CFFT|FIR Filtering|FOC Loop|Position/Speed Loop|ADC and PWM Loop" selected-text="FOC Loop" selected-value="4" selected-index="3" font-size="small" font-weight="700" disabled></ti-widget-droplist>
+            <ti-widget-label id="ti_widget_label76" label="Options:" text-align="right" font-size="small" font-color="#4e4e4e" font-weight="700"></ti-widget-label>
+            <ti-widget-droplist id="freq_list_3" labels="|16 kHz|32 kHz|100 kHz|250 kHz" selected-value="2" selected-index="1" font-size="small" font-weight="700"></ti-widget-droplist>
+        </ti-tile-container>
+        <ti-widget-button id="load_0" label="Load"  raised center-justified bindable-trigger="23" center wrap></ti-widget-button>
+        <ti-widget-button id="load_1" label="Load"  raised center-justified bindable-trigger="21" center wrap></ti-widget-button>
+        <ti-widget-container id="int_box_1"  auto-scroll>
+            <ti-widget-gauge id="gauge1" value="0" title-label="CPU Usage" decimal-places="0" gauge-thickness="40" fractional-scale-decimals="0" number-format="standard" size="0" units="%" value-font-size="x-large"></ti-widget-gauge>
+            <ti-widget-label id="ti_widget_label81" label="Core 0" text-align="center" font-size="xx-large" font-color="#4c4c4c" font-weight="700"></ti-widget-label>
+            <ti-widget-label id="ti_widget_label33" label="Avg:" text-align="center" font-size="small" font-color="#4c4c4c" font-weight="700"></ti-widget-label>
+            <ti-widget-label id="ti_widget_label35" label="Max:" text-align="center" font-size="small" font-color="#4d4d4d" font-weight="700" center></ti-widget-label>
+            <ti-widget-label id="ti_widget_label37" label="CPU Loading %:" text-align="right" font-size="small" font-color="#4c4c4c" font-weight="700"></ti-widget-label>
+            <ti-widget-label id="ti_widget_label36" label="0" text-align="center" font-size="large" font-color="#494949" font-weight="normal"></ti-widget-label>
+            <ti-widget-label id="ti_widget_label34" label="0" text-align="center" font-size="large" font-color="#4e4e4e" font-weight="normal"></ti-widget-label>
+            <ti-widget-label id="ti_widget_label38" label="Interrupt Latency (ns):" text-align="right" font-size="small" font-color="#4c4c4c" font-weight="700" wrap></ti-widget-label>
+            <ti-widget-label id="ti_widget_label39" label="0" text-align="center" font-size="large" font-color="#4e4e4e" font-weight="normal"></ti-widget-label>
+            <ti-widget-label id="ti_widget_label40" label="0" text-align="center" font-size="large" font-color="#494949" font-weight="normal"></ti-widget-label>
+            <ti-widget-label id="ti_widget_label82" label="Cycle Count Per Loop:" text-align="right" font-size="small" font-color="#4c4c4c" font-weight="700" wrap></ti-widget-label>
+            <ti-widget-label id="ti_widget_label83" label="0" text-align="center" font-size="large" font-color="#4e4e4e" font-weight="normal"></ti-widget-label>
+            <ti-widget-label id="ti_widget_label84" label="0" text-align="center" font-size="large" font-color="#494949" font-weight="normal"></ti-widget-label>
+        </ti-widget-container>
+        <ti-widget-container id="int_box_2"  auto-scroll>
+            <ti-widget-gauge id="gauge2" value="0" title-label="CPU Usage" decimal-places="0" gauge-thickness="40" fractional-scale-decimals="0" number-format="standard" units="%" value-font-size="x-large"></ti-widget-gauge>
+            <ti-widget-label id="ti_widget_label85" label="Core 1" text-align="center" font-size="xx-large" font-color="#4c4c4c" font-weight="700"></ti-widget-label>
+            <ti-widget-label id="ti_widget_label41" label="Avg:" text-align="center" font-size="small" font-color="#4c4c4c" font-weight="700"></ti-widget-label>
+            <ti-widget-label id="ti_widget_label42" label="Max:" text-align="center" font-size="small" font-color="#4d4d4d" font-weight="700" center></ti-widget-label>
+            <ti-widget-label id="ti_widget_label43" label="CPU Loading %:" text-align="right" font-size="small" font-color="#4c4c4c" font-weight="700"></ti-widget-label>
+            <ti-widget-label id="ti_widget_label44" label="0" text-align="center" font-size="large" font-color="#494949" font-weight="normal"></ti-widget-label>
+            <ti-widget-label id="ti_widget_label45" label="0" text-align="center" font-size="large" font-color="#4e4e4e" font-weight="normal"></ti-widget-label>
+            <ti-widget-label id="ti_widget_label46" label="Interrupt Latency (ns):" text-align="right" font-size="small" font-color="#4c4c4c" font-weight="700" wrap></ti-widget-label>
+            <ti-widget-label id="ti_widget_label47" label="0" text-align="center" font-size="large" font-color="#4e4e4e" font-weight="normal"></ti-widget-label>
+            <ti-widget-label id="ti_widget_label48" label="0" text-align="center" font-size="large" font-color="#494949" font-weight="normal"></ti-widget-label>
+            <ti-widget-label id="ti_widget_label86" label="Cycle Count Per Loop:" text-align="right" font-size="small" font-color="#4c4c4c" font-weight="700" wrap></ti-widget-label>
+            <ti-widget-label id="ti_widget_label87" label="0" text-align="center" font-size="large" font-color="#4e4e4e" font-weight="normal"></ti-widget-label>
+            <ti-widget-label id="ti_widget_label88" label="0" text-align="center" font-size="large" font-color="#494949" font-weight="normal"></ti-widget-label>
+        </ti-widget-container>
+        <ti-widget-container id="int_box_3"  auto-scroll>
+            <ti-widget-gauge id="gauge3" value="0" title-label="CPU Usage" decimal-places="0" gauge-thickness="40" fractional-scale-decimals="0" number-format="standard" units="%" value-font-size="x-large"></ti-widget-gauge>
+            <ti-widget-label id="ti_widget_label89" label="Core 2" text-align="center" font-size="xx-large" font-color="#4c4c4c" font-weight="700"></ti-widget-label>
+            <ti-widget-label id="ti_widget_label49" label="Avg:" text-align="center" font-size="small" font-color="#4c4c4c" font-weight="700"></ti-widget-label>
+            <ti-widget-label id="ti_widget_label50" label="Max:" text-align="center" font-size="small" font-color="#4d4d4d" font-weight="700" center></ti-widget-label>
+            <ti-widget-label id="ti_widget_label51" label="CPU Loading %:" text-align="right" font-size="small" font-color="#4c4c4c" font-weight="700"></ti-widget-label>
+            <ti-widget-label id="ti_widget_label52" label="0" text-align="center" font-size="large" font-color="#494949" font-weight="normal"></ti-widget-label>
+            <ti-widget-label id="ti_widget_label53" label="0" text-align="center" font-size="large" font-color="#4e4e4e" font-weight="normal"></ti-widget-label>
+            <ti-widget-label id="ti_widget_label54" label="Interrupt Latency (ns):" text-align="right" font-size="small" font-color="#4c4c4c" font-weight="700" wrap></ti-widget-label>
+            <ti-widget-label id="ti_widget_label55" label="0" text-align="center" font-size="large" font-color="#4e4e4e" font-weight="normal"></ti-widget-label>
+            <ti-widget-label id="ti_widget_label56" label="0" text-align="center" font-size="large" font-color="#494949" font-weight="normal"></ti-widget-label>
+            <ti-widget-label id="ti_widget_label90" label="Cycle Count Per Loop:" text-align="right" font-size="small" font-color="#4c4c4c" font-weight="700" wrap></ti-widget-label>
+            <ti-widget-label id="ti_widget_label91" label="0" text-align="center" font-size="large" font-color="#4e4e4e" font-weight="normal"></ti-widget-label>
+            <ti-widget-label id="ti_widget_label92" label="0" text-align="center" font-size="large" font-color="#494949" font-weight="normal"></ti-widget-label>
+        </ti-widget-container>
+        <ti-widget-container id="int_box_5"  auto-scroll>
+            <ti-widget-gauge id="gauge5" value="0" title-label="CPU Usage" decimal-places="0" gauge-thickness="40" fractional-scale-decimals="0" number-format="standard" units="%" value-font-size="x-large"></ti-widget-gauge>
+            <ti-widget-label id="ti_widget_label97" label="A53" text-align="center" font-size="xx-large" font-color="#4c4c4c" font-weight="700"></ti-widget-label>
+            <ti-widget-label id="ti_widget_label65" label="Avg:" text-align="center" font-size="small" font-color="#4c4c4c" font-weight="700"></ti-widget-label>
+            <ti-widget-label id="ti_widget_label66" label="Max:" text-align="center" font-size="small" font-color="#4d4d4d" font-weight="700" center></ti-widget-label>
+            <ti-widget-label id="ti_widget_label67" label="CPU Loading %:" text-align="right" font-size="small" font-color="#4c4c4c" font-weight="700"></ti-widget-label>
+            <ti-widget-label id="ti_widget_label68" label="0" text-align="center" font-size="large" font-color="#494949" font-weight="normal"></ti-widget-label>
+            <ti-widget-label id="ti_widget_label79" label="0" text-align="center" font-size="large" font-color="#4e4e4e" font-weight="normal"></ti-widget-label>
+            <ti-widget-label id="ti_widget_label80" label="Interrupt Latency (ns):" text-align="right" font-size="small" font-color="#4c4c4c" font-weight="700" wrap></ti-widget-label>
+            <ti-widget-label id="ti_widget_label98" label="0" text-align="center" font-size="large" font-color="#4e4e4e" font-weight="normal"></ti-widget-label>
+            <ti-widget-label id="ti_widget_label99" label="0" text-align="center" font-size="large" font-color="#494949" font-weight="normal"></ti-widget-label>
+            <ti-widget-label id="ti_widget_label100" label="Cycle Count Per Loop:" text-align="right" font-size="small" font-color="#4c4c4c" font-weight="700" wrap></ti-widget-label>
+            <ti-widget-label id="ti_widget_label101" label="0" text-align="center" font-size="large" font-color="#4e4e4e" font-weight="normal"></ti-widget-label>
+            <ti-widget-label id="ti_widget_label102" label="0" text-align="center" font-size="large" font-color="#494949" font-weight="normal"></ti-widget-label>
+        </ti-widget-container>
+        <ti-widget-container id="int_box_4"  auto-scroll>
+            <ti-widget-gauge id="gauge4" value="0" title-label="CPU Usage" decimal-places="0" gauge-thickness="40" fractional-scale-decimals="0" number-format="standard" units="%" value-font-size="x-large"></ti-widget-gauge>
+            <ti-widget-label id="ti_widget_label93" label="Core 3" text-align="center" font-size="xx-large" font-color="#4c4c4c" font-weight="700"></ti-widget-label>
+            <ti-widget-label id="ti_widget_label57" label="Avg:" text-align="center" font-size="small" font-color="#4c4c4c" font-weight="700"></ti-widget-label>
+            <ti-widget-label id="ti_widget_label58" label="Max:" text-align="center" font-size="small" font-color="#4d4d4d" font-weight="700" center></ti-widget-label>
+            <ti-widget-label id="ti_widget_label59" label="CPU Loading %:" text-align="right" font-size="small" font-color="#4c4c4c" font-weight="700"></ti-widget-label>
+            <ti-widget-label id="ti_widget_label60" label="0" text-align="center" font-size="large" font-color="#494949" font-weight="normal"></ti-widget-label>
+            <ti-widget-label id="ti_widget_label61" label="0" text-align="center" font-size="large" font-color="#4e4e4e" font-weight="normal"></ti-widget-label>
+            <ti-widget-label id="ti_widget_label62" label="Interrupt Latency (ns):" text-align="right" font-size="small" font-color="#4c4c4c" font-weight="700" wrap></ti-widget-label>
+            <ti-widget-label id="ti_widget_label63" label="0" text-align="center" font-size="large" font-color="#4e4e4e" font-weight="normal"></ti-widget-label>
+            <ti-widget-label id="ti_widget_label64" label="0" text-align="center" font-size="large" font-color="#494949" font-weight="normal"></ti-widget-label>
+            <ti-widget-label id="ti_widget_label94" label="Cycle Count Per Loop:" text-align="right" font-size="small" font-color="#4c4c4c" font-weight="700" wrap></ti-widget-label>
+            <ti-widget-label id="ti_widget_label95" label="0" text-align="center" font-size="large" font-color="#4e4e4e" font-weight="normal"></ti-widget-label>
+            <ti-widget-label id="ti_widget_label96" label="0" text-align="center" font-size="large" font-color="#494949" font-weight="normal"></ti-widget-label>
+        </ti-widget-container>
+        <ti-widget-container id="core_0_1_container" auto-scroll></ti-widget-container>
+        <ti-widget-container id="core_2_3_container" auto-scroll></ti-widget-container>
+    </ti-widget-vtab>
     <ti-widget-vtab id="ti_widget_vtab_cpu_monitor" data-demo-vtab name="CPU Monitor" icon="icons:assessment" icon-style="width:30px;height:30px;padding:5px;" visible="false" no-child-tabs-in-menu font-size="inherit" auto-scroll font-style="normal" font-weight="normal" text-align="left" text-decoration="none" autoscroll title vertical layout>
         <style>
             .cpu-performance-container {
@@ -3872,6 +3983,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         loadCpuInfo();
     });
 </script>
+<script src="demos/benchmark/demo.js"></script>
 <script>
 	// Do not edit this file - it is automatically generated.  Please edit index.js
 	addEventListener('WebComponentsReady', function () {
