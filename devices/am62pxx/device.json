@@ -5,7 +5,7 @@
     {
       "name": "SK-AM62P",
       "description": "Starter Kit for AM62P processors — quad Cortex-A53 with MMA accelerator, designed for high-performance HMI.",
-      "image": "images/sk-am62p-angled.png"
+      "image": "images/sk-am62p-lp-angled.png"
     }
   ],
   "soc": "AM62P5 quad Cortex-A53 @ 1.4GHz + MMA",

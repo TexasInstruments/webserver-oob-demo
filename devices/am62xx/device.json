@@ -15,7 +15,7 @@
     {
       "name": "AM62x LP EVM",
       "description": "AM62x Low Power Evaluation Module — optimized for low-power operation with LPDDR4.",
-      "image": "images/am62x-lp-evm-angled.png"
+      "image": "images/sk-am62-angled.png"
     }
   ],
   "soc": "AM625 quad Cortex-A53 @ 1.4GHz",

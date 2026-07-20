@@ -5,7 +5,7 @@
     {
       "name": "SK-AM62L",
       "description": "Starter Kit for AM62L processors — ultra-low-power dual Cortex-A53, designed for battery-powered industrial applications.",
-      "image": "images/sk-am62l-angled.png"
+      "image": "images/tmds62levm-angled.png"
     }
   ],
   "soc": "AM62Lx dual Cortex-A53 @ 400MHz",

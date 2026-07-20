@@ -5,7 +5,7 @@
     {
       "name": "SK-AM62D",
       "description": "Starter Kit for AM62D processors — display-optimized quad Cortex-A53 with dual DSS, designed for multi-display HMI.",
-      "image": "images/sk-am62d-angled.png"
+      "image": "images/audio-am62d-evm-angled.png"
     }
   ],
   "soc": "AM62Dx quad Cortex-A53 @ 1.4GHz + dual DSS",
