@@ -29,7 +29,7 @@
       {
         "title": "Technical Reference Manual",
         "description": "Complete technical documentation covering all AM64x subsystems, peripherals, and registers",
-        "url": "https://www.ti.com/lit/ug/spruim2b/spruim2b.pdf",
+        "url": "https://www.ti.com/lit/ug/spruim2j/spruim2j.pdf",
         "linkText": "Download PDF",
         "badge": "PDF",
         "icon": "action:book"
@@ -45,7 +45,7 @@
       {
         "title": "Getting Started Guide",
         "description": "Step-by-step guides for SDK installation, building applications, and deployment",
-        "url": "https://software-dl.ti.com/processor-sdk-linux/esd/AM64X/latest/exports/docs/linux/Overview/Processor_SDK_Linux_Getting_Started_Guide.html",
+        "url": "https://software-dl.ti.com/processor-sdk-linux/esd/AM64X/latest/exports/docs/devices/AM64X/linux/Overview_Getting_Started_Guide.html",
         "linkText": "Browse Docs",
         "badge": "Guides",
         "icon": "action:article"

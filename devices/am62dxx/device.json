@@ -24,23 +24,15 @@
       {
         "title": "Product Page",
         "description": "Explore specifications, features, and ordering information for the AM62D Sitara processor family",
-        "url": "https://www.ti.com/product/AM62D4",
+        "url": "https://www.ti.com/product/AM62D-Q1",
         "linkText": "View Product",
         "badge": "Official",
         "icon": "hardware:developer_board"
       },
       {
-        "title": "Processor SDK",
-        "description": "Linux development kit with drivers, libraries, and ready-to-run example applications",
-        "url": "https://www.ti.com/tool/PROCESSOR-SDK-AM62DX",
-        "linkText": "Get SDK",
-        "badge": "Latest",
-        "icon": "file:folder"
-      },
-      {
         "title": "Getting Started Guide",
         "description": "Step-by-step guides for SDK installation, building applications, and deployment",
-        "url": "https://software-dl.ti.com/processor-sdk-linux/esd/AM62DX/latest/exports/docs/linux/Overview/Processor_SDK_Linux_Getting_Started_Guide.html",
+        "url": "https://software-dl.ti.com/processor-sdk-linux/esd/AM62DX/latest/exports/docs/devices/AM62DX/linux/Overview_Getting_Started_Guide.html",
         "linkText": "Browse Docs",
         "badge": "Guides",
         "icon": "action:article"
