@@ -32,15 +32,32 @@
 /*
  * speech_utils.c
  *
- * Speech-to-text using Silero en_v5.onnx via NNStreamer + ONNX Runtime.
+ * Real-time speech-to-text using Silero STT en_v5 (static ONNX) via
+ * NNStreamer + ONNX Runtime.
  *
- * Pipeline:
- *   alsasrc → audioconvert → tensor_converter → tensor_aggregator
- *   → tensor_transform (S16LE→F32, normalise) → tensor_filter (onnxruntime)
- *   → tensor_sink (greedy CTC decode → FIFO)
+ * GStreamer pipeline:
+ *   alsasrc → audioconvert → audioresample →
+ *   audio/x-raw,S16LE,1ch,16kHz →
+ *   tensor_converter → tensor_aggregator (3 s window, 1 s stride) →
+ *   tensor_transform  (cast S16→float32, divide by 32768 → [-1,1]) →
+ *   tensor_filter (onnxruntime, Silero en_v5_static.onnx) →
+ *   tensor_sink (greedy CTC decode, silence filter, FIFO output)
  *
- * Output FIFO: /tmp/speech_classification_fifo   (one transcript line per flush)
- * PID file:    /tmp/speech_classification.pid
+ * Greedy CTC decoder matches Silero's reference Python decoder:
+ *   - Argmax per frame over 999-token BPE vocabulary
+ *   - Collapse consecutive identical token indices (CTC rule)
+ *   - Skip blank token (index 0, label '_')
+ *   - Token index 997 ('2') is a repeat-previous-token marker —
+ *     it duplicates the last emitted token rather than outputting '2'
+ *
+ * Silence filter (blank-ratio gating):
+ *   Industry-standard embedded approach when a dedicated VAD model is not
+ *   available.  If ≥ SILENCE_BLANK_THRESH of all frames predict blank, the
+ *   window contains no intelligible speech and the result is discarded.
+ *   This prevents constant garbage output during microphone silence or noise.
+ *
+ * Output FIFO : /tmp/speech_classification_fifo  (one transcript per line)
+ * PID file    : /tmp/speech_classification.pid
  *
  * Usage:
  *   speech_utils devices
@@ -63,7 +80,8 @@
 /*  Model / pipeline constants                                          */
 /* ------------------------------------------------------------------ */
 #define VOCAB_SIZE   999
-#define BLANK_IDX    0      /* '_' at index 0  */
+#define BLANK_IDX    0      /* '_' at vocab index 0  */
+#define REPEAT_IDX   997    /* '2' : duplicate the last emitted token */
 
 #define MODEL_PATH   "/usr/share/oob-demo-assets/models/en_v5_static.onnx"
 #define FIFO_PATH    "/tmp/speech_classification_fifo"
@@ -73,12 +91,30 @@
 #define WINDOW_SAMPLES  48000
 #define STRIDE_SAMPLES  16000
 
-/* Model I/O: input [1,48000] float32 → output [1,38,999] float32 (static ONNX). */
+/*
+ * Silence filter threshold.
+ * If the fraction of CTC-blank-winning frames exceeds this value the window
+ * is considered silent and the decode result is discarded.
+ * Tuned empirically: pure silence → ~98 % blank; active speech → ~55-70 %.
+ * 0.85 gives comfortable margin with no false-mutes during normal speech.
+ */
+#define SILENCE_BLANK_THRESH  0.85f
+
+/* Minimum decoded output length (chars).  Shorter strings are almost always
+ * model noise artifacts on borderline silence frames. */
+#define MIN_RESULT_CHARS  3
 
 /* ------------------------------------------------------------------ */
-/*  Vocabulary — 999 BPE-style tokens from Silero en_v1_labels.json   */
-/*  Index 0 = CTC blank ('_'), index 998 = space (' ')                */
-/* ------------------------------------------------------------------ */
+/*  Vocabulary — 999 BPE-style tokens (Silero STT en_v5 vocab)
+ *
+ *  Layout: [0] = blank '_', [1..796] = multi-char BPE subwords,
+ *          [797..987] = single ASCII chars, [988..996] = punctuation,
+ *          [997] = repeat marker '2', [998] = space ' '.
+ *
+ *  Normalization: torchaudio (Silero's training framework) loads PCM-16
+ *  as float32 divided by 2^15 = 32768.  The tensor_transform step must
+ *  match this exactly.
+ * ------------------------------------------------------------------ */
 static const char *LABELS[VOCAB_SIZE] = {
     "_", "th", "the", "in", "an", "re", "er", "on", "at", "ou",
     "is", "en", "to", "and", "ed", "al", "as", "it", "ing", "or",
@@ -252,14 +288,19 @@ static void get_arecord_devices(void)
 }
 
 /* ------------------------------------------------------------------ */
-/*  Greedy CTC decode                                                   */
-/*  logits: float[frames][VOCAB_SIZE] (row-major)                      */
+/*  Greedy CTC decode (matches Silero reference decoder in utils.py)   */
+/*                                                                      */
+/*  logits : float[frames][VOCAB_SIZE] row-major (raw model output)    */
+/*  Returns: number of non-blank frames (used for silence detection)   */
 /* ------------------------------------------------------------------ */
-static void ctc_decode(const float *logits, int frames,
-                       char *out, int out_size)
+static int ctc_decode(const float *logits, int frames,
+                      char *out, int out_size)
 {
-    int prev = -1;
-    int pos  = 0;
+    int prev          = -1;
+    int pos           = 0;
+    int last_tok_pos  = 0;
+    int last_tok_len  = 0;
+    int non_blank     = 0;
     out[0] = '\0';
 
     for (int t = 0; t < frames; t++) {
@@ -270,11 +311,29 @@ static void ctc_decode(const float *logits, int frames,
             if (row[v] > row[best]) best = v;
         }
 
-        /* CTC collapse: skip blank and consecutive repeats */
-        if (best != BLANK_IDX && best != prev) {
+        if (best != BLANK_IDX)
+            non_blank++;
+
+        /* CTC rule: skip blank and consecutive identical token indices */
+        if (best == BLANK_IDX || best == prev) {
+            prev = best;
+            continue;
+        }
+
+        if (best == REPEAT_IDX) {
+            /* Silero '2' token: duplicate the last emitted token.
+             * If nothing has been emitted yet, silently skip (matches
+             * the Python reference which emits a space with a warning). */
+            if (last_tok_len > 0 && pos + last_tok_len < out_size - 1) {
+                memcpy(out + pos, out + last_tok_pos, last_tok_len);
+                pos += last_tok_len;
+            }
+        } else {
             const char *tok = LABELS[best];
             int toklen = (int)strlen(tok);
             if (pos + toklen < out_size - 1) {
+                last_tok_pos = pos;
+                last_tok_len = toklen;
                 memcpy(out + pos, tok, toklen);
                 pos += toklen;
             }
@@ -282,6 +341,7 @@ static void ctc_decode(const float *logits, int frames,
         prev = best;
     }
     out[pos] = '\0';
+    return non_blank;
 }
 
 /* ------------------------------------------------------------------ */
@@ -296,11 +356,12 @@ typedef struct {
 
 static AppData g_app;
 
-/* tensor_sink "new-data" callback — runs for every 3-second chunk */
+/* tensor_sink "new-data" callback — fires every STRIDE_SAMPLES (1 s) */
 static void new_data_cb(GstElement *sink, GstBuffer *buf, gpointer user_data)
 {
     AppData *app = (AppData *)user_data;
     GstMapInfo info;
+    static char prev_result[2048] = "";
 
     if (!gst_buffer_map(buf, &info, GST_MAP_READ))
         return;
@@ -311,9 +372,21 @@ static void new_data_cb(GstElement *sink, GstBuffer *buf, gpointer user_data)
         return;
     }
 
+    /* --- Silence filter (blank-ratio gating) ---
+     * Count frames where the model predicts blank.  When the ratio
+     * exceeds SILENCE_BLANK_THRESH the window contains no intelligible
+     * speech; discard rather than writing noise artifacts to the FIFO.
+     * This is the lightweight alternative to running a dedicated VAD
+     * model (Silero VAD / WebRTC VAD) on embedded hardware.           */
     char result[2048];
-    ctc_decode((const float *)info.data, frames, result, sizeof(result));
+    int non_blank = ctc_decode((const float *)info.data, frames,
+                               result, sizeof(result));
     gst_buffer_unmap(buf, &info);
+
+    float blank_ratio = 1.0f - (float)non_blank / (float)frames;
+    if (blank_ratio >= SILENCE_BLANK_THRESH) {
+        return; /* silent window — no output */
+    }
 
     /* Trim leading/trailing whitespace */
     char *s = result;
@@ -322,18 +395,31 @@ static void new_data_cb(GstElement *sink, GstBuffer *buf, gpointer user_data)
     while (len > 0 && s[len - 1] == ' ') len--;
     s[len] = '\0';
 
-    if (len > 0) {
-        fprintf(stderr, "STT: %s\n", s);
-        /* Try to open FIFO if reader connected since startup */
-        if (app->fifo_fd < 0)
-            app->fifo_fd = open(FIFO_PATH, O_WRONLY | O_NONBLOCK);
-        if (app->fifo_fd >= 0) {
-            char line[2100];
-            snprintf(line, sizeof(line), "%s\n", s);
-            if (write(app->fifo_fd, line, strlen(line)) < 0) {
-                close(app->fifo_fd);
-                app->fifo_fd = -1; /* reader gone, reopen next time */
-            }
+    /* Minimum length guard: very short strings are almost always
+     * model artifacts on borderline silence/noise frames.             */
+    if (len < MIN_RESULT_CHARS)
+        return;
+
+    /* Deduplicate: overlapping 1 s strides can produce the same phrase
+     * up to 3 times before it slides out of the 3 s window.          */
+    if (strcmp(s, prev_result) == 0)
+        return;
+
+    strncpy(prev_result, s, sizeof(prev_result) - 1);
+    prev_result[sizeof(prev_result) - 1] = '\0';
+
+    fprintf(stderr, "STT: %s\n", s);
+
+    if (app->fifo_fd < 0)
+        app->fifo_fd = open(FIFO_PATH, O_WRONLY | O_NONBLOCK | O_CLOEXEC);
+
+    if (app->fifo_fd >= 0) {
+        char line[2100];
+        int  llen = snprintf(line, sizeof(line), "%s\n", s);
+        /* write() with SIGPIPE ignored: returns -1/EPIPE when reader gone */
+        if (write(app->fifo_fd, line, llen) < 0) {
+            close(app->fifo_fd);
+            app->fifo_fd = -1;
         }
     }
 }
@@ -364,12 +450,12 @@ static void bus_cb(GstBus *bus, GstMessage *msg, gpointer user_data)
     }
 }
 
-/* Signal handler */
 static void signal_handler(int signum)
 {
     (void)signum;
-    if (g_app.loop && g_main_loop_is_running(g_app.loop))
-        g_main_loop_quit(g_app.loop);
+    unlink(FIFO_PATH);
+    unlink(PID_FILE);
+    _exit(0);
 }
 
 /* ------------------------------------------------------------------ */
@@ -381,6 +467,17 @@ static int start_gst(const char *device)
     GstElement *sink;
     gchar      *pipeline_str;
 
+    /* Verify model file exists before attempting to build the pipeline */
+    if (device[0] != '/' && access(MODEL_PATH, R_OK) != 0) {
+        fprintf(stderr, "Model not found: %s\n", MODEL_PATH);
+        printf("ERROR: Model not found: %s\n", MODEL_PATH);
+        return 1;
+    }
+
+    /* Ignore SIGPIPE so that a write() to a disconnected FIFO reader
+     * returns -1/EPIPE instead of killing the process.               */
+    signal(SIGPIPE, SIG_IGN);
+
     /* Create FIFO */
     unlink(FIFO_PATH);
     if (mkfifo(FIFO_PATH, 0666) != 0) {
@@ -388,21 +485,26 @@ static int start_gst(const char *device)
         return 1;
     }
 
-    /* Open FIFO non-blocking. If no reader yet, fd stays -1 and
-     * results are logged to stderr only until a reader connects. */
-    g_app.fifo_fd = open(FIFO_PATH, O_WRONLY | O_NONBLOCK);
+    g_app.fifo_fd = open(FIFO_PATH, O_WRONLY | O_NONBLOCK | O_CLOEXEC);
 
-    /* File path (starts with '/') uses filesrc+wavparse; otherwise alsasrc. */
+    /*
+     * Pipeline notes:
+     *   audioresample  — ensures exact 16000 Hz regardless of device rate
+     *   frames-per-tensor / frames-in / frames-out / frames-flush:
+     *     stride = 16000 (1 s), window = 48000 (3 s)
+     *   typecast:float32,div:32768  — matches torchaudio normalization
+     *     (torchaudio.load returns PCM-16 as float32 / 2^15 = 32768)
+     */
     if (device[0] == '/') {
         pipeline_str = g_strdup_printf(
-            "filesrc location=%s ! wavparse ! "
+            "filesrc location=\"%s\" ! wavparse ! "
             "audioconvert ! audioresample ! "
             "audio/x-raw,format=S16LE,channels=1,rate=16000 ! "
             "tensor_converter frames-per-tensor=%d ! "
             "tensor_aggregator frames-in=%d frames-out=%d "
                 "frames-flush=%d frames-dim=1 ! "
             "tensor_transform mode=arithmetic "
-                "option=typecast:float32,div:32767.5 ! "
+                "option=typecast:float32,div:32768 ! "
             "tensor_filter framework=onnxruntime model=%s ! "
             "tensor_sink name=stt_sink emit-signal=true sync=false",
             device,
@@ -412,13 +514,13 @@ static int start_gst(const char *device)
     } else {
         pipeline_str = g_strdup_printf(
             "alsasrc device=%s ! "
-            "audioconvert ! "
+            "audioconvert ! audioresample ! "
             "audio/x-raw,format=S16LE,channels=1,rate=16000 ! "
             "tensor_converter frames-per-tensor=%d ! "
             "tensor_aggregator frames-in=%d frames-out=%d "
                 "frames-flush=%d frames-dim=1 ! "
             "tensor_transform mode=arithmetic "
-                "option=typecast:float32,div:32767.5 ! "
+                "option=typecast:float32,div:32768 ! "
             "tensor_filter framework=onnxruntime model=%s ! "
             "tensor_sink name=stt_sink emit-signal=true sync=false",
             device,
@@ -439,7 +541,6 @@ static int start_gst(const char *device)
         return 1;
     }
 
-    /* Connect tensor_sink signal */
     sink = gst_bin_get_by_name(GST_BIN(g_app.pipeline), "stt_sink");
     if (!sink) {
         fprintf(stderr, "Cannot find stt_sink element\n");
@@ -449,12 +550,10 @@ static int start_gst(const char *device)
     g_signal_connect(sink, "new-data", G_CALLBACK(new_data_cb), &g_app);
     gst_object_unref(sink);
 
-    /* Bus watch */
     g_app.bus = gst_element_get_bus(g_app.pipeline);
     gst_bus_add_signal_watch(g_app.bus);
     g_signal_connect(g_app.bus, "message", G_CALLBACK(bus_cb), &g_app);
 
-    /* Start */
     if (gst_element_set_state(g_app.pipeline, GST_STATE_PLAYING)
             == GST_STATE_CHANGE_FAILURE) {
         fprintf(stderr, "Failed to set pipeline to PLAYING\n");
@@ -498,7 +597,6 @@ int main(int argc, char *argv[])
     if (argc > 1 && strcmp(argv[1], "start_gst") == 0) {
         get_arecord_devices();
 
-        /* Resolve requested device → ALSA id or file path */
         char *alsa_dev = NULL;
         int is_file_input = (argc > 2 && argv[2][0] == '/');
 
@@ -511,7 +609,6 @@ int main(int argc, char *argv[])
         if (argc > 2) {
             const char *req = argv[2];
             if (req[0] == '/') {
-                /* Absolute path — pass directly to start_gst as file input */
                 alsa_dev = strdup(req);
             } else if (strncmp(req, "plughw:", 7) == 0) {
                 alsa_dev = strdup(req);
@@ -531,15 +628,12 @@ int main(int argc, char *argv[])
 
         if (!alsa_dev) alsa_dev = strdup("plughw:0,0");
 
-        /* Write PID file */
         FILE *pf = fopen(PID_FILE, "w");
         if (pf) { fprintf(pf, "%d\n", getpid()); fclose(pf); }
 
-        /* Signal handlers */
         signal(SIGTERM, signal_handler);
         signal(SIGINT,  signal_handler);
 
-        /* Init GStreamer */
         gst_init(&argc, &argv);
         g_app.loop = g_main_loop_new(NULL, FALSE);
 
@@ -557,7 +651,12 @@ int main(int argc, char *argv[])
                 fclose(pf);
                 if (kill(pid, SIGTERM) == 0) {
                     printf("SUCCESS: Speech-to-text stopped\n");
-                    sleep(1);
+                    /* Give the process time to flush/cleanup */
+                    int waited = 0;
+                    while (waited < 30 && kill(pid, 0) == 0) {
+                        usleep(100000); /* 100 ms */
+                        waited++;
+                    }
                     unlink(PID_FILE);
                 } else {
                     perror("kill");

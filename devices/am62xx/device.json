@@ -19,7 +19,7 @@
     }
   ],
   "soc": "AM625 quad Cortex-A53 @ 1.4GHz",
-  "demos": ["cpu-monitor", "audio-classification"],
+  "demos": ["cpu-monitor", "audio-classification", "speech-to-text"],
   "demoConfig": {
     "audio-classification": {
       "model":    "/usr/share/oob-demo-assets/models/yamnet_audio_classification.tflite",

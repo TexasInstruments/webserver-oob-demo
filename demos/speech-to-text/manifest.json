@@ -3,7 +3,7 @@
   "name": "Speech to Text",
   "icon": "av:hearing",
   "description": "Real-time speech recognition using Silero en_v5 ONNX model via GStreamer+NNStreamer+ONNX Runtime",
-  "devices": ["am62pxx"],
+  "devices": ["am62lxx", "am62pxx", "am62xx"],
   "routes": ["/speech-devices", "/start-speech-to-text", "/stop-speech-to-text"],
   "websocket": "/speech"
 }

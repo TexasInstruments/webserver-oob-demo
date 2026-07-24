@@ -8,6 +8,8 @@ package-lock.json
 *.d
 common/linux_app/cpu_stats
 devices/*/linux_app/audio_utils
+devices/*/linux_app/speech_utils
+devices/*/linux_app/rpmsg_json
 
 # Runtime files
 /tmp/

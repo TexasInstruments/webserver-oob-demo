@@ -83,36 +83,39 @@ module.exports = function registerSpeechToText(app, wss, device) {
             return res.send('Speech-to-text started (MOCK)');
         }
 
-        speechProcess = spawn('/usr/bin/speech_utils', ['start_gst', device_param]);
+        /* Evict any orphaned speech_utils (e.g. from a prior Node.js crash),
+         * then spawn inside the callback so pkill cannot race-kill the new process. */
+        exec('pkill -f "speech_utils start_gst"', () => {
+            speechProcess = spawn('/usr/bin/speech_utils', ['start_gst', device_param]);
 
-        speechProcess.stdout.on('data', (data) => {
-            /* speech_utils prints "SUCCESS: ..." or "ERROR: ..." on stdout */
-            const line = data.toString().trim();
-            if (line.startsWith('ERROR:')) {
-                console.error('[speech] speech_utils:', line);
-            }
-        });
-
-        speechProcess.stderr.on('data', (data) => {
-            /* speech_utils logs pipeline info and STT results to stderr */
-            data.toString().split('\n').forEach(line => {
-                if (line.trim()) console.log('[speech-utils]', line);
+            speechProcess.stdout.on('data', (data) => {
+                const line = data.toString().trim();
+                if (line.startsWith('ERROR:')) {
+                    console.error('[speech] speech_utils:', line);
+                }
             });
-        });
 
-        speechProcess.on('error', (err) => {
-            console.error('[speech] Failed to start speech_utils:', err);
-            speechProcess = null;
-        });
+            speechProcess.stderr.on('data', (data) => {
+                data.toString().split('\n').forEach(line => {
+                    if (line.trim()) console.log('[speech-utils]', line);
+                });
+            });
 
-        speechProcess.on('exit', (code) => {
-            console.log(`[speech] speech_utils exited with code ${code}`);
-            speechProcess = null;
-            stopFifoReader();
-        });
+            speechProcess.on('error', (err) => {
+                console.error('[speech] Failed to start speech_utils:', err);
+                speechProcess = null;
+                stopFifoReader();
+            });
 
-        startFifoReader();
-        res.send('Speech-to-text started');
+            speechProcess.on('exit', (code) => {
+                console.log(`[speech] speech_utils exited with code ${code}`);
+                speechProcess = null;
+                stopFifoReader();
+            });
+
+            startFifoReader();
+            res.send('Speech-to-text started');
+        });
     });
 
     app.get('/stop-speech-to-text', (req, res) => {
@@ -158,9 +161,20 @@ module.exports = function registerSpeechToText(app, wss, device) {
             console.error(`[speech] FIFO reader stderr: ${data}`);
         });
 
+        fifoReaderProcess.on('error', (err) => {
+            console.error('[speech] FIFO reader spawn error:', err);
+            fifoReaderProcess = null;
+        });
+
         fifoReaderProcess.on('exit', (code) => {
             console.log(`[speech] FIFO reader exited with code ${code}`);
             fifoReaderProcess = null;
+            /* Restart reader if it crashed (non-zero exit) while speech_utils is
+             * still running. code=0 means clean SIGTERM from stopFifoReader(). */
+            if (code !== 0 && speechProcess) {
+                console.log('[speech] FIFO reader crashed, restarting...');
+                setTimeout(startFifoReader, 500);
+            }
         });
     }
 
@@ -177,16 +191,11 @@ module.exports = function registerSpeechToText(app, wss, device) {
             mockInterval = null;
         }
         if (speechProcess) {
-            exec('/usr/bin/speech_utils stop_gst', (err) => {
-                if (err) console.error('[speech] Error stopping speech_utils:', err);
-            });
-            speechProcess.kill();
+            speechProcess.kill('SIGTERM');
             speechProcess = null;
         }
         stopFifoReader();
-        exec('pkill -f "speech_utils start_gst"', (err) => {
-            if (err) console.log('[speech] No speech_utils processes to kill');
-        });
+        exec('pkill -f "speech_utils start_gst"', () => {});
     }
 
     /* ------------------------------------------------------------ */
@@ -232,7 +241,6 @@ module.exports = function registerSpeechToText(app, wss, device) {
         });
     });
 
-    /* Clean up on server exit */
     process.on('SIGTERM', stopAll);
     process.on('SIGINT',  stopAll);
 

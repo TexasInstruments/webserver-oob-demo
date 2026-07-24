@@ -9,7 +9,7 @@
     }
   ],
   "soc": "AM62Lx dual Cortex-A53 @ 400MHz",
-  "demos": ["cpu-monitor", "audio-classification"],
+  "demos": ["cpu-monitor", "audio-classification", "speech-to-text"],
   "demoConfig": {
     "audio-classification": {
       "model":    "/usr/share/oob-demo-assets/models/yamnet_audio_classification.tflite",
