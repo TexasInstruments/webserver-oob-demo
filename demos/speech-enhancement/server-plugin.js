@@ -345,3 +345,6 @@ module.exports = function registerSpeechEnhancement(app, wss, device) {
 };
 
 module.exports.nextInputVisualizationBlock = nextInputVisualizationBlock;
+module.exports.parseAlsaOutput             = parseAlsaOutput;
+module.exports.readPcmWav                  = readPcmWav;
+module.exports.readPcmWavInfo              = readPcmWavInfo;

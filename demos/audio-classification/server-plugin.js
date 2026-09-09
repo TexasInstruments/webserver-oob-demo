@@ -819,3 +819,5 @@ module.exports = function registerAudioClassification(app, wss, device) {
 };
 
 module.exports.parseClassificationLine = parseClassificationLine;
+module.exports.parseRankedLine         = parseRankedLine;
+module.exports.parseAlsaOutput         = parseAlsaOutput;
