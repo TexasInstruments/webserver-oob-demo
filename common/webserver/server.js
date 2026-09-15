@@ -75,6 +75,13 @@ console.log(`[Server] Active demos: ${device.demos.join(', ')}`);
 /* ------------------------------------------------------------------ */
 
 const app    = express();
+
+/*
+ * Trust the reverse proxy so req.ip reflects the originating client IP.
+ * Demo ownership/start-stop authorization relies on the client IP.
+ */
+app.set('trust proxy', true);
+
 const server = http.createServer(app);
 const port   = process.env.PORT || 3000;
 const wss    = new WebSocket.Server({ server });
