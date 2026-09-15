@@ -1,0 +1,1900 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AM62D DSP + Edge AI Experience Portal — Developer Guide</title>
+<style>
+  :root {
+    --ti-red: #c41230;
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #22263a;
+    --border: #2d3148;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --code-bg: #141824;
+    --green: #22c55e;
+    --blue: #60a5fa;
+    --amber: #fbbf24;
+    --purple: #c084fc;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 15px;
+  }
+
+  /* ── Layout ──────────────────────────────────────────────────── */
+  .layout {
+    display: flex;
+    min-height: 100vh;
+  }
+
+  /* ── Sidebar / TOC ───────────────────────────────────────────── */
+  .sidebar {
+    width: 280px;
+    flex-shrink: 0;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    padding: 0 0 2rem 0;
+  }
+
+  .sidebar-brand {
+    padding: 1.25rem 1.25rem 1rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 0.75rem;
+  }
+
+  .sidebar-brand .brand-chip {
+    display: inline-block;
+    background: var(--ti-red);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 3px;
+    margin-bottom: 0.5rem;
+  }
+
+  .sidebar-brand h2 {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.35;
+  }
+
+  .sidebar-brand p {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  .toc-section-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 0.9rem 1.25rem 0.3rem;
+  }
+
+  .toc-list {
+    list-style: none;
+  }
+
+  .toc-list li a {
+    display: block;
+    padding: 0.3rem 1.25rem;
+    font-size: 13px;
+    color: var(--muted);
+    text-decoration: none;
+    transition: color 0.15s, background 0.15s;
+    border-left: 2px solid transparent;
+  }
+
+  .toc-list li a:hover {
+    color: var(--text);
+    background: var(--surface2);
+    border-left-color: var(--ti-red);
+  }
+
+  .toc-list li a.active {
+    color: var(--blue);
+    border-left-color: var(--blue);
+    background: rgba(96, 165, 250, 0.06);
+  }
+
+  .toc-list li a span.num {
+    color: var(--ti-red);
+    font-weight: 700;
+    margin-right: 5px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ── Main content ────────────────────────────────────────────── */
+  .main {
+    flex: 1;
+    min-width: 0;
+    padding: 0 2.5rem 4rem;
+    max-width: 1020px;
+  }
+
+  /* ── Cover ───────────────────────────────────────────────────── */
+  .cover {
+    padding: 3.5rem 0 2.5rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 3rem;
+  }
+
+  .cover-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .ti-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--ti-red);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 4px;
+  }
+
+  .cover h1 {
+    font-size: 2.25rem;
+    font-weight: 700;
+    line-height: 1.2;
+    color: #fff;
+    margin-bottom: 0.5rem;
+  }
+
+  .cover h1 span { color: var(--ti-red); }
+
+  .cover .subtitle {
+    font-size: 1.1rem;
+    color: var(--muted);
+    margin-bottom: 1.5rem;
+    font-weight: 400;
+  }
+
+  .sdk-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+  }
+
+  .sdk-badge {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 3px 12px;
+    font-size: 12px;
+    color: var(--muted);
+    font-family: 'SF Mono', 'Fira Code', 'Fira Mono', 'Roboto Mono', monospace;
+  }
+
+  .sdk-badge strong { color: var(--text); }
+
+  /* ── Sections ────────────────────────────────────────────────── */
+  .section {
+    margin-bottom: 3.5rem;
+    scroll-margin-top: 1.5rem;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-number {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--ti-red);
+    font-variant-numeric: tabular-nums;
+    min-width: 1.8rem;
+  }
+
+  .section-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text);
+    margin: 2rem 0 0.75rem;
+  }
+
+  h4 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--amber);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 1.5rem 0 0.6rem;
+  }
+
+  p {
+    color: var(--text);
+    margin-bottom: 0.75rem;
+  }
+
+  a { color: var(--blue); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  ul, ol {
+    padding-left: 1.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  li { margin-bottom: 0.3rem; color: var(--text); }
+
+  /* ── Code blocks ─────────────────────────────────────────────── */
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.1rem 1.25rem;
+    overflow-x: auto;
+    margin: 0.75rem 0 1.25rem;
+    font-family: 'SF Mono', 'Fira Code', 'Fira Mono', 'Roboto Mono', Consolas, monospace;
+    font-size: 13px;
+    line-height: 1.65;
+    position: relative;
+  }
+
+  pre .lang-label {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.75rem;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--muted);
+    opacity: 0.6;
+  }
+
+  code {
+    font-family: 'SF Mono', 'Fira Code', 'Fira Mono', 'Roboto Mono', Consolas, monospace;
+    font-size: 0.88em;
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    padding: 1px 6px;
+    border-radius: 4px;
+    color: var(--purple);
+  }
+
+  pre code {
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: inherit;
+    color: var(--text);
+    border-radius: 0;
+  }
+
+  /* syntax hints */
+  .kw  { color: var(--purple); }
+  .str { color: var(--green); }
+  .cm  { color: #4a5568; font-style: italic; }
+  .fn  { color: var(--blue); }
+  .num { color: var(--amber); }
+  .var { color: #f97316; }
+
+  /* ── Tables ──────────────────────────────────────────────────── */
+  .table-wrap { overflow-x: auto; margin: 0.75rem 0 1.5rem; border-radius: 8px; border: 1px solid var(--border); }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+  }
+
+  thead th {
+    background: var(--surface2);
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.65rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+
+  tbody tr:nth-child(even) { background: rgba(255,255,255,0.018); }
+
+  tbody td {
+    padding: 0.6rem 1rem;
+    border-bottom: 1px solid rgba(45,49,72,0.5);
+    vertical-align: top;
+  }
+
+  tbody tr:last-child td { border-bottom: none; }
+
+  td code { font-size: 12px; }
+
+  /* ── Callout boxes ───────────────────────────────────────────── */
+  .callout {
+    border-radius: 8px;
+    padding: 1rem 1.1rem;
+    margin: 1rem 0 1.5rem;
+    border-left: 3px solid;
+    font-size: 13.5px;
+  }
+
+  .callout.info    { background: rgba(96,165,250,0.07);  border-color: var(--blue);   }
+  .callout.warning { background: rgba(251,191,36,0.07);  border-color: var(--amber);  }
+  .callout.success { background: rgba(34,197,94,0.07);   border-color: var(--green);  }
+  .callout.danger  { background: rgba(196,18,48,0.08);   border-color: var(--ti-red); }
+
+  .callout strong { display: block; margin-bottom: 0.2rem; font-size: 12px; text-transform: uppercase; letter-spacing: 0.07em; }
+  .callout.info    strong { color: var(--blue);   }
+  .callout.warning strong { color: var(--amber);  }
+  .callout.success strong { color: var(--green);  }
+  .callout.danger  strong { color: var(--ti-red); }
+
+  /* ── Component diagram ───────────────────────────────────────── */
+  .arch-diagram {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin: 1rem 0 1.5rem;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 12.5px;
+    line-height: 1.8;
+    color: var(--text);
+    overflow-x: auto;
+  }
+
+  .arch-diagram .layer { color: var(--amber); font-weight: 700; }
+  .arch-diagram .box   { color: var(--blue);  }
+  .arch-diagram .arrow { color: var(--muted); }
+  .arch-diagram .note  { color: var(--green); font-style: italic; }
+
+  /* ── Steps ───────────────────────────────────────────────────── */
+  .steps { counter-reset: step; list-style: none; padding: 0; }
+
+  .steps li {
+    counter-increment: step;
+    position: relative;
+    padding: 0 0 1.5rem 3rem;
+    border-left: 1px solid var(--border);
+    margin-left: 1rem;
+  }
+
+  .steps li:last-child { border-left: 1px solid transparent; padding-bottom: 0; }
+
+  .steps li::before {
+    content: counter(step);
+    position: absolute;
+    left: -1rem;
+    top: 0;
+    width: 2rem;
+    height: 2rem;
+    background: var(--ti-red);
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .steps li h3 { margin-top: 0.1rem; }
+
+  /* ── API entries ─────────────────────────────────────────────── */
+  .api-group { margin-bottom: 2rem; }
+
+  .api-entry {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 0.65rem;
+    overflow: hidden;
+  }
+
+  .api-entry-header {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    padding: 0.6rem 1rem;
+    background: var(--surface2);
+  }
+
+  .method {
+    font-family: 'SF Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    padding: 2px 7px;
+    border-radius: 3px;
+    min-width: 3.5rem;
+    text-align: center;
+  }
+
+  .method.get    { background: rgba(34,197,94,0.15);  color: var(--green);  border: 1px solid rgba(34,197,94,0.3);  }
+  .method.post   { background: rgba(96,165,250,0.15); color: var(--blue);   border: 1px solid rgba(96,165,250,0.3); }
+  .method.delete { background: rgba(196,18,48,0.15);  color: #f87171;       border: 1px solid rgba(196,18,48,0.3);  }
+  .method.ws     { background: rgba(192,132,252,0.15);color: var(--purple); border: 1px solid rgba(192,132,252,0.3);}
+
+  .api-path {
+    font-family: 'SF Mono', monospace;
+    font-size: 13px;
+    color: var(--text);
+    flex: 1;
+  }
+
+  .api-desc {
+    padding: 0.5rem 1rem 0.6rem;
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .api-desc code { color: var(--purple); }
+
+  /* ── Env vars table highlight ────────────────────────────────── */
+  .var-name { color: var(--amber); font-family: monospace; font-size: 13px; }
+
+  /* ── File tree ───────────────────────────────────────────────── */
+  .file-tree {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.1rem 1.25rem;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 12.5px;
+    line-height: 1.8;
+    overflow-x: auto;
+  }
+
+  .ft-dir   { color: var(--blue); }
+  .ft-file  { color: var(--text); }
+  .ft-cm    { color: #4a5568; }
+  .ft-hi    { color: var(--amber); }
+
+  /* ── Top nav for quick jumps ─────────────────────────────────── */
+  .top-bar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0.5rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .top-bar .logo {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ti-red);
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+  }
+
+  /* ── Responsive ──────────────────────────────────────────────── */
+  @media (max-width: 900px) {
+    .sidebar { display: none; }
+    .main { padding: 0 1.25rem 3rem; }
+  }
+
+  @media print {
+    .sidebar, .top-bar { display: none; }
+    body { background: #fff; color: #000; }
+    pre, .arch-diagram, .file-tree { background: #f5f5f5; border-color: #ccc; }
+  }
+
+  /* ── Scrollbar ───────────────────────────────────────────────── */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #3d4468; }
+</style>
+</head>
+<body>
+
+<div class="layout">
+
+  <!-- ── Sidebar TOC ─────────────────────────────────────────── -->
+  <nav class="sidebar" aria-label="Table of Contents">
+    <div class="sidebar-brand">
+      <span class="brand-chip">Texas Instruments</span>
+      <h2>AM62D Experience Portal</h2>
+      <p>Developer Guide</p>
+    </div>
+
+    <div class="toc-section-label">Contents</div>
+    <ul class="toc-list">
+      <li><a href="#architecture"><span class="num">1</span>Architecture Overview</a></li>
+      <li><a href="#repo-structure"><span class="num">2</span>Repository Structure</a></li>
+      <li><a href="#plugin-api"><span class="num">3</span>Plugin API</a></li>
+      <li><a href="#new-demo"><span class="num">4</span>Adding a New Demo</a></li>
+      <li><a href="#new-device"><span class="num">5</span>Adding a New Device</a></li>
+      <li><a href="#gstreamer"><span class="num">6</span>GStreamer Pipeline Dev</a></li>
+      <li><a href="#frontend"><span class="num">7</span>Frontend Development</a></li>
+      <li><a href="#local-dev"><span class="num">8</span>Local Development</a></li>
+      <li><a href="#build-system"><span class="num">9</span>Build System</a></li>
+      <li><a href="#deployment"><span class="num">10</span>Deployment</a></li>
+      <li><a href="#yocto"><span class="num">11</span>Yocto Recipe</a></li>
+      <li><a href="#api-reference"><span class="num">12</span>REST API Reference</a></li>
+    </ul>
+  </nav>
+
+  <!-- ── Main content ─────────────────────────────────────────── -->
+  <main class="main">
+
+    <!-- Cover -->
+    <div class="cover" id="top">
+      <div class="cover-eyebrow">
+        <span class="ti-badge">Texas Instruments</span>
+      </div>
+      <h1><span>AM62D</span> DSP + Edge AI<br>Experience Portal</h1>
+      <p class="subtitle">Developer Guide</p>
+      <div class="sdk-badges">
+        <span class="sdk-badge"><strong>SDK</strong> 12.01.00.04</span>
+        <span class="sdk-badge"><strong>TIDL</strong> 11.02.16.00</span>
+        <span class="sdk-badge"><strong>MCU+ SDK</strong> 12.01.00.20</span>
+      </div>
+    </div>
+
+    <!-- ────────────────────────────────────────────────────────
+         1. Architecture Overview
+    ───────────────────────────────────────────────────────── -->
+    <section class="section" id="architecture">
+      <div class="section-header">
+        <span class="section-number">01</span>
+        <h2 class="section-title">Architecture Overview</h2>
+      </div>
+
+      <p>The portal is a plugin-based web server backed by an Express/WebSocket Node.js process and a Vue 3 + Vuetify single-page application. Device-specific behavior is isolated in per-device and per-demo plugins, keeping the common server and frontend shell device-agnostic.</p>
+
+      <h3>Component Layers</h3>
+
+      <div class="arch-diagram" aria-label="Component layer diagram">
+<span class="layer">Browser (Vue SPA)</span>
+  <span class="arrow">├──</span> <span class="box">frontend/src/App.vue</span>          <span class="note">Shell: sidebar, app-bar, power, router-view</span>
+  <span class="arrow">├──</span> <span class="box">frontend/src/main.js</span>          <span class="note">Vue init; imports @device/index.js</span>
+  <span class="arrow">├──</span> <span class="box">@device/views/*.vue</span>           <span class="note">Device-specific pages (AudioDsp, DspCompute …)</span>
+  <span class="arrow">└──</span> <span class="box">@device/demos/*.vue</span>           <span class="note">Per-demo UI components</span>
+
+<span class="layer">Node.js Server</span>
+  <span class="arrow">├──</span> <span class="box">common/webserver/server.js</span>    <span class="note">Express + ws; loads device then demo plugins</span>
+  <span class="arrow">├──</span> <span class="box">devices/am62dxx/server-plugin.js</span> <span class="note">Device REST: power, upload, model inspector</span>
+  <span class="arrow">└──</span> <span class="box">demos/&lt;id&gt;/server-plugin.js</span>  <span class="note">Per-demo endpoints &amp; WebSocket handlers</span>
+
+<span class="layer">Target Hardware (AM62D EVM)</span>
+  <span class="arrow">├──</span> <span class="box">GStreamer + tidspkernel + titvm</span> <span class="note">DSP offload, STFT/ISTFT, TVM inference</span>
+  <span class="arrow">├──</span> <span class="box">ALSA (hw:&lt;card&gt;,0)</span>            <span class="note">Audio I/O for live demos</span>
+  <span class="arrow">└──</span> <span class="box">TVM artifacts</span>                <span class="note">/usr/share/tvm_inference/artifacts/</span>
+      </div>
+
+      <h3>Startup Sequence</h3>
+      <ol class="steps">
+        <li>
+          <h3>systemd loads configuration</h3>
+          <p>The <code>webserver-oob.service</code> unit reads <code>/etc/webserver-oob.conf</code>, which sets <code>APP_DIR</code>, <code>DEVICE_CONFIG</code>, and <code>DEMOS_DIR</code> environment variables before launching <code>server.js</code>.</p>
+        </li>
+        <li>
+          <h3>server.js reads device.json</h3>
+          <p><code>DEVICE_CONFIG</code> points to the device JSON. The server parses it for the demo list, UI mode (<code>"vue"</code> vs <code>"legacy"</code>), and demo-specific config blocks.</p>
+        </li>
+        <li>
+          <h3>Device plugin loaded</h3>
+          <p>The server <code>require()</code>s <code>server-plugin.js</code> from the same directory as <code>device.json</code>, passing <code>(app, wss, device)</code>. This registers device-level REST routes.</p>
+        </li>
+        <li>
+          <h3>Demo plugins loaded</h3>
+          <p>For each demo ID in <code>device.demos</code>, the server loads <code>$DEMOS_DIR/&lt;id&gt;/server-plugin.js</code>. Plugins register their own routes and WebSocket handlers.</p>
+        </li>
+        <li>
+          <h3>Static assets served</h3>
+          <p>For Vue devices, the built SPA at <code>APP_DIR/vue-dist/</code> is served as a catch-all. Non-Vue devices serve the legacy GUI-Composer HTML at <code>APP_DIR/index.html</code>.</p>
+        </li>
+      </ol>
+
+      <h3>Key Environment Variables</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Variable</th><th>EVM Path / Default</th><th>Purpose</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><span class="var-name">APP_DIR</span></td><td><code>/usr/share/webserver-oob/app</code></td><td>Vue dist root and device assets (images, etc.)</td></tr>
+            <tr><td><span class="var-name">DEVICE_CONFIG</span></td><td><code>/usr/share/webserver-oob/device.json</code></td><td>Path to device metadata JSON (required)</td></tr>
+            <tr><td><span class="var-name">DEMOS_DIR</span></td><td><code>/usr/share/webserver-oob/demos</code></td><td>Directory containing per-demo plugin subdirectories</td></tr>
+            <tr><td><span class="var-name">PORT</span></td><td><code>3000</code></td><td>HTTP/WebSocket listen port (nginx proxies 80 → 3000)</td></tr>
+            <tr><td><span class="var-name">MOCK</span></td><td><code>0</code></td><td>Set to <code>1</code> to run without hardware (all hardware calls stubbed)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ────────────────────────────────────────────────────────
+         2. Repository Structure
+    ───────────────────────────────────────────────────────── -->
+    <section class="section" id="repo-structure">
+      <div class="section-header">
+        <span class="section-number">02</span>
+        <h2 class="section-title">Repository Structure</h2>
+      </div>
+
+      <div class="file-tree">
+<span class="ft-dir">common/</span>
+  <span class="ft-dir">webserver/</span>        <span class="ft-cm"># server.js, webserver-oob.service, webserver-oob.conf</span>
+  <span class="ft-dir">linux_app/</span>        <span class="ft-cm"># cpu_stats.c, audio_utils.c (shared C utilities)</span>
+  <span class="ft-dir">app/</span>              <span class="ft-cm"># Legacy frontend (index.html, components submodule)</span>
+
+<span class="ft-dir">demos/</span>
+  <span class="ft-hi">cpu-monitor/</span>      <span class="ft-cm"># server-plugin.js + manifest.json</span>
+  <span class="ft-hi">audio-classification/</span>
+  <span class="ft-hi">speech-enhancement/</span>
+  <span class="ft-hi">audio-offload/</span>
+  <span class="ft-hi">2dfft/</span>
+  <span class="ft-hi">sigchain-biquad/</span>
+  <span class="ft-hi">gst-pipeline/</span>
+  <span class="ft-hi">tvm-inference/</span>
+  <span class="ft-hi">benchmark/</span>
+  <span class="ft-hi">speech-to-text/</span>
+
+<span class="ft-dir">devices/</span>
+  <span class="ft-dir">am62dxx/</span>
+    <span class="ft-file">device.json</span>           <span class="ft-cm"># Device metadata and demo config</span>
+    <span class="ft-hi">server-plugin.js</span>      <span class="ft-cm"># Device REST endpoints</span>
+    <span class="ft-dir">linux_app/</span>            <span class="ft-cm"># audio_utils.c, speech_utils.c, Makefile</span>
+    <span class="ft-dir">app/</span>
+      <span class="ft-dir">images/</span>             <span class="ft-cm"># Board images</span>
+      <span class="ft-hi">vue-dist/</span>           <span class="ft-cm"># Built Vue frontend (Vite output) ← deploy target</span>
+    <span class="ft-dir">ui/</span>
+      <span class="ft-hi">index.js</span>            <span class="ft-cm"># Routes, navItems, deviceTitle, demoCards</span>
+      <span class="ft-dir">views/</span>
+        <span class="ft-file">AudioDsp.vue</span>      <span class="ft-cm"># Audio Intelligence page</span>
+        <span class="ft-file">DspCompute.vue</span>    <span class="ft-cm"># DSP Acceleration page</span>
+        <span class="ft-file">ModelInspector.vue</span>
+      <span class="ft-dir">demos/</span>
+        <span class="ft-file">SpeechEnhancement.vue</span>
+        <span class="ft-file">AudioOffload.vue</span>
+        <span class="ft-file">2DFft.vue</span>
+        <span class="ft-file">SigchainBiquad.vue</span>
+        <span class="ft-file">GStreamerPipeline.vue</span>
+        <span class="ft-file">TvmInference.vue</span>
+
+<span class="ft-dir">frontend/</span>
+  <span class="ft-dir">src/</span>
+    <span class="ft-hi">App.vue</span>             <span class="ft-cm"># Shell: sidebar, app-bar, power controls, router-view</span>
+    <span class="ft-hi">main.js</span>             <span class="ft-cm"># Vue app init, plugin registration, device UI import</span>
+    <span class="ft-dir">views/</span>
+      <span class="ft-file">Home.vue</span>          <span class="ft-cm"># Home/landing page</span>
+      <span class="ft-file">Logs.vue</span>          <span class="ft-cm"># Server log stream view</span>
+    <span class="ft-dir">components/</span>
+      <span class="ft-file">AudioPlayer.vue</span>
+      <span class="ft-file">SpectrogramCanvas.vue</span>
+      <span class="ft-file">SpectrumCanvas.vue</span>
+      <span class="ft-file">WaveformCanvas.vue</span>
+      <span class="ft-file">RmsTable.vue</span>
+  <span class="ft-file">vite.config.js</span>        <span class="ft-cm"># Build config (outDir, base, proxy, @device alias)</span>
+  <span class="ft-file">package.json</span>
+
+<span class="ft-dir">docs/</span>
+  <span class="ft-file">am62d-user-guide.html</span>
+  <span class="ft-hi">am62d-developer-guide.html</span>
+  <span class="ft-file">am62d-demo-guide.html</span>
+  <span class="ft-file">am62d-howto-guide.html</span>
+
+<span class="ft-dir">tools/</span>
+  <span class="ft-file">generate-inc.js</span>       <span class="ft-cm"># Regenerates webserver-oob-npm.inc for Yocto</span>
+  <span class="ft-file">generate-frontend-inc.js</span>
+
+<span class="ft-file">Makefile</span>
+      </div>
+    </section>
+
+    <!-- ────────────────────────────────────────────────────────
+         3. Plugin API
+    ───────────────────────────────────────────────────────── -->
+    <section class="section" id="plugin-api">
+      <div class="section-header">
+        <span class="section-number">03</span>
+        <h2 class="section-title">Plugin API</h2>
+      </div>
+
+      <p>Every <code>server-plugin.js</code> — whether device-level or demo-level — exports a single function with the following signature:</p>
+
+      <pre><span class="lang-label">javascript</span><span class="kw">module.exports</span> = <span class="kw">function</span> <span class="fn">registerPlugin</span>(app, wss, device) {
+  <span class="cm">// app    — Express application instance</span>
+  <span class="cm">// wss    — WebSocket server (ws library)</span>
+  <span class="cm">// device — Parsed device.json object</span>
+}</pre>
+
+      <h3>Plugin Arguments</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Argument</th><th>Type</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>app</code></td><td>Express</td><td>Standard Express app. Use <code>app.get()</code>, <code>app.post()</code>, etc. to register routes.</td></tr>
+            <tr><td><code>wss</code></td><td>ws.Server</td><td>WebSocket server. Subscribe to <code>'connection'</code> and filter by <code>req.url</code>.</td></tr>
+            <tr><td><code>device</code></td><td>Object</td><td>Parsed <code>device.json</code>. Access per-demo config via <code>device.demoConfig['&lt;id&gt;']</code>.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Demo manifest.json Fields</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>id</code></td><td>string</td><td>Must match the demo directory name. Used as the demo key throughout the system.</td></tr>
+            <tr><td><code>name</code></td><td>string</td><td>Human-readable display name shown in the UI.</td></tr>
+            <tr><td><code>description</code></td><td>string</td><td>Short description shown in demo cards.</td></tr>
+            <tr><td><code>devices</code></td><td>string[]</td><td><code>["*"]</code> for all devices, or an array of device IDs (e.g. <code>["am62dxx"]</code>).</td></tr>
+            <tr><td><code>routes</code></td><td>string[]</td><td>REST path prefixes this plugin registers. Used for documentation and route auditing.</td></tr>
+            <tr><td><code>websocket</code></td><td>string</td><td>WebSocket URL path this plugin handles (optional). E.g. <code>"/speech"</code>.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>WebSocket Handler Pattern</h3>
+      <p>Because all demos share a single <code>wss</code> instance, filter connections by <code>req.url</code>:</p>
+      <pre><span class="lang-label">javascript</span>wss.on(<span class="str">'connection'</span>, (ws, req) =&gt; {
+  <span class="kw">if</span> (req.url !== <span class="str">'/my-ws'</span>) <span class="kw">return</span>   <span class="cm">// ignore connections for other demos</span>
+
+  ws.send(JSON.stringify({ type: <span class="str">'connected'</span> }))
+
+  ws.on(<span class="str">'message'</span>, data =&gt; {
+    <span class="kw">const</span> msg = JSON.parse(data)
+    <span class="cm">// handle incoming messages</span>
+  })
+
+  ws.on(<span class="str">'close'</span>, () =&gt; {
+    <span class="cm">// cleanup: kill spawned processes, release resources</span>
+  })
+})</pre>
+
+      <h3>Mock Mode Pattern</h3>
+      <p>Read <code>MOCK</code> once at module load and short-circuit all hardware calls. This allows the full frontend to run on a developer laptop without a board attached.</p>
+      <pre><span class="lang-label">javascript</span><span class="kw">const</span> MOCK = process.env.MOCK === <span class="str">'1'</span>
+
+app.get(<span class="str">'/my-demo/status'</span>, (req, res) =&gt; {
+  <span class="kw">if</span> (MOCK) <span class="kw">return</span> res.json({ status: <span class="str">'mock'</span>, device: <span class="str">'simulated'</span> })
+
+  <span class="cm">// real hardware path</span>
+  res.json({ status: <span class="str">'ok'</span> })
+})</pre>
+
+      <div class="callout info">
+        <strong>Tip</strong>
+        Mock stubs should return the same JSON shape as real responses so the Vue components work identically in both modes. Never return an empty object when the component expects specific fields.
+      </div>
+
+      <h3>Spawning Native Processes</h3>
+      <p>Demo plugins typically spawn a native binary (GStreamer, audio utility, etc.) and stream its stdout/stderr to the browser over WebSocket:</p>
+      <pre><span class="lang-label">javascript</span><span class="kw">const</span> { spawn } = require(<span class="str">'child_process'</span>)
+<span class="kw">let</span> proc = <span class="kw">null</span>
+
+app.get(<span class="str">'/my-demo/start'</span>, (req, res) =&gt; {
+  <span class="kw">if</span> (proc) <span class="kw">return</span> res.status(<span class="num">409</span>).json({ error: <span class="str">'already running'</span> })
+
+  proc = spawn(<span class="str">'/usr/bin/my_util'</span>, [<span class="str">'--arg'</span>, req.query.device])
+
+  proc.stdout.on(<span class="str">'data'</span>, chunk =&gt; {
+    <span class="cm">// broadcast to all connected WebSocket clients on this path</span>
+    wss.clients.forEach(ws =&gt; {
+      <span class="kw">if</span> (ws.readyState === ws.OPEN &amp;&amp; ws._url === <span class="str">'/my-ws'</span>)
+        ws.send(JSON.stringify({ type: <span class="str">'data'</span>, payload: chunk.toString() }))
+    })
+  })
+
+  proc.on(<span class="str">'exit'</span>, code =&gt; { proc = <span class="kw">null</span> })
+  res.json({ started: <span class="kw">true</span> })
+})
+
+app.get(<span class="str">'/my-demo/stop'</span>, (req, res) =&gt; {
+  <span class="kw">if</span> (proc) { proc.kill(<span class="str">'SIGTERM'</span>); proc = <span class="kw">null</span> }
+  res.json({ stopped: <span class="kw">true</span> })
+})</pre>
+    </section>
+
+    <!-- ────────────────────────────────────────────────────────
+         4. Adding a New Demo
+    ───────────────────────────────────────────────────────── -->
+    <section class="section" id="new-demo">
+      <div class="section-header">
+        <span class="section-number">04</span>
+        <h2 class="section-title">Adding a New Demo</h2>
+      </div>
+
+      <p>Follow these steps in order. The system auto-discovers demo plugins at startup — no changes to <code>server.js</code> are needed.</p>
+
+      <ol class="steps">
+        <li>
+          <h3>Create the demo directory and manifest</h3>
+          <pre><span class="lang-label">bash</span>mkdir -p demos/my-demo</pre>
+          <p>Create <code>demos/my-demo/manifest.json</code>:</p>
+          <pre><span class="lang-label">json">{
+  "id": "my-demo",
+  "name": "My Demo",
+  "description": "What this demo does.",
+  "devices": ["am62dxx"],
+  "routes": ["/my-demo"],
+  "websocket": "/my-demo-ws"
+}</pre>
+        </li>
+
+        <li>
+          <h3>Write server-plugin.js</h3>
+          <pre><span class="lang-label">javascript">'use strict'
+const MOCK = process.env.MOCK === '1'
+
+module.exports = function registerMyDemo(app, wss, device) {
+  const cfg = (device.demoConfig || {})['my-demo'] || {}
+
+  app.get('/my-demo/status', (req, res) => {
+    if (MOCK) return res.json({ status: 'mock' })
+    res.json({ status: 'ok', config: cfg })
+  })
+
+  app.post('/my-demo/run', (req, res) => {
+    // spawn process, stream output via WebSocket
+    res.json({ started: true })
+  })
+
+  wss.on('connection', (ws, req) => {
+    if (req.url !== '/my-demo-ws') return
+    ws.send(JSON.stringify({ type: 'connected' }))
+    ws.on('message', data => { /* handle */ })
+    ws.on('close', () => { /* cleanup */ })
+  })
+
+  console.log('[my-demo] registered' + (MOCK ? ' (MOCK)' : ''))
+}</pre>
+        </li>
+
+        <li>
+          <h3>Register in device.json</h3>
+          <p>Add the demo ID to the <code>demos</code> array and provide any per-demo config:</p>
+          <pre><span class="lang-label">json">{
+  "demos": ["cpu-monitor", "my-demo"],
+  "demoConfig": {
+    "my-demo": { "binPath": "/usr/bin/my_util" }
+  }
+}</pre>
+        </li>
+
+        <li>
+          <h3>Create the Vue component</h3>
+          <p>Create <code>devices/am62dxx/ui/demos/MyDemo.vue</code>. Every demo component must expose <code>run()</code>, <code>stop()</code>, and <code>isRunning</code> so the parent view can control it:</p>
+          <pre><span class="lang-label">vue">&lt;template&gt;
+  &lt;div&gt;
+    &lt;div class="card"&gt;
+      &lt;div class="card-ttl"&gt;My Demo&lt;/div&gt;
+      &lt;!-- your UI --&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/template&gt;
+
+&lt;script setup&gt;
+import { ref } from 'vue'
+const result = ref(null)
+const isRunning = ref(false)
+
+async function run() {
+  isRunning.value = true
+  const r = await fetch('/my-demo/run', { method: 'POST' })
+  result.value = await r.json()
+}
+
+function stop() {
+  fetch('/my-demo/stop')
+  isRunning.value = false
+}
+
+defineExpose({ run, stop, isRunning })
+&lt;/script&gt;</pre>
+        </li>
+
+        <li>
+          <h3>Wire into a page view</h3>
+          <p>Add the component to the appropriate view — <code>AudioDsp.vue</code> for audio demos, <code>DspCompute.vue</code> for DSP compute demos, or create a new view. Import the component and add it to the demo list array:</p>
+          <pre><span class="lang-label">javascript">// In AudioDsp.vue (or your target view):
+import MyDemo from '@device/demos/MyDemo.vue'
+
+const demoList = [
+  // ... existing demos ...
+  {
+    name: 'My Demo',
+    description: 'What this demo does.',
+    icon: 'mdi-tune',
+    component: MyDemo
+  }
+]</pre>
+          <p>The view's active component is selected by index (<code>demoList[activeIdx].component</code>), so no additional wiring is needed.</p>
+        </li>
+
+        <li>
+          <h3>Add Vite dev proxy (dev mode only)</h3>
+          <p>In <code>frontend/vite.config.js</code>, add entries for the new demo's routes so the dev server forwards them to the backend:</p>
+          <pre><span class="lang-label">javascript">// frontend/vite.config.js
+proxy: {
+  '/my-demo': BACKEND,
+  '/my-demo-ws': { target: 'ws://localhost:3000', ws: true },
+  // ... existing entries
+}</pre>
+        </li>
+
+        <li>
+          <h3>Test with mock mode</h3>
+          <pre><span class="lang-label">bash"># Full dev stack with no hardware
+make dev DEVICE=am62dxx MOCK=1
+
+# Or start components individually:
+cd common/webserver && MOCK=1 DEVICE_CONFIG=../../devices/am62dxx/device.json node server.js &
+cd frontend && npm run dev
+# Open http://localhost:5173</pre>
+          <div class="callout success">
+            <strong>Done</strong>
+            The new demo appears automatically in the navigation once device.json lists its ID and the server loads its plugin.
+          </div>
+        </li>
+      </ol>
+    </section>
+
+    <!-- ────────────────────────────────────────────────────────
+         5. Adding a New Device
+    ───────────────────────────────────────────────────────── -->
+    <section class="section" id="new-device">
+      <div class="section-header">
+        <span class="section-number">05</span>
+        <h2 class="section-title">Adding a New Device</h2>
+      </div>
+
+      <p>A "device" in this portal is a target board with its own set of demos, UI layout, and optional native utilities. Devices are fully self-contained under <code>devices/&lt;id&gt;/</code>.</p>
+
+      <ol class="steps">
+        <li>
+          <h3>Create the device directory structure</h3>
+          <pre><span class="lang-label">bash">mkdir -p devices/&lt;id&gt;/app/images
+mkdir -p devices/&lt;id&gt;/linux_app
+mkdir -p devices/&lt;id&gt;/ui/views
+mkdir -p devices/&lt;id&gt;/ui/demos</pre>
+        </li>
+
+        <li>
+          <h3>Create device.json</h3>
+          <p>Set <code>"ui": "vue"</code> for the Vue/Vuetify frontend or <code>"legacy"</code> for the older GUI-Composer HTML frontend.</p>
+          <pre><span class="lang-label">json">{
+  "id": "am62xx",
+  "ui": "legacy",
+  "displayName": "AM62X Starter Kit",
+  "boards": [
+    {
+      "name": "SK-AM62",
+      "description": "Sitara AM625 Evaluation Module",
+      "image": "images/sk-am62.png"
+    }
+  ],
+  "soc": "AM625 Cortex-A53 @ 1.4 GHz",
+  "demos": ["cpu-monitor", "audio-classification"],
+  "demoConfig": {
+    "audio-classification": {
+      "defaultModel": "yamnet"
+    }
+  }
+}</pre>
+        </li>
+
+        <li>
+          <h3>Create device server-plugin.js (optional)</h3>
+          <p>Only needed if the device requires device-specific REST endpoints (power control, model management, custom hardware queries, etc.).</p>
+          <pre><span class="lang-label">javascript">'use strict'
+module.exports = function registerDevice(app, wss, device) {
+  app.get('/device-status', (req, res) => {
+    res.json({ id: device.id, soc: device.soc, ok: true })
+  })
+
+  app.post('/system/reboot', (req, res) => {
+    res.json({ ok: true })
+    setTimeout(() => require('child_process').exec('reboot'), 500)
+  })
+}</pre>
+        </li>
+
+        <li>
+          <h3>Add native utilities (if required)</h3>
+          <p>Create <code>devices/&lt;id&gt;/linux_app/Makefile</code>:</p>
+          <pre><span class="lang-label">makefile">include ../../../common/linux_app/Makefile.common
+
+TARGETS = my_utils
+
+my_utils: my_utils.c
+	$(CC) $(CFLAGS) my_utils.c -o my_utils $(LDFLAGS)
+
+all: $(TARGETS)
+
+clean:
+	rm -f $(TARGETS)</pre>
+        </li>
+
+        <li>
+          <h3>Add Vue UI (if ui: "vue")</h3>
+          <p>Create <code>devices/&lt;id&gt;/ui/index.js</code> exporting the required fields. All of these are consumed by <code>frontend/src/main.js</code> at build time via the <code>@device</code> alias:</p>
+          <pre><span class="lang-label">javascript">// devices/&lt;id&gt;/ui/index.js
+import MyView from './views/MyView.vue'
+
+export const routes = [
+  { path: '/', redirect: '/home' },
+  { path: '/my-view', component: MyView },
+]
+
+export const navItems = [
+  { icon: 'mdi-home', title: 'Home', to: '/home' },
+  { icon: 'mdi-tune', title: 'My Feature', to: '/my-view' },
+]
+
+export const deviceTitle = 'AM62X'
+export const connectedLabel = 'SK-AM62 Connected'
+export const heroDesc = 'Short description for the landing page.'
+export const heroButton = { label: 'Get Started', to: '/my-view' }
+export const demoCards = []      // optional: override home page cards
+export const sdkInfo = []        // SDK version badges
+export const chipImages = []     // chip/board images for About page
+export const aboutText = ''      // markdown-ish about text</pre>
+        </li>
+
+        <li>
+          <h3>Create the Yocto recipe entry</h3>
+          <p>In <code>meta-tisdk_vs/.../webserver-oob_git.bb</code>, extend compatibility and add device-specific dependencies:</p>
+          <pre><span class="lang-label">bitbake">COMPATIBLE_MACHINE = "...|&lt;id&gt;"
+DEVICE_ID:&lt;id&gt; = "&lt;id&gt;"
+RDEPENDS:${PN}:&lt;id&gt; = "nodejs gstreamer1.0-plugins-bad"</pre>
+        </li>
+
+        <li>
+          <h3>Build and test</h3>
+          <pre><span class="lang-label">bash"># Cross-compile native utilities
+make build DEVICE=&lt;id&gt; CC=aarch64-linux-gnu-gcc
+
+# Build Vue frontend (if ui: "vue")
+make build-frontend DEVICE=&lt;id&gt;
+
+# Deploy to board
+make deploy DEVICE=&lt;id&gt; BOARD_HOST=root@&lt;ip&gt;
+
+# Test locally with no hardware
+make dev DEVICE=&lt;id&gt; MOCK=1</pre>
+        </li>
+      </ol>
+    </section>
+
+    <!-- ────────────────────────────────────────────────────────
+         6. GStreamer Pipeline Development
+    ───────────────────────────────────────────────────────── -->
+    <section class="section" id="gstreamer">
+      <div class="section-header">
+        <span class="section-number">06</span>
+        <h2 class="section-title">GStreamer Pipeline Development</h2>
+      </div>
+
+      <h3>6.1 Available TI GStreamer Elements</h3>
+
+      <h4>tidspkernel</h4>
+      <p>Offloads DSP operations (STFT, ISTFT, interleave/deinterleave) to the AM62D C7x DSP core.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Property</th><th>Values / Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>msg-type</code></td><td><code>0x1020</code> = STFT &nbsp;|&nbsp; <code>0x1030</code> = ISTFT &nbsp;|&nbsp; <code>0x1040</code> = deinterleave/interleave</td></tr>
+            <tr><td><code>model-path</code></td><td>Path to TVM artifact directory (e.g. <code>/usr/share/tvm_inference/artifacts/gcrn</code>)</td></tr>
+            <tr><td><code>hop-size</code></td><td>Hop size in samples (e.g. <code>160</code> for 10ms at 16 kHz)</td></tr>
+            <tr><td><code>fft-size</code></td><td>FFT frame size in samples (e.g. <code>320</code>)</td></tr>
+            <tr><td><code>window-frames</code></td><td>Number of frames in the processing window (e.g. <code>401</code>)</td></tr>
+            <tr><td><code>batch-size</code></td><td>Number of frames per DSP batch call (e.g. <code>64</code>)</td></tr>
+            <tr><td><code>param2</code></td><td><code>0</code> = deinterleave &nbsp;|&nbsp; <code>1</code> = interleave (used with <code>msg-type=0x1040</code>)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h4>titvm</h4>
+      <p>Runs TVM-compiled model inference on the AM62D's MMA/C7x accelerator.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Property</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>model-path</code></td><td>TVM artifact directory (must contain compiled model and <code>mod.json</code>)</td></tr>
+            <tr><td><code>class-map-path</code></td><td>Path to label list file (one label per line; used for classification output)</td></tr>
+            <tr><td><code>top-k</code></td><td>Number of top-scoring classes to output (e.g. <code>3</code>)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>6.2 Speech Enhancement Pipeline (GCRN)</h3>
+      <p>Full STFT &rarr; TVM inference (GCRN) &rarr; ISTFT chain. Reads a noisy WAV, writes a denoised WAV, and plays back via ALSA simultaneously.</p>
+      <pre><span class="lang-label">bash">gst-launch-1.0 -v \
+  filesrc location=/usr/share/tvm_inference/input/input_audio.wav ! \
+  wavparse ! audio/x-raw,format=S16LE,rate=16000,channels=1 ! \
+  tidspkernel name=stft msg-type=0x1020 \
+    model-path=/usr/share/tvm_inference/artifacts/gcrn \
+    hop-size=160 fft-size=320 window-frames=401 batch-size=64 ! \
+  tidspkernel name=deinterleave msg-type=0x1040 param2=0 \
+    model-path=/usr/share/tvm_inference/artifacts/gcrn \
+    fft-size=320 window-frames=401 ! \
+  titvm model-path=/usr/share/tvm_inference/artifacts/gcrn ! \
+  tidspkernel name=interleave msg-type=0x1040 param2=1 \
+    model-path=/usr/share/tvm_inference/artifacts/gcrn \
+    fft-size=320 window-frames=401 ! \
+  tidspkernel name=istft msg-type=0x1030 \
+    model-path=/usr/share/tvm_inference/artifacts/gcrn \
+    hop-size=160 fft-size=320 window-frames=401 batch-size=64 ! \
+  audio/x-raw,format=S16LE,rate=16000,channels=1 ! \
+  tee name=t ! \
+  queue ! wavenc ! filesink location=/tmp/gst_enhanced.wav \
+  t. ! queue ! audioconvert ! audioresample ! autoaudiosink</pre>
+
+      <h3>6.3 Audio Classification — Live Microphone (YAMNet)</h3>
+      <pre><span class="lang-label">bash">gst-launch-1.0 -v \
+  alsasrc device=hw:0,0 ! \
+  audioconvert ! audioresample ! \
+  audio/x-raw,format=S16LE,rate=16000,channels=1 ! \
+  tidspkernel name=stft msg-type=0x1020 \
+    model-path=/usr/share/tvm_inference/artifacts/yamnet \
+    hop-size=160 window-frames=96 batch-size=64 ! \
+  titvm model-path=/usr/share/tvm_inference/artifacts/yamnet \
+    class-map-path=/usr/share/tvm_inference/labels/yamnet_label_list.txt \
+    top-k=3 ! \
+  fakesink</pre>
+
+      <h3>6.4 Audio Classification — File Input (VGGish)</h3>
+      <pre><span class="lang-label">bash">gst-launch-1.0 \
+  filesrc location=/usr/share/tvm_inference/input/urbansound_16k.wav ! \
+  wavparse ! audio/x-raw,format=S16LE,rate=16000,channels=1 ! \
+  tidspkernel name=stft msg-type=0x1020 \
+    model-path=/usr/share/tvm_inference/artifacts/vggish/ \
+    hop-size=160 window-frames=126 batch-size=64 ! \
+  titvm model-path=/usr/share/tvm_inference/artifacts/vggish/ \
+    class-map-path=/usr/share/tvm_inference/labels/vggish_label_list.txt \
+    top-k=3 ! \
+  filesink location=vggish_inference_output.bin</pre>
+
+      <h3>6.5 TVM Artifact Directory Structure</h3>
+      <div class="file-tree">
+/usr/share/tvm_inference/
+  <span class="ft-dir">artifacts/</span>
+    <span class="ft-hi">yamnet/</span>         <span class="ft-cm"># compiled YAMNet TVM model (audio classification)</span>
+    <span class="ft-hi">vggish/</span>       <span class="ft-cm"># compiled VGGish TVM model (audio classification)</span>
+    <span class="ft-hi">gcrn/</span>           <span class="ft-cm"># compiled GCRN model (speech enhancement)</span>
+  <span class="ft-dir">labels/</span>
+    <span class="ft-file">yamnet_label_list.txt</span>
+    <span class="ft-file">vggish_label_list.txt</span>
+  <span class="ft-dir">input/</span>
+    <span class="ft-file">input_audio.wav</span>         <span class="ft-cm"># sample noisy speech (16 kHz mono)</span>
+    <span class="ft-file">urbansound_16k.wav</span>      <span class="ft-cm"># sample urban sounds (16 kHz mono)</span>
+      </div>
+
+      <h3>6.6 Uploading Custom Artifacts via the Portal</h3>
+      <ol>
+        <li>Package your TVM model: <code>tar -czf my_model.tar.gz my_model/</code></li>
+        <li>Open the portal &rarr; <strong>Custom Audio Pipeline</strong> &rarr; <strong>TVM Artifacts</strong> &rarr; <strong>Upload Archive</strong>.</li>
+        <li>The archive is extracted to <code>/usr/share/tvm_inference/artifacts/my_model/</code>.</li>
+        <li>Click <strong>Refresh</strong>, then <strong>Use</strong> to insert the artifact path directly into the pipeline command field.</li>
+      </ol>
+
+      <div class="callout warning">
+        <strong>Model Compatibility</strong>
+        TVM artifacts must be compiled for the AM62D C7x/MMA target using TIDL 11.02.16.00. Models compiled for other targets (x86, ARM NEON, etc.) will fail to load. Use the TI Edge AI model conversion tools documented in the TIDL user guide.
+      </div>
+
+      <h3>6.7 Extending the gst-pipeline Demo Plugin</h3>
+      <p><code>demos/gst-pipeline/server-plugin.js</code> handles all <code>/gst/*</code> REST routes and the <code>/gst</code> WebSocket. Common extension points:</p>
+      <ul>
+        <li>Add custom preprocessing REST endpoints before pipeline execution.</li>
+        <li>Support additional archive formats beyond <code>.tar.gz</code> in the upload handler.</li>
+        <li>Extend <code>POST /gst/run</code> to validate pipeline syntax before spawning.</li>
+        <li>Emit structured metrics (latency, throughput) via the <code>/gst</code> WebSocket using a new message type.</li>
+      </ul>
+    </section>
+
+    <!-- ────────────────────────────────────────────────────────
+         7. Frontend Development
+    ───────────────────────────────────────────────────────── -->
+    <section class="section" id="frontend">
+      <div class="section-header">
+        <span class="section-number">07</span>
+        <h2 class="section-title">Frontend Development (Vue/Vuetify)</h2>
+      </div>
+
+      <h3>7.1 Prerequisites</h3>
+      <ul>
+        <li>Node.js 18 or later</li>
+        <li><code>cd frontend &amp;&amp; npm install</code></li>
+        <li>Vite 5.x (installed as a dev dependency)</li>
+      </ul>
+
+      <h3>7.2 Starting the Dev Server</h3>
+      <pre><span class="lang-label">bash"># Recommended: use the Makefile target (starts both server and Vite)
+make dev DEVICE=am62dxx
+
+# Or start components individually:
+# Terminal 1 — Node.js backend
+cd common/webserver
+DEVICE_CONFIG=../../devices/am62dxx/device.json node server.js
+
+# Terminal 2 — Vite dev server
+cd frontend && npm run dev
+# Open http://localhost:5173</pre>
+
+      <h3>7.3 Building for Production</h3>
+      <pre><span class="lang-label">bash">cd frontend && npm run build
+# Output: devices/am62dxx/app/vue-dist/
+# This directory is what gets deployed to the EVM.</pre>
+
+      <div class="callout info">
+        <strong>Note</strong>
+        The Vite build reads the <code>DEVICE</code> environment variable (set in <code>package.json</code> scripts or <code>make build-frontend</code>) to resolve the <code>@device</code> alias. Ensure the correct device is set before building.
+      </div>
+
+      <h3>7.4 The @device Alias</h3>
+      <p>In <code>vite.config.js</code>, the alias <code>@device</code> resolves to <code>devices/${DEVICE}/ui/</code>. This is the mechanism that makes the shared frontend shell device-agnostic while still importing device-specific views and demo components at build time.</p>
+      <pre><span class="lang-label">javascript">// Usage in shared frontend code:
+import DeviceIndex from '@device/index.js'        // device route/nav config
+import AudioDsp    from '@device/views/AudioDsp.vue'
+import MyDemo      from '@device/demos/MyDemo.vue'</pre>
+
+      <h3>7.5 Theme System</h3>
+      <p>The app ships two Vuetify themes: <code>tiDark</code> (default) and <code>tiLight</code>. Users toggle between them with the sun/moon icon in the app bar. Canvas-based visualizations (waveform, spectrogram, spectrum) must detect the active theme to adjust colors:</p>
+      <pre><span class="lang-label">vue">&lt;script setup&gt;
+import { computed } from 'vue'
+import { useTheme } from 'vuetify'
+
+const theme = useTheme()
+const isLight = computed(() =&gt; theme.global.name.value === 'tiLight')
+const bgColor  = computed(() =&gt; isLight.value ? '#ffffff' : '#141824')
+const lineColor = computed(() =&gt; isLight.value ? '#1a1d27' : '#60a5fa')
+&lt;/script&gt;</pre>
+
+      <h3>7.6 Adding a New View/Page</h3>
+      <ol>
+        <li>Create <code>devices/am62dxx/ui/views/MyView.vue</code></li>
+        <li>Add a route in <code>devices/am62dxx/ui/index.js</code>:
+          <pre><span class="lang-label">javascript">{ path: '/my-view', component: () => import('./views/MyView.vue') }</pre>
+        </li>
+        <li>Add a navigation item:
+          <pre><span class="lang-label">javascript">{ icon: 'mdi-tune', title: 'My View', to: '/my-view' }</pre>
+        </li>
+      </ol>
+
+      <h3>7.7 Reusable Canvas Components</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Component</th><th>Props</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>WaveformCanvas</code></td><td><code>data[]</code>, <code>color</code></td><td>Time-domain PCM waveform</td></tr>
+            <tr><td><code>SpectrumCanvas</code></td><td><code>bins[]</code>, <code>color</code></td><td>FFT magnitude spectrum (bar chart)</td></tr>
+            <tr><td><code>SpectrogramCanvas</code></td><td><code>frames[][]</code></td><td>Rolling 2D spectrogram</td></tr>
+            <tr><td><code>RmsTable</code></td><td><code>rms[]</code>, <code>labels[]</code></td><td>RMS level per channel table</td></tr>
+            <tr><td><code>AudioPlayer</code></td><td><code>src</code>, <code>label</code></td><td>Inline HTML5 audio player</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>7.8 WebSocket Usage in Components</h3>
+      <p>The standard pattern for opening a WebSocket to a demo endpoint and handling message routing:</p>
+      <pre><span class="lang-label">vue">&lt;script setup&gt;
+import { ref, onUnmounted } from 'vue'
+
+const isRunning = ref(false)
+let ws = null
+
+function run() {
+  isRunning.value = true
+  ws = new WebSocket(`ws://${location.host}/my-demo-ws`)
+
+  ws.onmessage = (event) =&gt; {
+    const msg = JSON.parse(event.data)
+    if (msg.type === 'data')   handleData(msg.payload)
+    if (msg.type === 'error')  handleError(msg.message)
+    if (msg.type === 'exit')   { isRunning.value = false }
+  }
+
+  ws.onclose = () =&gt; { isRunning.value = false }
+  fetch('/my-demo/run', { method: 'POST' })
+}
+
+function stop() {
+  fetch('/my-demo/stop')
+  ws?.close()
+  isRunning.value = false
+}
+
+onUnmounted(stop)   // clean up if user navigates away
+
+defineExpose({ run, stop, isRunning })
+&lt;/script&gt;</pre>
+    </section>
+
+    <!-- ────────────────────────────────────────────────────────
+         8. Local Development
+    ───────────────────────────────────────────────────────── -->
+    <section class="section" id="local-dev">
+      <div class="section-header">
+        <span class="section-number">08</span>
+        <h2 class="section-title">Local Development</h2>
+      </div>
+
+      <h3>8.1 Mock Mode — No Hardware Required</h3>
+      <pre><span class="lang-label">bash"># Starts Node.js server on :3000 and Vite dev server on :5173
+make dev DEVICE=am62dxx MOCK=1</pre>
+      <p>In mock mode all hardware-dependent code paths (GStreamer spawning, ALSA device enumeration, TVM daemon queries) return synthetic data. The Vue frontend runs identically to the hardware case.</p>
+
+      <h3>8.2 With Target Hardware (Remote EVM)</h3>
+      <p>Run the Node.js server on the EVM (or forward its port via SSH), then point the Vite dev server's proxy at the EVM IP:</p>
+      <pre><span class="lang-label">bash"># On your dev machine — forward EVM port 3000 locally
+ssh -L 3000:localhost:3000 root@&lt;EVM_IP&gt;
+
+# Start Vite (proxy targets localhost:3000 → tunneled to EVM)
+cd frontend && npm run dev</pre>
+
+      <h3>8.3 Environment Variables</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Variable</th><th>Default</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><span class="var-name">PORT</span></td><td><code>3000</code></td><td>HTTP/WebSocket listen port.</td></tr>
+            <tr><td><span class="var-name">DEVICE_CONFIG</span></td><td>(required)</td><td>Absolute path to <code>device.json</code>.</td></tr>
+            <tr><td><span class="var-name">APP_DIR</span></td><td>Derived from DEVICE_CONFIG</td><td>Root directory for Vue dist and static assets. Defaults to same directory as <code>device.json</code>.</td></tr>
+            <tr><td><span class="var-name">DEMOS_DIR</span></td><td>Derived</td><td>Directory containing demo plugin subdirectories. Defaults to <code>&lt;repo-root&gt;/demos</code>.</td></tr>
+            <tr><td><span class="var-name">MOCK</span></td><td><code>0</code></td><td>Set to <code>1</code> to stub all hardware I/O.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>8.4 Running Individual Tests</h3>
+      <pre><span class="lang-label">bash"># Run server plugin tests (Jest)
+cd demos/speech-enhancement && npx jest server-plugin.test.js
+
+# Lint frontend
+cd frontend && npm run lint
+
+# Type check (if tsconfig present)
+cd frontend && npm run type-check</pre>
+
+      <div class="callout warning">
+        <strong>Windows dev machines</strong>
+        The server and Vite config use Unix paths. On Windows, run inside WSL2 or Git Bash. The Makefile targets also require a POSIX shell. Docker is an alternative: <code>docker run --rm -v $(pwd):/app -w /app node:18 make dev DEVICE=am62dxx MOCK=1</code>.
+      </div>
+    </section>
+
+    <!-- ────────────────────────────────────────────────────────
+         9. Build System
+    ───────────────────────────────────────────────────────── -->
+    <section class="section" id="build-system">
+      <div class="section-header">
+        <span class="section-number">09</span>
+        <h2 class="section-title">Build System (Makefile)</h2>
+      </div>
+
+      <p>The root <code>Makefile</code> orchestrates cross-compilation, frontend builds, and board deployment. Always pass <code>DEVICE=&lt;id&gt;</code>.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Target</th><th>Example</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>build</code></td>
+              <td><code>make build DEVICE=am62dxx CC=aarch64-linux-gnu-gcc</code></td>
+              <td>Cross-compile all native utilities in <code>devices/am62dxx/linux_app/</code> and <code>common/linux_app/</code>.</td>
+            </tr>
+            <tr>
+              <td><code>build-frontend</code></td>
+              <td><code>make build-frontend DEVICE=am62dxx</code></td>
+              <td>Runs <code>npm run build</code> in <code>frontend/</code> with the correct <code>DEVICE</code> env. Output lands in <code>devices/am62dxx/app/vue-dist/</code>.</td>
+            </tr>
+            <tr>
+              <td><code>deploy</code></td>
+              <td><code>make deploy DEVICE=am62dxx BOARD_HOST=root@10.24.50.220</code></td>
+              <td>Full deploy: cross-compile, Vite build, <code>rsync</code> everything to the EVM, restart <code>webserver-oob.service</code>.</td>
+            </tr>
+            <tr>
+              <td><code>deploy-app</code></td>
+              <td><code>make deploy-app DEVICE=am62dxx BOARD_HOST=root@10.24.50.220</code></td>
+              <td>Deploy Vue dist only (<code>vue-dist/</code>). Use after frontend-only changes to avoid a full rebuild.</td>
+            </tr>
+            <tr>
+              <td><code>deploy-server</code></td>
+              <td><code>make deploy-server DEVICE=am62dxx BOARD_HOST=root@10.24.50.220</code></td>
+              <td>Deploy <code>server.js</code> and all demo/device plugins only. Does not rebuild the frontend.</td>
+            </tr>
+            <tr>
+              <td><code>dev</code></td>
+              <td><code>make dev DEVICE=am62dxx MOCK=1</code></td>
+              <td>Start local dev stack: Node.js server + Vite hot-reload. No cross-compilation.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Cross-Compilation Toolchain</h3>
+      <pre><span class="lang-label">bash"># Install the Linaro AArch64 toolchain (Ubuntu/Debian)
+sudo apt-get install gcc-aarch64-linux-gnu
+
+# Verify
+aarch64-linux-gnu-gcc --version
+
+# Build
+make build DEVICE=am62dxx CC=aarch64-linux-gnu-gcc</pre>
+
+      <h3>Regenerating Yocto npm.inc Files</h3>
+      <p>After updating <code>package.json</code> or <code>package-lock.json</code>, regenerate the Yocto npm include files so BitBake can download the correct packages during offline builds:</p>
+      <pre><span class="lang-label">bash"># Regenerate server-side npm.inc
+node tools/generate-inc.js
+
+# Regenerate frontend npm.inc
+node tools/generate-frontend-inc.js</pre>
+    </section>
+
+    <!-- ────────────────────────────────────────────────────────
+         10. Deployment (Manual SSH)
+    ───────────────────────────────────────────────────────── -->
+    <section class="section" id="deployment">
+      <div class="section-header">
+        <span class="section-number">10</span>
+        <h2 class="section-title">Deployment (Manual SSH)</h2>
+      </div>
+
+      <p>Use these steps for manual or CI/CD deployments when the <code>make deploy</code> shortcut is not available.</p>
+
+      <pre><span class="lang-label">bash"># 1. Build the Vue frontend
+cd frontend && npm run build
+# Output: devices/am62dxx/app/vue-dist/
+
+# 2. Deploy Vue dist to EVM
+scp -r devices/am62dxx/app/vue-dist root@&lt;EVM_IP&gt;:/usr/share/webserver-oob/app/
+
+# 3. Deploy device server plugin
+scp devices/am62dxx/server-plugin.js root@&lt;EVM_IP&gt;:/usr/share/webserver-oob/server-plugin.js
+
+# 4. Deploy demo plugins (only those that changed)
+scp -r demos/my-demo root@&lt;EVM_IP&gt;:/usr/share/webserver-oob/demos/
+
+# 5. Deploy Node.js server (only if server.js changed)
+scp common/webserver/server.js root@&lt;EVM_IP&gt;:/usr/lib/node_modules/webserver-oob/
+
+# 6. Restart the systemd service
+ssh root@&lt;EVM_IP&gt; systemctl restart webserver-oob
+
+# 7. Verify
+ssh root@&lt;EVM_IP&gt; systemctl status webserver-oob
+curl http://&lt;EVM_IP&gt;/ping</pre>
+
+      <h3>EVM File Paths</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Asset</th><th>Path on EVM</th></tr></thead>
+          <tbody>
+            <tr><td>Vue dist (SPA)</td><td><code>/usr/share/webserver-oob/app/vue-dist/</code></td></tr>
+            <tr><td>Device JSON</td><td><code>/usr/share/webserver-oob/device.json</code></td></tr>
+            <tr><td>Device plugin</td><td><code>/usr/share/webserver-oob/server-plugin.js</code></td></tr>
+            <tr><td>Demo plugins</td><td><code>/usr/share/webserver-oob/demos/&lt;id&gt;/server-plugin.js</code></td></tr>
+            <tr><td>Node.js server</td><td><code>/usr/lib/node_modules/webserver-oob/server.js</code></td></tr>
+            <tr><td>Environment config</td><td><code>/etc/webserver-oob.conf</code></td></tr>
+            <tr><td>systemd service</td><td><code>/usr/lib/systemd/system/webserver-oob.service</code></td></tr>
+            <tr><td>TVM artifacts</td><td><code>/usr/share/tvm_inference/artifacts/</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Service Management</h3>
+      <pre><span class="lang-label">bash"># View service logs (last 100 lines, follow)
+ssh root@&lt;EVM_IP&gt; journalctl -u webserver-oob -n 100 -f
+
+# Restart after config change
+ssh root@&lt;EVM_IP&gt; systemctl restart webserver-oob
+
+# Stop service (useful during heavy file transfers)
+ssh root@&lt;EVM_IP&gt; systemctl stop webserver-oob
+
+# Check open ports
+ssh root@&lt;EVM_IP&gt; ss -tlnp | grep node</pre>
+
+      <div class="callout info">
+        <strong>Nginx Reverse Proxy</strong>
+        The EVM runs nginx to proxy port 80 &rarr; Node.js on port 3000. When connecting from a browser, use port 80 (default). Use port 3000 only for direct API testing or when nginx is not running. WebSocket connections use the standard <code>ws://&lt;EVM_IP&gt;/&lt;path&gt;</code> form — nginx forwards these transparently.
+      </div>
+    </section>
+
+    <!-- ────────────────────────────────────────────────────────
+         11. Yocto Recipe
+    ───────────────────────────────────────────────────────── -->
+    <section class="section" id="yocto">
+      <div class="section-header">
+        <span class="section-number">11</span>
+        <h2 class="section-title">Yocto Recipe (meta-tisdk)</h2>
+      </div>
+
+      <p>The Yocto recipe <code>webserver-oob_git.bb</code> in <code>meta-tisdk_vs</code> builds and installs the entire portal from source during image generation.</p>
+
+      <h3>Key Recipe Tasks</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Task</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>do_fetch</code></td><td>Clones source using <code>AUTOREV</code> — always pulls the latest commit on the configured branch.</td></tr>
+            <tr><td><code>do_npm_unpack</code></td><td>Unpacks pre-fetched server-side npm packages from <code>webserver-oob-npm.inc</code>.</td></tr>
+            <tr><td><code>do_frontend_npm_unpack</code></td><td>Unpacks pre-fetched frontend npm packages from <code>webserver-oob-frontend-npm.inc</code>.</td></tr>
+            <tr><td><code>do_compile</code></td><td>Cross-compiles native utilities in <code>linux_app/</code> using the SDK toolchain.</td></tr>
+            <tr><td><code>do_compile:append:am62dxx</code></td><td>Runs <code>npm run build</code> via Vite to produce the Vue SPA for AM62D.</td></tr>
+            <tr><td><code>do_install</code></td><td>Copies binaries, plugins, SPA, and device.json to correct image paths.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Triggering a Rebuild After Source Changes</h3>
+      <p>Because <code>SRCREV = "${AUTOREV}"</code>, BitBake automatically detects new commits on the next build. No manual recipe changes are needed for source updates.</p>
+      <pre><span class="lang-label">bash"># On your build machine (after committing and pushing changes):
+bitbake webserver-oob -c cleanall
+bitbake webserver-oob
+
+# Or rebuild the full image:
+bitbake tisdk-default-image</pre>
+
+      <h3>PR Bump for Metadata Changes</h3>
+      <p>Increment the <code>PR</code> variable in the recipe when non-source metadata changes (install paths, <code>RDEPENDS</code>, <code>FILES</code> entries, etc.) to invalidate the sstate cache:</p>
+      <pre><span class="lang-label">bitbake">PR = "r4"   # was r3 — bump for new RDEPENDS entry</pre>
+
+      <h3>Adding a New Device to the Recipe</h3>
+      <pre><span class="lang-label">bitbake">COMPATIBLE_MACHINE = "am62dxx|am62xx|&lt;new-id&gt;"
+
+DEVICE_ID:&lt;new-id&gt; = "&lt;new-id&gt;"
+
+RDEPENDS:${PN}:&lt;new-id&gt; = " \
+    nodejs \
+    gstreamer1.0-plugins-bad \
+    my-native-dep \
+"
+
+# If this device uses the Vue frontend:
+do_compile:append:&lt;new-id&gt; () {
+    cd ${S}/frontend
+    npm run build
+}</pre>
+
+      <div class="callout warning">
+        <strong>npm.inc Files Must Be Current</strong>
+        BitBake downloads npm packages during <code>do_fetch</code> using the checksums in <code>webserver-oob-npm.inc</code> and <code>webserver-oob-frontend-npm.inc</code>. After any <code>package.json</code> change, run <code>node tools/generate-inc.js</code> and <code>node tools/generate-frontend-inc.js</code>, commit the updated <code>.inc</code> files, then rebuild.
+      </div>
+    </section>
+
+    <!-- ────────────────────────────────────────────────────────
+         12. REST API Reference
+    ───────────────────────────────────────────────────────── -->
+    <section class="section" id="api-reference">
+      <div class="section-header">
+        <span class="section-number">12</span>
+        <h2 class="section-title">REST API Reference (AM62D)</h2>
+      </div>
+
+      <p>All endpoints are relative to the server root (e.g. <code>http://&lt;EVM_IP&gt;/version</code>). WebSocket URLs use the same host with <code>ws://</code> scheme.</p>
+
+      <!-- Core Server -->
+      <h3>Core Server</h3>
+      <div class="api-group">
+        <div class="api-entry">
+          <div class="api-entry-header">
+            <span class="method get">GET</span>
+            <span class="api-path">/version</span>
+          </div>
+          <div class="api-desc">Returns <code>{ version, buildDate, serverStarted }</code>. Version comes from <code>package.json</code>.</div>
+        </div>
+        <div class="api-entry">
+          <div class="api-entry-header">
+            <span class="method get">GET</span>
+            <span class="api-path">/device-info</span>
+          </div>
+          <div class="api-desc">Returns the parsed <code>device.json</code> object including <code>id</code>, <code>displayName</code>, <code>soc</code>, <code>demos</code>, and <code>boards</code>.</div>
+        </div>
+        <div class="api-entry">
+          <div class="api-entry-header">
+            <span class="method get">GET</span>
+            <span class="api-path">/demo-manifests</span>
+          </div>
+          <div class="api-desc">Returns an array of all loaded demo <code>manifest.json</code> objects for this device.</div>
+        </div>
+        <div class="api-entry">
+          <div class="api-entry-header">
+            <span class="method get">GET</span>
+            <span class="api-path">/ping</span>
+          </div>
+          <div class="api-desc">Health check — returns HTTP 200 with body <code>pong</code>. Use for monitoring and readiness probes.</div>
+        </div>
+        <div class="api-entry">
+          <div class="api-entry-header">
+            <span class="method ws">WS</span>
+            <span class="api-path">/ws</span>
+          </div>
+          <div class="api-desc">Periodic CPU and system metrics. Emits <code>{ type: 'cpu', cpuPercent, loadAvg, memUsed, memTotal }</code>.</div>
+        </div>
+      </div>
+
+      <!-- Device Plugin -->
+      <h3>Device Plugin</h3>
+      <div class="api-group">
+        <div class="api-entry">
+          <div class="api-entry-header">
+            <span class="method post">POST</span>
+            <span class="api-path">/system/reboot</span>
+          </div>
+          <div class="api-desc">Triggers a system reboot after a 500 ms delay. Returns <code>{ ok: true }</code> immediately.</div>
+        </div>
+        <div class="api-entry">
+          <div class="api-entry-header">
+            <span class="method post">POST</span>
+            <span class="api-path">/system/poweroff</span>
+          </div>
+          <div class="api-desc">Triggers a system power-off after a 500 ms delay. Returns <code>{ ok: true }</code> immediately.</div>
+        </div>
+        <div class="api-entry">
+          <div class="api-entry-header">
+            <span class="method get">GET</span>
+            <span class="api-path">/model-inspector-list</span>
+          </div>
+          <div class="api-desc">Returns <code>{ files: [filename, ...] }</code> — list of uploaded model HTML inspection files.</div>
+        </div>
+        <div class="api-entry">
+          <div class="api-entry-header">
+            <span class="method post">POST</span>
+            <span class="api-path">/upload-model-file</span>
+          </div>
+          <div class="api-desc">Multipart upload for model inspector HTML files. Maximum 100 MB. Returns <code>{ ok: true, filename }</code>.</div>
+        </div>
+        <div class="api-entry">
+          <div class="api-entry-header">
+            <span class="method get">GET</span>
+            <span class="api-path">/cpu-stats</span>
+          </div>
+          <div class="api-desc">Returns current CPU utilization snapshot: <code>{ cpuPercent, loadAvg, memUsed, memTotal }</code>.</div>
+        </div>
+      </div>
+
+      <!-- Speech Enhancement -->
+      <h3>Speech Enhancement</h3>
+      <div class="api-group">
+        <div class="api-entry">
+          <div class="api-entry-header">
+            <span class="method get">GET</span>
+            <span class="api-path">/speech-devices</span>
+          </div>
+          <div class="api-desc">Returns available ALSA input devices: <code>{ devices: [{ name, id }] }</code>.</div>
+        </div>
+        <div class="api-entry">
+          <div class="api-entry-header">
+            <span class="method get">GET</span>
+            <span class="api-path">/speech-output-devices</span>
+          </div>
+          <div class="api-desc">Returns available ALSA output devices for playback selection.</div>
+        </div>
+        <div class="api-entry">
+          <div class="api-entry-header">
+            <span class="method get">GET</span>
+            <span class="api-path">/start-speech-enhancement</span>
+          </div>
+          <div class="api-desc">Query params: <code>device=hw:1,0</code> (input), <code>outputDevice=hw:0,0</code> (output), optional model override. Starts the GStreamer enhancement pipeline.</div>
+        </div>
+        <div class="api-entry">
+          <div class="api-entry-header">
+            <span class="method get">GET</span>
+            <span class="api-path">/stop-speech-enhancement</span>
+          </div>
+          <div class="api-desc">Stops the running enhancement pipeline. Returns <code>{ stopped: true }</code>.</div>
+        </div>
+        <div class="api-entry">
+          <div class="api-entry-header">
+            <span class="method get">GET</span>
+            <span class="api-path">/speech-enhancement/status</span>
+          </div>
+          <div class="api-desc">Returns <code>{ running: bool, device, uptime }</code>.</div>
+        </div>
+        <div class="api-entry">
+          <div class="api-entry-header">
+            <span class="method get">GET</span>
+            <span class="api-path">/tvm-daemon/status</span>
+          </div>
+          <div class="api-desc">Returns TVM daemon readiness: <code>{ state: 'ready' | 'loading' | 'error', message }</code>. Poll this after starting the pipeline to detect when model loading is complete.</div>
+        </div>
+        <div class="api-entry">
+          <div class="api-entry-header">
+            <span class="method ws">WS</span>
+            <span class="api-path">/speech</span>
+          </div>
+          <div class="api-desc">
+            Real-time stream from the speech enhancement pipeline.<br>
+            Message types: <code>'spectrum'</code> (FFT data), <code>'timing'</code> (DSP latency), <code>'model_loading'</code> (TVM init progress), <code>'error'</code>.
+          </div>
+        </div>
+      </div>
+
+      <!-- Audio Classification -->
+      <h3>Audio Classification</h3>
+      <div class="api-group">
+        <div class="api-entry">
+          <div class="api-entry-header">
+            <span class="method get">GET</span>
+            <span class="api-path">/audio-devices</span>
+          </div>
+          <div class="api-desc">Returns <code>{ devices: [{name, id}], files: [{name, path}] }</code> — ALSA inputs plus available audio files.</div>
+        </div>
+        <div class="api-entry">
+          <div class="api-entry-header">
+            <span class="method get">GET</span>
+            <span class="api-path">/audio-classification/models</span>
+          </div>
+          <div class="api-desc">Returns <code>{ models: [{ id, name, artifact }] }</code> — available TVM classification models.</div>
+        </div>
+        <div class="api-entry">
+          <div class="api-entry-header">
+            <span class="method get">GET</span>
+            <span class="api-path">/start-audio-classification</span>
+          </div>
+          <div class="api-desc">Query params: <code>model=yamnet</code>, <code>device=file</code> or <code>hw:1,0</code>, <code>file=&lt;filename&gt;</code> (when device=file). Starts the classification pipeline.</div>
+        </div>
+        <div class="api-entry">
+          <div class="api-entry-header">
+            <span class="method get">GET</span>
+            <span class="api-path">/stop-audio-classification</span>
+          </div>
+          <div class="api-desc">Stops the running classification pipeline. Returns <code>{ stopped: true }</code>.</div>
+        </div>
+        <div class="api-entry">
+          <div class="api-entry-header">
+            <span class="method ws">WS</span>
+            <span class="api-path">/audio</span>
+          </div>
+          <div class="api-desc">
+            Real-time classification results.<br>
+            Message types: <code>'result'</code> (<code>{ labels: [{label, score}] }</code>), <code>'status'</code>, <code>'model_loading'</code>, <code>'error'</code>.
+          </div>
+        </div>
+      </div>
+
+      <!-- GStreamer Pipeline -->
+      <h3>GStreamer Pipeline (Custom)</h3>
+      <div class="api-group">
+        <div class="api-entry">
+          <div class="api-entry-header">
+            <span class="method get">GET</span>
+            <span class="api-path">/gst/artifacts</span>
+          </div>
+          <div class="api-desc">Returns <code>{ artifacts: [{ name, path, fileCount, files: [] }], dir }</code> — TVM artifact directories available for use in pipelines.</div>
+        </div>
+        <div class="api-entry">
+          <div class="api-entry-header">
+            <span class="method post">POST</span>
+            <span class="api-path">/gst/upload-artifact?name=&lt;dir&gt;</span>
+          </div>
+          <div class="api-desc">Upload a <code>.tar.gz</code> archive. Extracted to <code>/usr/share/tvm_inference/artifacts/&lt;dir&gt;/</code>. Returns <code>{ ok: true, path }</code>.</div>
+        </div>
+        <div class="api-entry">
+          <div class="api-entry-header">
+            <span class="method get">GET</span>
+            <span class="api-path">/gst/input-files</span>
+          </div>
+          <div class="api-desc">Returns <code>{ files: [{ name, path, size }], dir }</code> — audio input files available for pipeline use.</div>
+        </div>
+        <div class="api-entry">
+          <div class="api-entry-header">
+            <span class="method post">POST</span>
+            <span class="api-path">/gst/upload-input?filename=&lt;name&gt;</span>
+          </div>
+          <div class="api-desc">Upload an audio file (WAV). Stored in the input directory. Returns <code>{ ok: true, path }</code>.</div>
+        </div>
+        <div class="api-entry">
+          <div class="api-entry-header">
+            <span class="method get">GET</span>
+            <span class="api-path">/gst/saved-pipelines</span>
+          </div>
+          <div class="api-desc">Returns <code>{ pipelines: [{ id, name, command }] }</code> — user-saved pipeline presets.</div>
+        </div>
+        <div class="api-entry">
+          <div class="api-entry-header">
+            <span class="method post">POST</span>
+            <span class="api-path">/gst/save-pipeline</span>
+          </div>
+          <div class="api-desc">Body: <code>{ id? (for update), name, command }</code>. Returns <code>{ pipeline: { id, name, command } }</code>.</div>
+        </div>
+        <div class="api-entry">
+          <div class="api-entry-header">
+            <span class="method delete">DELETE</span>
+            <span class="api-path">/gst/saved-pipeline?id=&lt;id&gt;</span>
+          </div>
+          <div class="api-desc">Delete a saved pipeline preset. Returns HTTP 200.</div>
+        </div>
+        <div class="api-entry">
+          <div class="api-entry-header">
+            <span class="method post">POST</span>
+            <span class="api-path">/gst/run</span>
+          </div>
+          <div class="api-desc">Body: <code>{ command: "gst-launch-1.0 ..." }</code>. Spawns the pipeline. Output streamed via WebSocket. Returns <code>{ started: true }</code>.</div>
+        </div>
+        <div class="api-entry">
+          <div class="api-entry-header">
+            <span class="method post">POST</span>
+            <span class="api-path">/gst/stop</span>
+          </div>
+          <div class="api-desc">Sends SIGTERM to the running pipeline process. Returns <code>{ stopped: true }</code>.</div>
+        </div>
+        <div class="api-entry">
+          <div class="api-entry-header">
+            <span class="method ws">WS</span>
+            <span class="api-path">/gst</span>
+          </div>
+          <div class="api-desc">
+            Pipeline lifecycle and log stream.<br>
+            Message types: <code>'connected'</code>, <code>'started'</code> (PID), <code>'log'</code> (stdout/stderr line), <code>'error'</code>, <code>'exit'</code> (<code>{ code }</code>).
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+</div>
+
+<script>
+// Highlight active TOC entry based on scroll position
+(function() {
+  const links = document.querySelectorAll('.toc-list a')
+  const sections = []
+
+  links.forEach(link => {
+    const id = link.getAttribute('href').slice(1)
+    const el = document.getElementById(id)
+    if (el) sections.push({ id, el, link })
+  })
+
+  function onScroll() {
+    let active = sections[0]
+    for (const s of sections) {
+      const rect = s.el.getBoundingClientRect()
+      if (rect.top <= 100) active = s
+    }
+    links.forEach(l => l.classList.remove('active'))
+    if (active) active.link.classList.add('active')
+  }
+
+  window.addEventListener('scroll', onScroll, { passive: true })
+  onScroll()
+})()
+</script>
+
+</body>
+</html>

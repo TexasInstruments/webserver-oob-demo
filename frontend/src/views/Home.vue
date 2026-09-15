@@ -88,13 +88,15 @@
               <span class="metric-val">{{ m.value }}</span>
             </div>
             <div v-if="m.pct !== null" class="bar-track">
-              <div class="bar-fill" :class="m.color" :style="{ width: m.pct + '%' }" />
+              <div class="bar-fill" :class="m.color" :style="{ transform: 'scaleX(' + m.pct / 100 + ')' }" />
             </div>
           </div>
         </v-card>
+
       </div>
 
     </div>
+
   </div>
 </template>
 
@@ -282,7 +284,8 @@ onUnmounted(() => timers.forEach(clearInterval))
 .metric-lbl { color:#94a3b8; }
 .metric-val { color:rgb(var(--v-theme-on-surface)); font-weight:600; }
 .bar-track  { height:6px; background:rgb(var(--v-theme-surface-variant)); border-radius:4px; overflow:hidden; }
-.bar-fill   { height:100%; border-radius:4px; transition:width 1.2s ease; }
+.bar-fill   { height:100%; border-radius:4px; transform-origin:left; transition:transform 1.2s ease; }
 .bar-green  { background: linear-gradient(90deg,#16a34a,#4ade80); }
 .bar-purple { background: linear-gradient(90deg,#7c3aed,#c084fc); }
+
 </style>

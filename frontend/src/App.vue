@@ -13,51 +13,48 @@
         </div>
       </div>
 
-      <div class="sidebar-inner">
-        <v-list density="compact" nav class="sidebar-nav">
+      <v-list density="compact" nav class="sidebar-nav">
+        <v-list-item
+          prepend-icon="mdi-home-outline"
+          title="Home"
+          to="/home"
+          class="nav-item"
+        />
+
+        <template v-for="group in navItems" :key="group.section">
+          <v-list-subheader class="nav-lbl">{{ group.section }}</v-list-subheader>
           <v-list-item
-            prepend-icon="mdi-home-outline"
-            title="Home"
-            to="/home"
+            v-for="item in group.items"
+            :key="item.to"
+            :prepend-icon="item.icon"
+            :title="item.title"
+            :to="item.to"
             class="nav-item"
           />
+        </template>
 
-          <template v-for="group in navItems" :key="group.section">
-            <v-list-subheader class="nav-lbl">{{ group.section }}</v-list-subheader>
-            <v-list-item
-              v-for="item in group.items"
-              :key="item.to"
-              :prepend-icon="item.icon"
-              :title="item.title"
-              :to="item.to"
-              class="nav-item"
-            />
-          </template>
+        <v-list-subheader class="nav-lbl">System</v-list-subheader>
 
-          <v-list-subheader class="nav-lbl">System</v-list-subheader>
-
-          <v-list-item
-            prepend-icon="mdi-monitor"
-            title="Device Info"
-            class="nav-item"
-            @click="openDeviceInfo"
-          />
-          <v-list-item
-            prepend-icon="mdi-file-document-outline"
-            title="Logs"
-            to="/logs"
-            class="nav-item"
-          />
-          <v-list-item
-            prepend-icon="mdi-help-circle-outline"
-            title="Help"
-            href="https://e2e.ti.com/support/processors/"
-            target="_blank"
-            class="nav-item"
-          />
-        </v-list>
-
-      </div>
+        <v-list-item
+          prepend-icon="mdi-monitor"
+          title="Device Info"
+          class="nav-item"
+          @click="openDeviceInfo"
+        />
+        <v-list-item
+          prepend-icon="mdi-file-document-outline"
+          title="Logs"
+          to="/logs"
+          class="nav-item"
+        />
+        <v-list-item
+          prepend-icon="mdi-help-circle-outline"
+          title="Help"
+          href="https://e2e.ti.com/support/processors/"
+          target="_blank"
+          class="nav-item"
+        />
+      </v-list>
     </v-navigation-drawer>
 
     <!-- ── APP BAR (top navbar) ── -->
@@ -72,6 +69,36 @@
         </div>
 
         <v-divider vertical class="mx-3" style="height:32px;align-self:center;" />
+
+        <v-tooltip text="Reboot EVM" location="bottom">
+          <template #activator="{ props }">
+            <v-btn
+              v-bind="props"
+              icon="mdi-restart"
+              variant="tonal"
+              size="small"
+              color="warning"
+              class="mr-1"
+              @click="confirmAction('reboot')"
+            />
+          </template>
+        </v-tooltip>
+
+        <v-tooltip text="Power Off EVM" location="bottom">
+          <template #activator="{ props }">
+            <v-btn
+              v-bind="props"
+              icon="mdi-power"
+              variant="tonal"
+              size="small"
+              color="error"
+              class="mr-2"
+              @click="confirmAction('poweroff')"
+            />
+          </template>
+        </v-tooltip>
+
+        <v-divider vertical class="mr-3" style="height:32px;align-self:center;" />
 
         <v-btn
           :icon="theme === 'tiDark' ? 'mdi-weather-night' : 'mdi-weather-sunny'"
@@ -88,7 +115,11 @@
     <v-main style="height:100vh;overflow:hidden;">
       <div style="height:100%;display:flex;flex-direction:column;overflow:hidden;">
         <div style="flex:1;overflow:hidden;">
-          <router-view />
+          <router-view v-slot="{ Component }">
+            <Transition name="page-fade" mode="out-in">
+              <component :is="Component" :key="$route.path" />
+            </Transition>
+          </router-view>
         </div>
 
         <!-- ── STATUS BAR (footer) ── -->
@@ -99,7 +130,7 @@
           </div>
           <div class="sb-item">
             CPU Load: <span>{{ stats.cpu.value }}%</span>
-            <div class="bar-t"><div class="bar-f g" :style="{ width: stats.cpu.value + '%' }" /></div>
+            <div class="bar-t"><div class="bar-f g" :style="{ transform: 'scaleX(' + stats.cpu.value / 100 + ')' }" /></div>
           </div>
           <div class="sb-item">
             RAM: <span class="sb-ram">{{ stats.ramUsed.value }} / {{ stats.ramFree.value }}</span>
@@ -155,6 +186,42 @@
         </div>
       </div>
     </div>
+
+    <!-- ── POWER CONTROL DIALOG ── -->
+    <v-dialog v-model="powerDialog" max-width="360" persistent>
+      <v-card class="sys-card" rounded="lg">
+        <div class="sys-hdr">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <v-icon :color="powerTarget === 'poweroff' ? 'error' : 'warning'" size="18">
+              {{ powerTarget === 'poweroff' ? 'mdi-power' : 'mdi-restart' }}
+            </v-icon>
+            <span>{{ powerTarget === 'poweroff' ? 'Power Off EVM?' : 'Reboot EVM?' }}</span>
+          </div>
+          <v-btn icon size="small" variant="text" @click="powerDialog = false">
+            <v-icon size="18">mdi-close</v-icon>
+          </v-btn>
+        </div>
+        <div class="sys-body" style="padding-bottom:8px;">
+          <p style="font-size:13px;color:#94a3b8;line-height:1.65;padding:8px 0;">
+            {{ powerTarget === 'poweroff'
+              ? 'The EVM will shut down immediately. Physical access is required to power it back on.'
+              : 'The EVM will restart. The portal will be unavailable for ~30 seconds, then reconnect automatically.'
+            }}
+          </p>
+          <v-alert v-if="powerMsg" :type="powerMsgType" density="compact" variant="tonal" class="mb-2">{{ powerMsg }}</v-alert>
+        </div>
+        <v-card-actions class="px-4 pb-4">
+          <v-spacer />
+          <v-btn variant="text" :disabled="!!powerLoading" @click="powerDialog = false">Cancel</v-btn>
+          <v-btn
+            :color="powerTarget === 'poweroff' ? 'error' : 'warning'"
+            variant="flat"
+            :loading="!!powerLoading"
+            @click="doPowerAction"
+          >Confirm</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
 
   </v-app>
 </template>
@@ -266,6 +333,38 @@ async function openDeviceInfo() {
   } catch (_) {}
 }
 
+/* ── Power control ── */
+const powerDialog  = ref(false)
+const powerTarget  = ref('')
+const powerLoading = ref('')
+const powerMsg     = ref('')
+const powerMsgType = ref('success')
+
+function confirmAction(action) {
+  powerTarget.value  = action
+  powerMsg.value     = ''
+  powerLoading.value = ''
+  powerDialog.value  = true
+}
+
+async function doPowerAction() {
+  const action = powerTarget.value
+  powerLoading.value = action
+  powerMsg.value     = ''
+  try {
+    const res = await fetch(`/system/${action}`, { method: 'POST' })
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    powerMsgType.value = 'success'
+    powerMsg.value = action === 'reboot'
+      ? 'Rebooting… portal will reconnect automatically.'
+      : 'Powering off… the EVM is shutting down.'
+  } catch (e) {
+    powerMsgType.value = 'error'
+    powerMsg.value     = `Failed: ${e.message}`
+    powerLoading.value = ''
+  }
+}
+
 </script>
 
 <style>
@@ -308,7 +407,7 @@ async function openDeviceInfo() {
 .statusbar { background:rgb(var(--v-theme-surface)); border-top:1px solid rgba(var(--v-border-color),var(--v-border-opacity)); height:42px; padding:0 20px; display:flex; align-items:center; gap:20px; flex-shrink:0; font-size:12px; }
 .sb-item   { display:flex; align-items:center; gap:7px; color:#94a3b8; white-space:nowrap; }
 .bar-t { width:58px; height:5px; background:rgb(var(--v-theme-surface-variant)); border-radius:3px; overflow:hidden; }
-.bar-f { height:100%; border-radius:3px; transition:width 1s ease; }
+.bar-f { height:100%; border-radius:3px; transform-origin:left; transition:transform 1s ease; }
 .bar-f.g { background:linear-gradient(90deg,#16a34a,#4ade80); }
 .sb-ram    { color:#c084fc; font-weight:600; }
 .sb-spacer { flex:1; }
@@ -334,4 +433,10 @@ async function openDeviceInfo() {
 .disc-msg   { font-size:13px;color:#94a3b8;line-height:1.7; }
 .disc-spin  { display:flex;align-items:center;gap:12px;margin-top:4px; }
 .disc-sec   { font-size:13px;color:#64748b; }
+
+/* Page transition */
+.page-fade-enter-active,
+.page-fade-leave-active { transition: opacity 0.15s ease; }
+.page-fade-enter-from,
+.page-fade-leave-to    { opacity: 0; }
 </style>

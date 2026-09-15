@@ -10,8 +10,28 @@
     }
   ],
   "soc": "AM62Dx quad Cortex-A53 @ 1.4GHz + C7x DSP",
-  "demos": ["cpu-monitor", "tvm-inference", "audio-classification", "speech-enhancement", "audio-offload", "2dfft", "sigchain-biquad"],
+  "demos": ["cpu-monitor", "tvm-inference", "audio-classification", "speech-enhancement", "audio-offload", "2dfft", "sigchain-biquad", "gst-pipeline"],
   "demoConfig": {
+    "audio-classification": {
+      "edgeAiBinary": "/usr/bin/rpmsg_inference_example",
+      "defaultModel": "yamnet",
+      "models": {
+        "yamnet": {
+          "label": "YAMNet",
+          "jsonFile": "/usr/share/tvm_inference/json/pipeline_audio_classification_yamnet.json",
+          "description": "521 AudioSet classes · MobileNet v1"
+        },
+        "vggish": {
+          "label": "VGGish",
+          "jsonFile": "/usr/share/tvm_inference/json/pipeline_audio_classification_vggish.json",
+          "description": "10 UrbanSound8K classes · VGGish features"
+        }
+      },
+      "inputPath": "/usr/share/tvm_inference/input/input_audio.wav",
+      "captureSeconds": 1,
+      "sampleRate": 16000,
+      "preloadTvm": false
+    },
     "2dfft": {
       "binPath": "/usr/bin/rpmsg_2dfft_example"
     },
@@ -30,6 +50,10 @@
       "inputPath": "/usr/share/tvm_inference/input/input_audio.wav",
       "streamSocket": "/tmp/edge-ai-speech.sock",
       "outputName": "processed_output.wav"
+    },
+    "gst-pipeline": {
+      "artifactsDir": "/usr/share/tvm_inference/artifacts",
+      "inputDir":     "/usr/share/tvm_inference/input"
     },
     "tvm-inference": {
       "edgeAiBinary": "/usr/bin/rpmsg_inference_example",

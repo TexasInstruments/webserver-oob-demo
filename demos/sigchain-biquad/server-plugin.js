@@ -215,7 +215,7 @@ module.exports = function registerSigchainBiquad(app, wss, device) {
             return res.send('rpmsg_sigchain_biquad_example already running');
         }
 
-        const dspError = demoCoordinator.acquireDsp('sigchain-biquad');
+        const dspError = demoCoordinator.acquireDsp('sigchain-biquad', req.ip);
         if (dspError) return res.status(409).send(dspError);
 
         if (autoStopTimer) clearTimeout(autoStopTimer);
@@ -253,6 +253,8 @@ module.exports = function registerSigchainBiquad(app, wss, device) {
 
     app.get('/sigchain-biquad/stop', (req, res) => {
         if (MOCK) { _stopMock(); return res.send('sigchain-biquad stopped (MOCK)'); }
+        const denied = demoCoordinator.checkStopAuthorised('sigchain-biquad', req.ip);
+        if (denied) return res.status(403).send(denied);
         _stopProc();
         res.send('sigchain-biquad stopped');
     });
@@ -266,6 +268,8 @@ module.exports = function registerSigchainBiquad(app, wss, device) {
 
     app.get('/sigchain-biquad/stop-audio', (req, res) => {
         if (MOCK) return res.send('stop (MOCK)');
+        const denied = demoCoordinator.checkStopAuthorised('sigchain-biquad', req.ip);
+        if (denied) return res.status(403).send(denied);
         if (autoStopTimer) clearTimeout(autoStopTimer);
         sendCmd('STOP');
         setTimeout(() => sendCmd('CODEC_SHUTDOWN'), 100);

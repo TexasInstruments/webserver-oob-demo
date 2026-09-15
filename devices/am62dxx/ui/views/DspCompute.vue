@@ -43,7 +43,9 @@
 
       <!-- Active demo -->
       <div class="demo-panel">
-        <component :is="currentComponent" ref="activeDemoRef" @running-change="onRunningChange" />
+        <Transition name="demo-fade" mode="out-in">
+          <component :is="currentComponent" :key="activeIdx" ref="activeDemoRef" @running-change="onRunningChange" />
+        </Transition>
       </div>
 
     </div>
@@ -51,10 +53,10 @@
 </template>
 
 <script setup>
-import { ref, shallowRef, onUnmounted } from 'vue'
-import AudioOffload   from '../demos/AudioOffload.vue'
-import TwoDeeFft      from '../demos/2DFft.vue'
-import SigchainBiquad from '../demos/SigchainBiquad.vue'
+import { ref, shallowRef, onUnmounted, defineAsyncComponent } from 'vue'
+const AudioOffload   = defineAsyncComponent(() => import('../demos/AudioOffload.vue'))
+const TwoDeeFft      = defineAsyncComponent(() => import('../demos/2DFft.vue'))
+const SigchainBiquad = defineAsyncComponent(() => import('../demos/SigchainBiquad.vue'))
 import { registerRunningDemo, clearRunningDemo } from '@/composables/useDemoSession'
 
 const demoList = [
@@ -123,4 +125,10 @@ onUnmounted(() => {
 .dsi-name { font-size:13px;font-weight:600;color:rgb(var(--v-theme-on-surface)); }
 .dsi-sub  { font-size:11px;color:#64748b;margin-top:2px; }
 .dsi-arr  { color:#d97706;font-size:16px;flex-shrink:0; }
+
+/* Demo switch transition */
+.demo-fade-enter-active,
+.demo-fade-leave-active { transition: opacity 0.12s ease; }
+.demo-fade-enter-from,
+.demo-fade-leave-to    { opacity: 0; }
 </style>

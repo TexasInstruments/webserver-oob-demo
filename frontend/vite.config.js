@@ -48,6 +48,18 @@ export default defineConfig({
   build: {
     outDir: `../devices/${DEVICE}/app/vue-dist`,
     emptyOutDir: true,
+    reportCompressedSize: false,
+    chunkSizeWarningLimit: 600,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('/node_modules/vuetify/'))  return 'vuetify'
+          if (id.includes('/node_modules/vue')   ||
+              id.includes('/node_modules/@vue/')) return 'vue'
+          if (id.includes('/node_modules/'))          return 'vendor'
+        },
+      },
+    },
   },
   server: {
     port: 5173,
@@ -58,12 +70,18 @@ export default defineConfig({
       '/upload-speech-enhancement-file':  BACKEND,
       '/speech-devices':                  BACKEND,
       '/speech-output-devices':           BACKEND,
+      '/audio-devices':                   BACKEND,
+      '/start-audio-classification':      BACKEND,
+      '/stop-audio-classification':       BACKEND,
       '/tvm-inference':                   BACKEND,
       '/tvm-daemon':                      BACKEND,
+      '/gst':    { target: 'ws://localhost:3000', ws: true },
       '/cpu-stats':                       BACKEND,
       '/version':                         BACKEND,
+      '/system/':                         BACKEND,
       '/ws':     { target: 'ws://localhost:3000', ws: true },
       '/speech': { target: 'ws://localhost:3000', ws: true },
+      '/audio':  { target: 'ws://localhost:3000', ws: true },
     },
   },
 })

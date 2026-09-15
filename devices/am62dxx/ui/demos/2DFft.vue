@@ -134,7 +134,7 @@ function run() {
   fft2d.load='--%'; fft2d.cycles='--'; fft2d.ddr='-- MB/s'
   if (fft2dLogEl.value) fft2dLogEl.value.innerHTML = ''
   fetch('/2dfft/run')
-    .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status) })
+    .then(r => r.ok ? r : r.text().then(t => { let m = t; try { m = JSON.parse(t).error || t } catch (_) {} throw new Error(m || 'HTTP ' + r.status) }))
     .then(() => connectFft2dWs())
     .catch(err => { fft2d.statusMsg = 'Error: ' + err.message; fft2d.statusColor = '#ef4444'; fft2d.statusPulse = false; fft2d.running = false; emit('running-change', false) })
 }

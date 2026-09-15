@@ -17,7 +17,7 @@
         variant="flat"
         size="small"
         :disabled="!canRun && !demoRunning"
-        :prepend-icon="demoRunning ? 'mdi-stop' : (!tvmReady && !tvmWasReady) ? 'mdi-loading' : 'mdi-play'"
+        :prepend-icon="demoRunning ? 'mdi-stop' : (!tvmReady && !tvmWasReady) ? 'mdi-cog-sync-outline' : 'mdi-play'"
         class="run-btn"
         @click="triggerRun"
       >{{ demoRunning ? 'Stop Demo' : (!tvmReady && !tvmWasReady) ? 'Preparing Demo…' : 'Run Demo' }}</v-btn>
@@ -30,7 +30,7 @@
       variant="tonal"
       density="compact"
       class="preparing-alert"
-      icon="mdi-loading"
+      icon="mdi-cog-sync-outline"
       aria-live="polite"
     >
       <span class="preparing-txt">
@@ -68,7 +68,9 @@
 
       <!-- Active demo panel -->
       <div class="demo-panel">
-        <component :is="currentComponent" ref="activeDemo" @running-change="onRunningChange" />
+        <Transition name="demo-fade" mode="out-in">
+          <component :is="currentComponent" :key="activeIdx" ref="activeDemo" @running-change="onRunningChange" />
+        </Transition>
       </div>
 
     </div>
@@ -77,10 +79,11 @@
 </template>
 
 <script setup>
-import { ref, computed, shallowRef, watch, onMounted, onUnmounted } from 'vue'
-import SpeechEnhancement  from '../demos/SpeechEnhancement.vue'
-import TvmInference        from '../demos/TvmInference.vue'
-import AudioClassification from '@/demos/AudioClassification.vue'
+import { ref, computed, shallowRef, watch, onMounted, onUnmounted, defineAsyncComponent } from 'vue'
+const SpeechEnhancement  = defineAsyncComponent(() => import('../demos/SpeechEnhancement.vue'))
+const TvmInference        = defineAsyncComponent(() => import('../demos/TvmInference.vue'))
+const AudioClassification = defineAsyncComponent(() => import('@/demos/AudioClassification.vue'))
+const GStreamerPipeline   = defineAsyncComponent(() => import('../demos/GStreamerPipeline.vue'))
 import { registerRunningDemo, clearRunningDemo } from '@/composables/useDemoSession'
 
 const demos = [
@@ -100,13 +103,22 @@ const demos = [
     component: AudioClassification,
     canRun: true,
   },
+  // {
+  //   name: 'TVM Inference',
+  //   sub:  'GCRN on C7x DSP via TVM+TIDL',
+  //   icon: 'mdi-flash',
+  //   iconStyle: 'background:radial-gradient(circle at 40% 40%,#1a3a7a,#0a1540);border:2px solid #1d4ed8;color:#60a5fa',
+  //   component: TvmInference,
+  //   canRun: true,
+  // },
   {
-    name: 'TVM Inference',
-    sub:  'GCRN on C7x DSP via TVM+TIDL',
-    icon: 'mdi-flash',
-    iconStyle: 'background:radial-gradient(circle at 40% 40%,#1a3a7a,#0a1540);border:2px solid #1d4ed8;color:#60a5fa',
-    component: TvmInference,
+    name: 'Custom Audio Pipeline',
+    sub:  'Generic gst-launch runner with artifact management',
+    icon: 'mdi-pipe',
+    iconStyle: 'background:radial-gradient(circle at 40% 40%,#1a3a1a,#0a200a);border:2px solid #16a34a;color:#4ade80',
+    component: GStreamerPipeline,
     canRun: true,
+    skipTvmCheck: true,
   },
 ]
 
@@ -114,14 +126,19 @@ const activeIdx        = ref(0)
 const activeDemo       = ref(null)
 const currentComponent = shallowRef(demos[0].component)
 const demoRunning      = ref(false)
-const canRun = computed(() => demos[activeIdx.value].canRun && (tvmReady.value || tvmWasReady.value))
+const canRun = computed(() => {
+  const demo = demos[activeIdx.value]
+  return demo.canRun && (demo.skipTvmCheck || tvmReady.value || tvmWasReady.value)
+})
 
 const tvmReady      = ref(false)
 const tvmWasReady   = ref(false)   // latched true once tvmReady ever becomes true
 const tvmState      = ref('checking')
 const tvmDetails    = ref(null)
-let _tvmPollTimer  = null
+let _tvmPollTimer   = null
 let _tvmPollStopped = false
+let _tvmPollStart   = 0
+const TVM_INIT_TIMEOUT_MS = 90_000
 
 /* Show the preload banner only during the initial boot sequence, or on hard
  * error. Once the daemon has been ready at least once, transient drops (e.g.
@@ -156,17 +173,29 @@ async function pollTvmDaemon() {
     tvmState.value = 'error'
     tvmDetails.value = { error: error.message, c7xState: 'unavailable' }
   } finally {
-    if (!_tvmPollStopped) _tvmPollTimer = setTimeout(pollTvmDaemon, 2000)
+    if (_tvmPollStopped || tvmReady.value) return
+    if (Date.now() - _tvmPollStart >= TVM_INIT_TIMEOUT_MS) {
+      tvmState.value = 'error'
+      tvmDetails.value = { error: 'TVM initialization timed out after 90 s — check C7x remoteproc and tvm-model-daemon service', c7xState: tvmDetails.value?.c7xState || 'unknown' }
+      return
+    }
+    _tvmPollTimer = setTimeout(pollTvmDaemon, 2000)
   }
 }
 
-onMounted(pollTvmDaemon)
+onMounted(() => { _tvmPollStart = Date.now(); pollTvmDaemon() })
 
 function selectDemo(i) {
   if (i === activeIdx.value) return
   if (demoRunning.value) {
+    if (activeDemo.value?.isModelLoading?.value) {
+      window.alert(
+        `${demos[activeIdx.value].name} model is loading — please wait for it to finish before switching demos.`
+      )
+      return
+    }
     const confirmed = window.confirm(
-      `“${demos[activeIdx.value].name}” is currently running. Switching demos will stop it. Continue?`
+      `”${demos[activeIdx.value].name}” is currently running. Switching demos will stop it. Continue?`
     )
     if (!confirmed) return
     activeDemo.value?.stop()
@@ -261,4 +290,10 @@ onUnmounted(() => {
   line-height: 1;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* Demo switch transition */
+.demo-fade-enter-active,
+.demo-fade-leave-active { transition: opacity 0.12s ease; }
+.demo-fade-enter-from,
+.demo-fade-leave-to    { opacity: 0; }
 </style>

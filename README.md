@@ -30,6 +30,11 @@ devices/<id>/
   device.json       Device metadata, active demos, per-demo config
   app/              Device-specific frontend overlay (images, config files)
   linux_app/        Device-specific Makefile (builds audio_utils or rpmsg_json)
+  docs/             Device-specific user and developer guides
+
+docs/
+  adding-a-demo.md     Generic guide: add a new demo to any device
+  adding-a-device.md   Generic guide: add support for a new device
 
 tools/
   generate-inc.js   Regenerates webserver-oob-npm.inc from package-lock.json
@@ -67,6 +72,15 @@ make deploy DEVICE=am62xx BOARD_HOST=root@<ip>
 ## Adding a Demo / Device
 
 See `docs/adding-a-demo.md` and `docs/adding-a-device.md`.
+
+## Documentation
+
+| Document | Location | Description |
+|---|---|---|
+| Adding a Demo | [`docs/adding-a-demo.md`](docs/adding-a-demo.md) | Step-by-step guide to adding a new demo to any device |
+| Adding a Device | [`docs/adding-a-device.md`](docs/adding-a-device.md) | Step-by-step guide to adding support for a new device |
+| AM62Dx User Guide | [`devices/am62dxx/docs/am62d-user-guide.html`](devices/am62dxx/docs/am62d-user-guide.html) | End-user portal walkthrough: all demos, inputs, troubleshooting |
+| AM62Dx Developer Guide | [`devices/am62dxx/docs/am62d-developer-guide.html`](devices/am62dxx/docs/am62d-developer-guide.html) | Architecture, plugin API, GStreamer pipelines, build/deploy, Yocto |
 
 ## License
 

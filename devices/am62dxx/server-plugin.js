@@ -40,9 +40,15 @@
 
 const fs   = require('fs');
 const path = require('path');
+const { exec } = require('child_process');
 
 module.exports = function(app, wss, device, ctx) {
     const { appDir, deviceConfigPath, express } = ctx;
+
+    /* Prefer device-specific app dir (exists in local dev); fall back to appDir on EVM
+     * where both resolve to the same deployed /usr/share/webserver-oob/app path. */
+    const deviceAppDir = path.join(path.dirname(deviceConfigPath), 'app');
+    const miBaseDir = fs.existsSync(deviceAppDir) ? deviceAppDir : appDir;
 
     app.use(express.json({ limit: '512kb' }));
 
@@ -71,7 +77,7 @@ module.exports = function(app, wss, device, ctx) {
 
     /* List HTML files in Model-Inspector folder for the AI Model Inspector page */
     app.get('/model-inspector-list', (req, res) => {
-        const miDir = path.join(appDir, 'Model-Inspector');
+        const miDir = path.join(miBaseDir, 'Model-Inspector');
         try {
             if (!fs.existsSync(miDir)) return res.json({ files: [] });
             const files = fs.readdirSync(miDir)
@@ -84,13 +90,26 @@ module.exports = function(app, wss, device, ctx) {
         }
     });
 
+    /* System power control */
+    app.post('/system/reboot', (req, res) => {
+        console.log('[Server] Reboot requested');
+        res.json({ status: 'rebooting' });
+        setTimeout(() => exec('reboot'), 500);
+    });
+
+    app.post('/system/poweroff', (req, res) => {
+        console.log('[Server] Power-off requested');
+        res.json({ status: 'powering-off' });
+        setTimeout(() => exec('poweroff'), 500);
+    });
+
     /* Upload a model HTML file into the Model-Inspector folder */
     app.post('/upload-model-file',
         express.raw({ type: '*/*', limit: '100mb' }),
         (req, res) => {
             const raw = ((req.query.filename || '') + '').replace(/[^a-zA-Z0-9._-]/g, '_').replace(/\.+/g, '.').slice(0, 120);
             const filename = raw || 'uploaded_model.html';
-            const miDir = path.join(appDir, 'Model-Inspector');
+            const miDir = path.join(miBaseDir, 'Model-Inspector');
             try {
                 if (!fs.existsSync(miDir)) fs.mkdirSync(miDir, { recursive: true });
                 const dest = path.join(miDir, filename);

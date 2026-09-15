@@ -386,7 +386,7 @@ module.exports = function registerAudioOffload(app, wss, device) {
             return res.send('rpmsg_audio_offload_example already running');
         }
 
-        const dspError = demoCoordinator.acquireDsp('audio-offload');
+        const dspError = demoCoordinator.acquireDsp('audio-offload', req.ip);
         if (dspError) return res.status(409).send(dspError);
 
         console.log(`[audio-offload] Spawning ${BIN_PATH}`);
@@ -413,6 +413,8 @@ module.exports = function registerAudioOffload(app, wss, device) {
 
     app.get('/audio-offload/stop', (req, res) => {
         if (MOCK) { stopMock(); return res.send('Audio offload stopped (MOCK)'); }
+        const denied = demoCoordinator.checkStopAuthorised('audio-offload', req.ip);
+        if (denied) return res.status(403).send(denied);
         disconnectTcp();
         killOffloadProc();
         res.send('Audio offload stopped');

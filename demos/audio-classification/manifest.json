@@ -2,8 +2,8 @@
   "id": "audio-classification",
   "name": "Audio Classification",
   "icon": "av:mic",
-  "description": "Real-time audio classification using YAMNet TFLite model via GStreamer+NNStreamer",
-  "devices": ["am335x", "am62x"],
-  "routes": ["/audio-devices", "/start-audio-classification", "/stop-audio-classification"],
+  "description": "Real-time audio classification using the legacy GStreamer backend or the AM62D Edge-AI RPMsg pipeline",
+  "devices": ["am335x", "am62x", "am62dxx"],
+  "routes": ["/audio-devices", "/audio-output-devices", "/upload-audio-classification-file", "/audio-classification/info", "/start-audio-classification", "/stop-audio-classification", "/audio-classification/status"],
   "websocket": "/audio"
 }

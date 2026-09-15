@@ -16,7 +16,7 @@
           </p>
 
           <!-- Signal flow image -->
-          <img src="/images/speech-enhancement-flow.png" alt="Speech Enhancement Pipeline" class="flow-img" />
+          <img :src="isLight ? '/images/speech-enhancement-flow-light.png' : '/images/speech-enhancement-flow.png'" alt="Speech Enhancement Pipeline" class="flow-img" />
 
           <!-- Features -->
           <ul class="feat-list">
@@ -71,18 +71,6 @@
         </div>
       </div>
 
-      <v-alert v-if="uploadError" type="error" density="compact" variant="tonal" closable @click:close="uploadError = null">
-        {{ uploadError }}
-      </v-alert>
-
-      <div class="d-flex gap-2">
-        <v-btn size="small" variant="outlined" color="primary" disabled prepend-icon="mdi-upload">
-          Upload WAV File
-        </v-btn>
-        <v-btn v-if="uploadedPath" size="small" variant="text" color="secondary" @click="useDefault">
-          Use Default
-        </v-btn>
-      </div>
     </v-card>
 
     <!-- Status -->
@@ -96,6 +84,13 @@
         </div>
         <span class="status-lbl" :class="`text-${ws.statusColor.value}`">{{ ws.statusMsg.value }}</span>
       </div>
+
+      <v-alert v-if="ws.modelLoading.value" type="info" variant="tonal" density="compact" icon="mdi-cog-sync-outline" class="model-loading-alert" aria-live="polite">
+        <span class="model-loading-txt">
+          <span class="preparing-spinner">&#9696;</span>
+          <span><strong>{{ ws.modelName.value || 'GCRN Model Artifacts' }} loading</strong> — {{ gcrNLoadingMsg }}</span>
+        </span>
+      </v-alert>
 
       <v-alert v-if="ws.error.value" type="error" density="compact" variant="tonal" closable @click:close="ws.error.value = null">
         {{ ws.error.value }}
@@ -182,7 +177,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useTheme } from 'vuetify'
 import { useSpeechWs }    from '@/composables/useSpeechWs'
 import SpectrogramCanvas from '@/components/SpectrogramCanvas.vue'
@@ -196,11 +191,38 @@ const isLight     = computed(() => vuetifyTheme.global.name.value === 'tiLight')
 const inputColor  = computed(() => isLight.value ? '#1d6fe8' : '#4da6ff')
 const outputColor = computed(() => isLight.value ? '#16a34a' : '#22c55e')
 const canvasBg    = computed(() => isLight.value ? '#f1f5f9' : '#05080f')
-const spectBg     = computed(() => isLight.value ? '#0f172a' : '#020408')
+const spectBg     = computed(() => isLight.value ? '#e8eef6' : '#020408')
 
 const emit = defineEmits(['running-change'])
 
 const ws = useSpeechWs()
+
+// TVM status polling — runs while modelLoading is true to show granular messages
+const tvmDetails     = ref(null)
+let   _tvmPollTimer  = null
+
+const gcrNLoadingMsg = computed(() => {
+  const d = tvmDetails.value
+  if (!d) return 'please wait, this may take up to 15 seconds…'
+  if (d.c7xState !== 'running') return `waiting for C7x DSP (state: ${d.c7xState || 'unknown'})…`
+  if (!d.daemonReady)           return 'loading TVM model daemon…'
+  if (!d.modelReady)            return 'preloading GCRN model artifacts, this may take up to 15 seconds…'
+  return 'initialising inference pipeline…'
+})
+
+async function _pollTvmForLoading() {
+  if (!ws.modelLoading.value) return
+  try {
+    const r = await fetch('/tvm-daemon/status')
+    tvmDetails.value = r.ok ? await r.json() : null
+  } catch { tvmDetails.value = null }
+  if (ws.modelLoading.value) _tvmPollTimer = setTimeout(_pollTvmForLoading, 2000)
+}
+
+watch(() => ws.modelLoading.value, v => {
+  if (v) { tvmDetails.value = null; _pollTvmForLoading() }
+  else   { clearTimeout(_tvmPollTimer); _tvmPollTimer = null }
+})
 
 // Emit running-change whenever ws.running changes (not just on manual start/stop)
 watch(() => ws.running.value, (v) => emit('running-change', v))
@@ -286,6 +308,8 @@ onMounted(async () => {
     if (r.ok) fileInfo.value = await r.json()
   } catch { /* board not connected */ }
 })
+
+onUnmounted(() => { clearTimeout(_tvmPollTimer); _tvmPollTimer = null })
 
 const dotClass = computed(() => ({
   'dot-running': ws.running.value,
@@ -419,7 +443,7 @@ async function saveArtifacts() {
 async function run()  { await ws.start(uploadedPath.value || null) }
 async function stop() { await ws.stop() }
 
-defineExpose({ run, stop, isRunning: ws.running })
+defineExpose({ run, stop, isRunning: ws.running, isModelLoading: ws.modelLoading })
 </script>
 
 <style scoped>
@@ -509,6 +533,12 @@ defineExpose({ run, stop, isRunning: ws.running })
 .viz-stack       { display:flex; flex-direction:column; gap:10px; }
 .viz-row         { display:flex; flex-direction:column; gap:4px; }
 .viz-ch-label    { font-size:12px; font-weight:700; margin-bottom:2px; }
+
+/* Model loading alert */
+.model-loading-alert { flex-shrink: 0; }
+.model-loading-txt   { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+.preparing-spinner   { display: inline-block; animation: spin 1.2s linear infinite; font-size: 16px; line-height: 1; }
+@keyframes spin { to { transform: rotate(360deg); } }
 
 /* Playback */
 .playback-row { display:flex; flex-direction:column; gap:6px; }

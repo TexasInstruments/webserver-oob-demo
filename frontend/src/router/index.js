@@ -1,6 +1,7 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
-import Home from '@/views/Home.vue'
-import Logs from '@/views/Logs.vue'
+import { defineAsyncComponent } from 'vue'
+const Home = defineAsyncComponent(() => import('@/views/Home.vue'))
+const Logs = defineAsyncComponent(() => import('@/views/Logs.vue'))
 import { routes as deviceRoutes } from '@device/index.js'
 import { runningDemoSnapshot, stopRunningDemo } from '@/composables/useDemoSession'
 

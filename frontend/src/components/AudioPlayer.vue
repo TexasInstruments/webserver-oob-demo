@@ -62,9 +62,9 @@ function fmt(s) {
 .audio-player { background:rgb(var(--v-theme-surface-variant)); border:1px solid rgba(var(--v-border-color),var(--v-border-opacity)); border-radius:6px; padding:8px 10px; }
 .ap-label { font-size:11px; color:#64748b; margin-bottom:6px; }
 .ap-row   { display:flex; align-items:center; gap:8px; }
-.ap-play  { width:28px; height:28px; border-radius:50%; background:rgb(var(--v-theme-surface)); border:1px solid rgba(var(--v-border-color),1); color:#e2e8f0; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; }
+.ap-play  { width:28px; height:28px; border-radius:50%; background:rgb(var(--v-theme-surface)); border:1px solid rgba(var(--v-border-color),1); color:rgb(var(--v-theme-on-surface)); display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; }
 .ap-play:disabled { opacity:0.35; cursor:not-allowed; }
-.ap-track { flex:1; height:3px; background:#1a2438; border-radius:2px; overflow:hidden; cursor:pointer; }
+.ap-track { flex:1; height:3px; background:rgba(var(--v-border-color),0.5); border-radius:2px; overflow:hidden; cursor:pointer; }
 .ap-fill  { height:100%; border-radius:2px; transition:width .1s linear; pointer-events:none; }
 .ap-time  { font-size:10px; color:#475569; min-width:32px; text-align:right; }
 </style>

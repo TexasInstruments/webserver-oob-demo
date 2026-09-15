@@ -89,9 +89,18 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, nextTick, onMounted, onUnmounted } from 'vue'
+import { ref, reactive, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
+import { useTheme } from 'vuetify'
 
 const emit = defineEmits(['running-change'])
+
+const theme   = useTheme()
+const isLight = computed(() => theme.global.name.value === 'tiLight')
+const cvBg     = computed(() => isLight.value ? '#f1f5f9' : '#05080f')
+const cvGrid   = computed(() => isLight.value ? '#dde3ec' : '#1a2f4a')
+const cvLabel  = computed(() => isLight.value ? '#64748b' : '#3d5068')
+const cvAxis   = computed(() => isLight.value ? '#cbd5e1' : '#334155')
+const cvLegend = computed(() => isLight.value ? '#475569' : '#94a3b8')
 
 const aoFeatures = ['8-channel audio via RPMsg-DMA','FFT bandpass filtering on C7x DSP','Real-time input/output spectrum','Live CPU and DSP load metrics','ARM vs DSP mode comparison']
 
@@ -151,13 +160,13 @@ function drawAoSpectrum(which, b64pcm) {
   const ctx=canvas.getContext('2d'),W=canvas.width,H=canvas.height
   const PL=44,PR=8,PT=12,PB=24,PW=W-PL-PR,PH=H-PT-PB
   const DB_MIN=-100,DB_MAX=0,SR=48000,MAX_HZ=16000,MAX_BIN=Math.round(MAX_HZ/(SR/N))
-  ctx.fillStyle='#05080f';ctx.fillRect(0,0,W,H)
+  ctx.fillStyle=cvBg.value;ctx.fillRect(0,0,W,H)
   ctx.font='10px monospace';ctx.textAlign='right'
-  ;[-100,-75,-50,-25,0].forEach(db=>{const y=PT+(db-DB_MAX)/(DB_MIN-DB_MAX)*PH;ctx.strokeStyle='#1a2f4a';ctx.lineWidth=0.5;ctx.beginPath();ctx.moveTo(PL,y);ctx.lineTo(W-PR,y);ctx.stroke();ctx.fillStyle='#3d5068';ctx.fillText(db,PL-3,y+3);})
+  ;[-100,-75,-50,-25,0].forEach(db=>{const y=PT+(db-DB_MAX)/(DB_MIN-DB_MAX)*PH;ctx.strokeStyle=cvGrid.value;ctx.lineWidth=0.5;ctx.beginPath();ctx.moveTo(PL,y);ctx.lineTo(W-PR,y);ctx.stroke();ctx.fillStyle=cvLabel.value;ctx.fillText(db,PL-3,y+3);})
   ctx.textAlign='center'
-  ;[0,1000,2000,4000,8000,12000,16000].forEach(hz=>{const x=PL+(Math.round(hz/(SR/N))/MAX_BIN)*PW;if(x<PL||x>W-PR)return;ctx.strokeStyle='#1a2f4a';ctx.lineWidth=0.5;ctx.beginPath();ctx.moveTo(x,PT);ctx.lineTo(x,H-PB);ctx.stroke();ctx.fillStyle='#3d5068';ctx.fillText(hz===0?'0':(hz>=1000?(hz/1000)+'k':hz),x,H-7);})
-  ctx.save();ctx.translate(11,PT+PH/2);ctx.rotate(-Math.PI/2);ctx.font='9px sans-serif';ctx.textAlign='center';ctx.fillStyle='#475569';ctx.fillText('Amplitude (dBFS)',0,0);ctx.restore()
-  ctx.strokeStyle='#334155';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(PL,PT);ctx.lineTo(PL,H-PB);ctx.lineTo(W-PR,H-PB);ctx.stroke()
+  ;[0,1000,2000,4000,8000,12000,16000].forEach(hz=>{const x=PL+(Math.round(hz/(SR/N))/MAX_BIN)*PW;if(x<PL||x>W-PR)return;ctx.strokeStyle=cvGrid.value;ctx.lineWidth=0.5;ctx.beginPath();ctx.moveTo(x,PT);ctx.lineTo(x,H-PB);ctx.stroke();ctx.fillStyle=cvLabel.value;ctx.fillText(hz===0?'0':(hz>=1000?(hz/1000)+'k':hz),x,H-7);})
+  ctx.save();ctx.translate(11,PT+PH/2);ctx.rotate(-Math.PI/2);ctx.font='9px sans-serif';ctx.textAlign='center';ctx.fillStyle=cvLabel.value;ctx.fillText('Amplitude (dBFS)',0,0);ctx.restore()
+  ctx.strokeStyle=cvAxis.value;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(PL,PT);ctx.lineTo(PL,H-PB);ctx.lineTo(W-PR,H-PB);ctx.stroke()
   ctx.strokeStyle=which==='in'?'#22c55e':'#3b82f6';ctx.lineWidth=1.5;ctx.beginPath()
   for(let b=1;b<=MAX_BIN;b++){const re=aoSpecFFTRe[b],im=aoSpecFFTIm[b],db=20*Math.log10(Math.sqrt(re*re+im*im)+1e-9),x=PL+(b/MAX_BIN)*PW,y=PT+(_clamp(db,DB_MIN,DB_MAX)-DB_MAX)/(DB_MIN-DB_MAX)*PH;if(b===1)ctx.moveTo(x,y);else ctx.lineTo(x,y);}
   ctx.stroke()
@@ -171,10 +180,10 @@ function drawTrendLine(canvas, buf, tsIdx, tsCount, TS_LEN, color, unit) {
   for(let i=0;i<n;i++){const v=buf[(si+i)%TS_LEN];if(v<vMin)vMin=v;if(v>vMax)vMax=v;}
   if(vMin===vMax){vMin-=1;vMax+=1;}
   const mg=(vMax-vMin)*0.15||0.5;vMin-=mg;vMax+=mg
-  ctx.fillStyle='#05080f';ctx.fillRect(0,0,W,H)
+  ctx.fillStyle=cvBg.value;ctx.fillRect(0,0,W,H)
   ctx.font='9px monospace';ctx.textAlign='right'
-  ;[vMin,(vMin+vMax)/2,vMax].forEach(v=>{const y=PT+(1-(v-vMin)/(vMax-vMin))*PH;ctx.strokeStyle='#1a2f4a';ctx.lineWidth=0.5;ctx.beginPath();ctx.moveTo(PL,y);ctx.lineTo(W-PR,y);ctx.stroke();ctx.fillStyle='#3d5068';ctx.fillText(v.toFixed(v<10?2:0)+(unit||''),PL-3,y+3);})
-  ctx.strokeStyle='#334155';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(PL,PT);ctx.lineTo(PL,H-PB);ctx.lineTo(W-PR,H-PB);ctx.stroke()
+  ;[vMin,(vMin+vMax)/2,vMax].forEach(v=>{const y=PT+(1-(v-vMin)/(vMax-vMin))*PH;ctx.strokeStyle=cvGrid.value;ctx.lineWidth=0.5;ctx.beginPath();ctx.moveTo(PL,y);ctx.lineTo(W-PR,y);ctx.stroke();ctx.fillStyle=cvLabel.value;ctx.fillText(v.toFixed(v<10?2:0)+(unit||''),PL-3,y+3);})
+  ctx.strokeStyle=cvAxis.value;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(PL,PT);ctx.lineTo(PL,H-PB);ctx.lineTo(W-PR,H-PB);ctx.stroke()
   ctx.strokeStyle=color;ctx.lineWidth=1.5;ctx.beginPath()
   for(let i=0;i<n;i++){const v=buf[(si+i)%TS_LEN],x=PL+(i/(n-1))*PW,y=PT+(1-_clamp((v-vMin)/(vMax-vMin),0,1))*PH;if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);}
   ctx.stroke()
@@ -184,18 +193,18 @@ function drawAoLoadChart() {
   const canvas=tsLoadCanvas.value; if(!canvas||aoTsCount<2)return
   const ctx=canvas.getContext('2d'),W=canvas.width,H=canvas.height,PL=42,PR=6,PT=6,PB=14,PW=W-PL-PR,PH=H-PT-PB
   const n=Math.min(aoTsCount,AO_TS_LEN),si=aoTsCount<AO_TS_LEN?0:aoTsIdx
-  ctx.fillStyle='#05080f';ctx.fillRect(0,0,W,H)
+  ctx.fillStyle=cvBg.value;ctx.fillRect(0,0,W,H)
   ctx.font='9px monospace';ctx.textAlign='right'
-  ;[0,50,100].forEach(v=>{const y=PT+(1-v/100)*PH;ctx.strokeStyle='#1a2f4a';ctx.lineWidth=0.5;ctx.beginPath();ctx.moveTo(PL,y);ctx.lineTo(W-PR,y);ctx.stroke();ctx.fillStyle='#3d5068';ctx.fillText(v+'%',PL-3,y+3);})
-  ctx.strokeStyle='#334155';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(PL,PT);ctx.lineTo(PL,H-PB);ctx.lineTo(W-PR,H-PB);ctx.stroke()
+  ;[0,50,100].forEach(v=>{const y=PT+(1-v/100)*PH;ctx.strokeStyle=cvGrid.value;ctx.lineWidth=0.5;ctx.beginPath();ctx.moveTo(PL,y);ctx.lineTo(W-PR,y);ctx.stroke();ctx.fillStyle=cvLabel.value;ctx.fillText(v+'%',PL-3,y+3);})
+  ctx.strokeStyle=cvAxis.value;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(PL,PT);ctx.lineTo(PL,H-PB);ctx.lineTo(W-PR,H-PB);ctx.stroke()
   ;[[aoTsCpu,'#3b82f6'],[aoTsDsp,'#f59e0b']].forEach(([buf,col])=>{ctx.strokeStyle=col;ctx.lineWidth=1.5;ctx.beginPath();for(let i=0;i<n;i++){const v=buf[(si+i)%AO_TS_LEN],x=PL+(i/(n-1))*PW,y=PT+(1-_clamp(v/100,0,1))*PH;if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);}ctx.stroke();})
   ctx.textAlign='left';ctx.font='9px sans-serif'
-  ctx.fillStyle='#3b82f6';ctx.fillRect(W-76,9,12,2);ctx.fillStyle='#94a3b8';ctx.fillText('CPU',W-61,13)
-  ctx.fillStyle='#f59e0b';ctx.fillRect(W-36,9,12,2);ctx.fillStyle='#94a3b8';ctx.fillText('DSP',W-21,13)
+  ctx.fillStyle='#3b82f6';ctx.fillRect(W-76,9,12,2);ctx.fillStyle=cvLegend.value;ctx.fillText('CPU',W-61,13)
+  ctx.fillStyle='#f59e0b';ctx.fillRect(W-36,9,12,2);ctx.fillStyle=cvLegend.value;ctx.fillText('DSP',W-21,13)
 }
 
 function clearAoCanvases() {
-  ;[specInCanvas,specOutCanvas,tsAmpCanvas,tsLatCanvas,tsLoadCanvas].forEach(r=>{if(!r.value)return;const c=r.value.getContext('2d');c.fillStyle='#05080f';c.fillRect(0,0,r.value.width,r.value.height);})
+  ;[specInCanvas,specOutCanvas,tsAmpCanvas,tsLatCanvas,tsLoadCanvas].forEach(r=>{if(!r.value)return;const c=r.value.getContext('2d');c.fillStyle=cvBg.value;c.fillRect(0,0,r.value.width,r.value.height);})
 }
 
 function checkConflictOverlay() {
@@ -217,7 +226,7 @@ async function run() {
   clearAoCanvases()
 
   fetch('/audio-offload/run')
-    .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status) })
+    .then(r => r.ok ? r : r.text().then(t => { let m = t; try { m = JSON.parse(t).error || t } catch (_) {} throw new Error(m || 'HTTP ' + r.status) }))
     .then(() => { ao.statusMsg = 'Connecting…'; connectAoWs() })
     .catch(err => { ao.statusMsg = 'Error: ' + err.message; ao.statusColor = '#ef4444'; ao.statusPulse = false; ao.running = false; emit('running-change', false) })
 }
@@ -295,6 +304,8 @@ function startRebootWatch() {
   }
   setTimeout(tryConnect, 3000)
 }
+
+watch(isLight, () => nextTick(clearAoCanvases))
 
 onMounted(() => {
   checkConflictOverlay()

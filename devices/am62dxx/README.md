@@ -20,7 +20,7 @@ Web-based demo portal for TI Sitara processors. A Node.js/Express server automat
 12. [Built-in REST Endpoints](#12-built-in-rest-endpoints)
 13. [Demo-Specific REST and WebSocket Reference](#13-demo-specific-rest-and-websocket-reference)
 14. [Native C Utilities Reference](#14-native-c-utilities-reference)
-15. [FIFO Data Flow (Audio Classification)](#15-fifo-data-flow-audio-classification)
+15. [Audio Classification Data Flow](#15-audio-classification-data-flow)
 16. [Adding a New Demo](#16-adding-a-new-demo)
 17. [Modifying an Existing Demo](#17-modifying-an-existing-demo)
 18. [Adding a New Device](#18-adding-a-new-device)
@@ -152,13 +152,13 @@ webserver-oob-demo-vs/
 │       require('demos/<id>/server-plugin.js')(app,wss,dev)│
 └──────────────────────┬──────────────────────────────────┘
                        │  spawn / exec / TCP
-        ┌──────────────┼───────────────────┐
-        ▼              ▼                   ▼
-  /usr/bin/        TCP bridge          GStreamer
-  cpu_stats        rpmsg_audio_        NNStreamer
-  rpmsg_2dfft      offload_example     pipeline
-  tvm_inference    (ports 8888-8891)   → FIFO
-  _client                              ← fifo-reader.js
+        ┌──────────────┼───────────────────┬──────────────────────┐
+        ▼              ▼                   ▼                      ▼
+  /usr/bin/        TCP bridge          GStreamer             AM62D Edge-AI
+  cpu_stats        rpmsg_audio_        NNStreamer            arecord → WAV
+  rpmsg_2dfft      offload_example     pipeline → FIFO       → RPMsg/TVM JSON
+  tvm_inference    (ports 8888-8891)   (non-AM62D)           (C7x DSP)
+  _client
 ```
 
 **Key design rules:**
@@ -231,6 +231,42 @@ make build DEVICE=am335x CC=arm-linux-gnueabihf-gcc
 This builds:
 - `common/linux_app/cpu_stats` → deployed to `/usr/bin/cpu_stats`
 - `devices/<id>/linux_app/audio_utils` (if the Makefile defines it) → `/usr/bin/audio_utils`
+
+For AM62D, the root build also installs and builds the Vue frontend. The
+Audio Classification page is compiled into
+`devices/am62dxx/app/vue-dist/`. Its classification backend does **not** use
+`audio_utils` or GStreamer: live audio is captured by `arecord`, while live
+and file sources are processed by `rpmsg_inference_example` using the
+classification pipeline JSON. Other devices continue to build and use their
+existing `audio_utils` implementation unchanged.
+
+To build and test only the AM62D frontend while developing the GUI:
+
+```bash
+cd frontend
+npm install
+npm test
+VITE_DEVICE=am62dxx npm run build
+cd ..
+```
+
+Use an active Node.js LTS release (Node.js 20 or newer). No Node.js
+packages are needed on the EVM for the Vue bundle itself; the generated files
+are static HTML, JavaScript, CSS, images, and fonts.
+
+The AM62D image must separately contain the Edge-AI artifacts built from the
+RPMsg-DMA repository:
+
+```text
+/usr/bin/rpmsg_inference_example
+/usr/share/tvm_inference/json/pipeline_speech_classification.json
+/usr/share/tvm_inference/input/input_audio.wav
+/usr/bin/arecord
+```
+
+The webserver build does not compile or install the RPMsg application. Build
+and install the RPMsg-DMA project first (including its Edge-AI target and JSON
+install rule), then verify the four paths above on the EVM.
 
 ### Deploy to board
 
@@ -514,7 +550,7 @@ Hosts three demos in a shared sidebar + tabbed layout:
 | Tab | Demo plugin | What it does |
 |---|---|---|
 | TVM Inference | `tvm-inference` | MobileNet v2 image classification on C7x DSP via TVM+TIDL |
-| Audio Classification | `audio-classification` | YAMNet sound classification via GStreamer + NNStreamer |
+| Audio Classification | `audio-classification` | YAMNet sound classification: AM62D uses ALSA WAV capture + RPMsg/TVM; other SoCs retain GStreamer + NNStreamer |
 | Speech Enhancement | `speech-enhancement` | Noise reduction + TIDL spectral filtering on C7x DSP |
 
 Key JavaScript functions:
@@ -752,11 +788,35 @@ See section 12 above — its endpoints are listed there.
 
 ### audio-classification
 
+The visible AM62D GUI remains the existing Audio Classification layout. It
+reuses the established device-list, start, stop, and WebSocket contracts, so
+the page does not need a second set of controls. On AM62D only, the source
+list contains ALSA microphones plus the installed sample WAV:
+
+- Selecting `plughw:C,D` runs `arecord` for the configured duration and then
+  passes the captured WAV to the Edge-AI client.
+- Selecting `File: input_audio.wav` passes the installed WAV directly to the
+  same Edge-AI client.
+- The plugin copies `pipeline_speech_classification.json` into a per-run job
+  directory, changes only its `input_file`, and runs
+  `rpmsg_inference_example <job-json>`.
+- Classification records written by the RPMsg client are forwarded on
+  WebSocket `/audio` using the same `{ class, timestamp }` shape the GUI
+  already consumes.
+
+This path is selected only when `device.id` is `am62dxx`. On every other
+device, `/audio-devices`, `audio_utils start_gst`, the FIFO reader, and
+GStreamer/NNStreamer behavior remain unchanged.
+
 | Method | Path | Description |
 |---|---|---|
-| `GET` | `/audio-devices` | Lists ALSA capture devices via `audio_utils devices` |
-| `GET` | `/start-audio-classification?device=plughw:X,Y` | Spawns `audio_utils start_gst <device>` and starts FIFO reader |
-| `GET` | `/stop-audio-classification` | Kills pipeline + FIFO reader |
+| `GET` | `/audio-devices` | AM62D: lists `arecord -l` devices plus the default file; other SoCs: existing `audio_utils devices` output |
+| `GET` | `/audio-classification/info` | AM62D configuration: backend, default file, capture duration, and sample rate |
+| `POST` | `/upload-audio-classification-file` | AM62D: validates and stores an uploaded WAV; returns `{ path }` |
+| `GET` | `/start-audio-classification?device=plughw:X,Y` | AM62D: captures with `arecord` then starts RPMsg; other SoCs: starts `audio_utils` + FIFO |
+| `GET` | `/start-audio-classification?device=file:/path/input.wav` | AM62D file-input form used by the unchanged source selector |
+| `GET` | `/stop-audio-classification` | Stops the backend selected for the current device |
+| `GET` | `/audio-classification/status` | Returns `{ running, backend, result }` |
 | `WS` | `/audio` | Sends `{ class, timestamp }` per detection; supports `diagnostic_ping` → `diagnostic_response` |
 
 ### audio-offload
@@ -842,7 +902,7 @@ TCP bridge to three ports on `rpmsg_sigchain_biquad_example`:
 |---|---|---|
 | `GET` | `/speech-devices` | Lists ALSA capture + output devices |
 | `POST` | `/upload-speech-enhancement-file` | Saves WAV file for offline processing |
-| `GET` | `/start-speech-enhancement?device=...` | Starts GStreamer enhancement pipeline |
+| `GET` | `/start-speech-enhancement?file=...` | Starts the AM62D Edge-AI RPMsg enhancement pipeline |
 | `GET` | `/stop-speech-enhancement` | Stops pipeline |
 | `WS` | `/speech` | Streams enhanced audio frames |
 
@@ -878,7 +938,9 @@ Key implementation constants:
 
 ### audio_utils (`common/linux_app/audio_utils.c`, built per-device)
 
-Deployed to `/usr/bin/audio_utils`.
+Deployed to `/usr/bin/audio_utils` for the existing non-AM62D Audio
+Classification backend (and retained for any other device functions that use
+it). AM62D Audio Classification does not invoke these commands.
 
 ```bash
 audio_utils devices              # Lists ALSA capture and playback devices
@@ -886,7 +948,10 @@ audio_utils start_gst plughw:1,0 # Starts GStreamer+NNStreamer YAMNet pipeline, 
 audio_utils stop_gst             # Stops pipeline (reads PID from /tmp/audio_classification.pid)
 ```
 
-The pipeline writes `$`-delimited classification labels to `/tmp/audio_classification_fifo`. `common/webserver/lib/fifo-reader.js` reads this FIFO as a child process and forwards JSON to the parent server process.
+On non-AM62D devices the pipeline writes `$`-delimited classification labels
+to `/tmp/audio_classification_fifo`. `common/webserver/lib/fifo-reader.js`
+reads this FIFO as a child process and forwards JSON to the parent server
+process.
 
 ### speech_utils (`common/linux_app/speech_utils.c`)
 
@@ -903,9 +968,35 @@ Pipeline output goes to `/tmp/speech_classification_fifo`, read by `common/webse
 
 ---
 
-## 15. FIFO Data Flow (Audio Classification)
+## 15. Audio Classification Data Flow
 
-Understanding this flow helps when debugging classification results not appearing in the UI:
+The frontend API and WebSocket message format are shared, but the server
+selects one of two isolated backend paths.
+
+**AM62D live input:**
+
+```text
+Input Device selector (`plughw:C,D`)
+        │
+        ▼
+audio-classification/server-plugin.js
+  spawn: rpmsg_inference_example <pipeline.json> --device plughw:C,D
+        │ binary opens ALSA device directly (S16LE 16 kHz mono)
+        │ reads PCM frames → STFT batches on C7x via RPMsg
+        │ TVM/TIDL inference per window
+        │ stdout: "[App]   1. <score>  <ClassName>"
+        ▼
+audio-classification/server-plugin.js (parent process)
+        │ WebSocket {class, timestamp}
+        ▼
+AudioClassification.vue results list
+```
+
+**AM62D file input:** Selecting a WAV file spawns
+`rpmsg_inference_example <pipeline.json> --input-file <path>` — the binary
+reads the file directly, no temp JSON or arecord needed.
+
+**Existing non-AM62D path (unchanged):**
 
 ```
 audio_utils start_gst plughw:1,0
@@ -936,9 +1027,38 @@ Browser  ws://board:3000/audio
 ```
 
 **Debugging tips:**
-- If classifications stop: check if `audio_utils` is still running (`pgrep audio_utils`)
-- If FIFO blocks: the reader child process may have died; check server logs (`GET /logs`)
-- If nothing appears at all: ensure the audio device name matches exactly (`plughw:X,Y` format)
+- Confirm the plugin is enabled: `curl http://<evm-ip>:3000/demo-manifests`
+- Confirm source enumeration: `curl http://<evm-ip>:3000/audio-devices`
+- Confirm backend selection: `curl http://<evm-ip>:3000/audio-classification/status`
+- AM62D: run `arecord -l`; verify `rpmsg_inference_example` and
+  `pipeline_speech_classification.json` exist at the configured paths.
+- AM62D file smoke test:
+  `/usr/bin/rpmsg_inference_example /usr/share/tvm_inference/json/pipeline_speech_classification.json`
+- Non-AM62D: run `/usr/bin/audio_utils devices`, check `pgrep audio_utils`,
+  and check `/tmp/audio_classification_fifo` after starting.
+- For either backend, inspect the webserver journal or `GET /logs` for the
+  exact child-process error.
+
+After changing `AudioClassification.vue` or its API helper, rebuild the
+frontend before copying files to an EVM. Source `.vue`/`.js` files are not
+served by the production webserver:
+
+```bash
+cd frontend
+VITE_DEVICE=am62dxx npm run build
+cd ..
+make deploy-app DEVICE=am62dxx BOARD_HOST=root@<evm-ip>
+make deploy-server DEVICE=am62dxx BOARD_HOST=root@<evm-ip>
+make deploy-bins DEVICE=am62dxx BOARD_HOST=root@<evm-ip>
+make deploy-restart BOARD_HOST=root@<evm-ip>
+```
+
+For AM62D, `deploy-app` supplies the compiled GUI and `deploy-server` supplies
+the Audio Classification plugin, manifest, and device configuration.
+`rpmsg_inference_example`, its classification JSON/model artifacts, and
+`arecord` come from the EVM image/RPMsg-DMA installation; `deploy-bins` does
+not install those RPMsg assets. For non-AM62D devices, the existing
+`deploy-bins` flow still supplies `audio_utils`.
 
 ---
 
@@ -1231,10 +1351,28 @@ make deploy-bins DEVICE=am62dxx BOARD_HOST=root@<ip>
 
 ### Audio classification produces no results
 
-1. Check `/tmp/audio_classification_fifo` exists on board after starting the demo
-2. Check `pgrep audio_utils` — the process must be running
-3. Check `/logs` in the side panel for error messages from the plugin
-4. Verify the audio device name is correct — use the device selector dropdown which calls `GET /audio-devices`
+First identify the active backend:
+
+```bash
+curl http://127.0.0.1:3000/audio-classification/status
+```
+
+For AM62D (`backend: edge-ai-rpmsg`):
+
+1. Verify `arecord -l` lists the selected microphone, or select the default
+   file entry to remove capture hardware from the test.
+2. Verify `/usr/bin/rpmsg_inference_example` and
+   `/usr/share/tvm_inference/json/pipeline_speech_classification.json` exist.
+3. Run the classification JSON directly and confirm it prints classification
+   records in either JSON form (`{"class":"..."}`) or a supported text form
+   such as `Predicted label: ...`.
+4. Check `/logs` for `arecord`, DSP-busy, JSON, RPMsg, or TVM errors.
+
+For other devices (`backend: gstreamer`), use the existing checks:
+
+1. Check `/tmp/audio_classification_fifo` exists after starting.
+2. Check `pgrep audio_utils` and `pgrep gst-launch`.
+3. Verify the selected `plughw:X,Y` value using `/usr/bin/audio_utils devices`.
 
 ### rpmsg binary not responding / audio offload stuck
 

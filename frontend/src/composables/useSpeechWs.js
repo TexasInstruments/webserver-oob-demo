@@ -8,6 +8,8 @@ export function useSpeechWs() {
   const error        = ref(null)
   const chunkTimings   = ref([])         // [{ chunk, total, frameStart, frameEnd, stft, tvm, istft, totalMs }]
   const runKey         = ref(0)          // increments on each new run — canvases watch this to clear history
+  const modelLoading   = ref(false)      // true while TVM is initialising (before first spectrum frame)
+  const modelName      = ref('')         // model name received in model_loading message
   const inputPcmFrame  = shallowRef(null)  // latest frame → spectrogram FFT
   const outputPcmFrame = shallowRef(null)
   const inputPcm       = shallowRef(null)  // accumulated signal → waveform
@@ -38,10 +40,22 @@ export function useSpeechWs() {
 
   function dispatch(msg) {
     switch (msg.type) {
+      case 'model_loading':
+        modelLoading.value = true
+        modelName.value    = msg.modelName || ''
+        statusMsg.value    = `Loading ${msg.modelName || 'model'}…`
+        statusColor.value  = 'primary'
+        break
       case 'spectrum':
         handleSpectrum(msg)
+        modelLoading.value = false
         break
       case 'chunk_timing':
+        if (modelLoading.value) {
+          modelLoading.value = false
+          statusMsg.value   = 'Running Speech Enhancement'
+          statusColor.value = 'primary'
+        }
         chunkTimings.value = [...chunkTimings.value, {
           chunk: msg.chunk, total: msg.total,
           frameStart: msg.frameStart ?? null, frameEnd: msg.frameEnd ?? null,
@@ -54,6 +68,7 @@ export function useSpeechWs() {
         statusColor.value = 'primary'
         break
       case 'error':
+        modelLoading.value = false
         error.value = msg.message
         statusMsg.value = msg.message
         statusColor.value = 'error'
@@ -132,6 +147,8 @@ export function useSpeechWs() {
     metrics.value        = []
     error.value          = null
     downloadUrls.value   = null
+    modelLoading.value   = false
+    modelName.value      = ''
     inputPcmFrame.value  = null
     outputPcmFrame.value = null
     inputPcm.value       = null
@@ -151,6 +168,7 @@ export function useSpeechWs() {
     const r = await fetch(url)
     if (!r.ok) {
       const d = await r.json().catch(() => ({}))
+      modelLoading.value = false
       error.value = d.error || `HTTP ${r.status}`
       running.value = false
       statusMsg.value = error.value
@@ -168,5 +186,5 @@ export function useSpeechWs() {
   onUnmounted(() => { if (ws) ws.close() })
   connect()
 
-  return { connected, running, statusMsg, statusColor, error, chunkTimings, runKey, inputPcmFrame, outputPcmFrame, inputPcm, outputPcm, inputPcmFull, outputPcmFull, downloadUrls, metrics, start, stop }
+  return { connected, running, statusMsg, statusColor, error, chunkTimings, runKey, modelLoading, modelName, inputPcmFrame, outputPcmFrame, inputPcm, outputPcm, inputPcmFull, outputPcmFull, downloadUrls, metrics, start, stop }
 }

@@ -161,6 +161,11 @@ module.exports = function registerSpeechEnhancement(app, wss, device) {
     function finishJob(error) {
         if (!job) return;
         const finished = job;
+        // Destroy the EASP visualization socket so the next run starts clean.
+        // Without this, dmaSocket can remain non-null when connectDmaStream() is
+        // called for the next job, causing it to bail immediately and drop all frames.
+        if (dmaSocket) { dmaSocket.destroy(); dmaSocket = null; }
+        dmaBuffer = Buffer.alloc(0);
         if (error) {
             send({ type: 'error', message: error.message || String(error) });
             job = null;
@@ -189,18 +194,15 @@ module.exports = function registerSpeechEnhancement(app, wss, device) {
         });
     }
 
-    function startEdgeAi(inputPath) {
-        console.log('[speech-enhancement] startEdgeAi called with inputPath:', inputPath);
+    function startEdgeAi(inputPath, ownerIp) {
         if (job) throw new Error('Speech enhancement is already running');
-        const dspError = demoCoordinator.acquireDsp('speech-enhancement');
+        const dspError = demoCoordinator.acquireDsp('speech-enhancement', ownerIp);
         if (dspError) throw new Error(dspError);
         lastCompletedJob = null;
         fs.mkdirSync(JOB_ROOT, { recursive: true });
         const jobDir = fs.mkdtempSync(path.join(JOB_ROOT, 'job-'));
         const outputPath = path.join(jobDir, outputName);
-        console.log('[speech-enhancement] jobDir:', jobDir, 'outputPath:', outputPath);
 
-        console.log('[speech-enhancement] validating WAV file');
         const inputWav = readPcmWav(inputPath); // Validate WAV before switching C7x firmware.
         job = {
             inputPath,
@@ -213,11 +215,9 @@ module.exports = function registerSpeechEnhancement(app, wss, device) {
             stdout: '',
             dmaFrames: false,
         };
-        send({ type: 'metric', label: 'Waiting for RPMsg DMA input/output buffers' });
-        console.log('[speech-enhancement] checking binary:', binary);
+        send({ type: 'metric', label: 'Running Speech Enhancement' });
         if (!fs.existsSync(binary)) throw new Error(`Edge-AI client not installed: ${binary}`);
         const baseJsonPath = path.join(tvmDir, jsonFile);
-        console.log('[speech-enhancement] checking pipeline config:', baseJsonPath);
         if (!fs.existsSync(baseJsonPath)) throw new Error(`Edge-AI pipeline config not installed: ${baseJsonPath}`);
 
         // Write a per-job JSON with the correct input_file path so the binary
@@ -226,19 +226,19 @@ module.exports = function registerSpeechEnhancement(app, wss, device) {
         const jobJson = Object.assign({}, baseJson, { input_file: inputPath });
         const jobJsonPath = path.join(jobDir, 'pipeline.json');
         fs.writeFileSync(jobJsonPath, JSON.stringify(jobJson));
-        console.log('[speech-enhancement] wrote per-job JSON:', jobJsonPath);
 
+        const modelAlreadyLoaded = demoCoordinator.tvmCacheMatchesPath(baseJson.artifacts_path);
+        // Send before ensurePreloaded so the WS frame is in the OS TCP buffer
+        // and reaches the client even while Node.js is blocked on the sync preload.
+        if (!modelAlreadyLoaded) send({ type: 'model_loading', modelName: 'GCRN Model Artifacts' });
         demoCoordinator.ensurePreloaded(binary);
-        console.log('[speech-enhancement] spawning binary with args:', [jobJsonPath]);
         const child = spawn(binary, [jobJsonPath], { cwd: jobDir, stdio: ['pipe', 'pipe', 'pipe'] });
         job.process = child;
-        console.log('[speech-enhancement] child process spawned, pid:', child.pid);
         connectDmaStream();
         let totalFrames = 401; // updated from [App] GCRN configuration: TOTAL_FRAMES=N
         const collect = data => {
             const text = data.toString();
             if (job) job.stdout += text;
-            console.log('[speech-enhancement] child stdout:', text.trim());
             text.split('\n').filter(Boolean).forEach(line => {
                 const configMatch = line.match(/TOTAL_FRAMES=(\d+)/);
                 if (configMatch) totalFrames = parseInt(configMatch[1]);
@@ -262,16 +262,9 @@ module.exports = function registerSpeechEnhancement(app, wss, device) {
             });
         };
         child.stdout.on('data', collect);
-        child.stderr.on('data', (data) => {
-            const text = data.toString();
-            console.log('[speech-enhancement] child stderr:', text.trim());
-        });
-        child.on('error', (error) => {
-            console.log('[speech-enhancement] child error:', error);
-            finishJob(error);
-        });
+        child.stderr.on('data', collect);
+        child.on('error', (error) => finishJob(error));
         child.on('close', (code) => {
-            console.log('[speech-enhancement] child closed with code:', code);
             if (!job || job.process !== child) return;
             if (job.cancelled) return;
             finishJob(code === 0 ? null : new Error(`Edge-AI client exited with ${code}`));
@@ -316,10 +309,14 @@ module.exports = function registerSpeechEnhancement(app, wss, device) {
 
     app.get('/start-speech-enhancement', (req, res) => {
         const fileToUse = req.query.file || inputPath;
-        try { startEdgeAi(fileToUse); res.json({ status: 'started', backend: MOCK ? 'mock' : 'edge-ai-rpmsg', inputPath: fileToUse }); }
+        try { startEdgeAi(fileToUse, req.ip); res.json({ status: 'started', backend: MOCK ? 'mock' : 'edge-ai-rpmsg', inputPath: fileToUse }); }
         catch (error) { stopJob(); res.status(400).json({ error: error.message }); }
     });
-    app.get('/stop-speech-enhancement', (req, res) => { stopJob(); res.json({ status: 'stopped' }); });
+    app.get('/stop-speech-enhancement', (req, res) => {
+        const denied = demoCoordinator.checkStopAuthorised('speech-enhancement', req.ip);
+        if (denied) return res.status(403).json({ error: denied });
+        stopJob(); res.json({ status: 'stopped' });
+    });
     app.get('/speech-enhancement/status', (req, res) => res.json({ running: Boolean(job), backend: MOCK ? 'mock' : 'edge-ai-rpmsg' }));
     app.get('/tvm-daemon/status', async (req, res) => {
         try { res.json(await demoCoordinator.tvmStatus()); }

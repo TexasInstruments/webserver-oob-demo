@@ -45,7 +45,7 @@ module.exports = function register2dFft(app, wss, device) {
         if (MOCK) { _startMock(); return res.send('2dfft started (MOCK)'); }
         if (proc)  return res.send('rpmsg_2dfft_example already running');
 
-        const dspError = demoCoordinator.acquireDsp('2dfft');
+        const dspError = demoCoordinator.acquireDsp('2dfft', req.ip);
         if (dspError) return res.status(409).send(dspError);
 
         broadcast({ type: 'status', state: 'running', message: 'Starting rpmsg_2dfft_example…' });
@@ -78,6 +78,8 @@ module.exports = function register2dFft(app, wss, device) {
 
     app.get('/2dfft/stop', (req, res) => {
         if (MOCK) { _stopMock(); return res.send('2dfft stopped (MOCK)'); }
+        const denied = demoCoordinator.checkStopAuthorised('2dfft', req.ip);
+        if (denied) return res.status(403).send(denied);
         if (proc) {
             try { process.kill(-proc.pid, 'SIGINT'); } catch (_) {
                 try { proc.kill('SIGINT'); } catch (_) {}

@@ -77,9 +77,17 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
+import { ref, reactive, computed, watch, onMounted, onUnmounted } from 'vue'
+import { useTheme } from 'vuetify'
 
 const emit = defineEmits(['running-change'])
+
+const theme   = useTheme()
+const isLight = computed(() => theme.global.name.value === 'tiLight')
+const cvBg     = computed(() => isLight.value ? '#f1f5f9' : '#05080f')
+const cvGrid   = computed(() => isLight.value ? '#dde3ec' : '#1a2f4a')
+const cvLabel  = computed(() => isLight.value ? '#64748b' : '#3d5068')
+const cvAxis   = computed(() => isLight.value ? '#cbd5e1' : '#334155')
 
 const biquadFeatures = ['3-stage cascade biquad EQ on C7x DSP','TAD5212 DAC + PCM6240 ADC support','Live C7x load, cycles, throughput','Multi-port TCP (logs, cmds, stats)']
 
@@ -131,10 +139,10 @@ function drawTrendLine(canvas, buf, tsIdx, tsCount, TS_LEN, color, unit) {
   for(let i=0;i<n;i++){const v=buf[(si+i)%TS_LEN];if(v<vMin)vMin=v;if(v>vMax)vMax=v;}
   if(vMin===vMax){vMin-=1;vMax+=1;}
   const mg=(vMax-vMin)*0.15||0.5;vMin-=mg;vMax+=mg
-  ctx.fillStyle='#05080f';ctx.fillRect(0,0,W,H)
+  ctx.fillStyle=cvBg.value;ctx.fillRect(0,0,W,H)
   ctx.font='9px monospace';ctx.textAlign='right'
-  ;[vMin,(vMin+vMax)/2,vMax].forEach(v=>{const y=PT+(1-(v-vMin)/(vMax-vMin))*PH;ctx.strokeStyle='#1a2f4a';ctx.lineWidth=0.5;ctx.beginPath();ctx.moveTo(PL,y);ctx.lineTo(W-PR,y);ctx.stroke();ctx.fillStyle='#3d5068';ctx.fillText(v.toFixed(v<10?2:0)+(unit||''),PL-3,y+3);})
-  ctx.strokeStyle='#334155';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(PL,PT);ctx.lineTo(PL,H-PB);ctx.lineTo(W-PR,H-PB);ctx.stroke()
+  ;[vMin,(vMin+vMax)/2,vMax].forEach(v=>{const y=PT+(1-(v-vMin)/(vMax-vMin))*PH;ctx.strokeStyle=cvGrid.value;ctx.lineWidth=0.5;ctx.beginPath();ctx.moveTo(PL,y);ctx.lineTo(W-PR,y);ctx.stroke();ctx.fillStyle=cvLabel.value;ctx.fillText(v.toFixed(v<10?2:0)+(unit||''),PL-3,y+3);})
+  ctx.strokeStyle=cvAxis.value;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(PL,PT);ctx.lineTo(PL,H-PB);ctx.lineTo(W-PR,H-PB);ctx.stroke()
   ctx.strokeStyle=color;ctx.lineWidth=1.5;ctx.beginPath()
   for(let i=0;i<n;i++){const v=buf[(si+i)%TS_LEN],x=PL+(i/(n-1))*PW,y=PT+(1-_clamp((v-vMin)/(vMax-vMin),0,1))*PH;if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);}
   ctx.stroke()
@@ -173,7 +181,7 @@ function run() {
   biquad.cycles = '--'; biquad.tput = '-- MB/s'
   if (biquadLogEl.value) biquadLogEl.value.innerHTML = ''
   fetch('/sigchain-biquad/run')
-    .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status) })
+    .then(r => r.ok ? r : r.text().then(t => { let m = t; try { m = JSON.parse(t).error || t } catch (_) {} throw new Error(m || 'HTTP ' + r.status) }))
     .then(() => connectBiquadWs())
     .catch(err => { biquad.statusMsg = 'Error: ' + err.message; biquad.statusColor = '#ef4444'; biquad.statusPulse = false; biquad.running = false; emit('running-change', false) })
 }
@@ -248,7 +256,18 @@ function startRebootWatch() {
   setTimeout(tryConnect, 3000)
 }
 
-onMounted(checkBiquadOverlay)
+function clearBiquadCanvases() {
+  ;[bqLoadCanvas, bqCyclesCanvas, bqTputCanvas].forEach(r => {
+    if (!r.value) return
+    const c = r.value.getContext('2d')
+    c.fillStyle = cvBg.value
+    c.fillRect(0, 0, r.value.width, r.value.height)
+  })
+}
+
+watch(isLight, () => clearBiquadCanvases())
+
+onMounted(() => { checkBiquadOverlay(); clearBiquadCanvases() })
 
 onUnmounted(() => {
   if (biquad.running) fetch('/sigchain-biquad/stop').catch(() => {})

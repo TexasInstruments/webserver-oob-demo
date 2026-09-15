@@ -18,6 +18,7 @@ const canvasEl = ref(null)
 const history  = []      // Float32Array[] — one entry per received frame
 const NUM_BINS = 96      // more frequency bins → finer resolution
 let overrideMaxCols = null   // set by rebuildFromPcm; overrides props.maxCols for render
+let colorLut = null          // Uint8Array(256*3) — pre-built color lookup table
 
 watch(() => props.runKey, () => { history.length = 0; overrideMaxCols = null; drawEmpty() })
 
@@ -33,6 +34,8 @@ watch(() => props.maxCols, (newCols) => {
   while (history.length > newCols) history.shift()
   history.length === 0 ? drawEmpty() : render()
 })
+
+watch(() => props.colorMap, () => { colorLut = buildColorLut() }, { immediate: true })
 
 watch(() => [props.bgColor, props.colorMap], () => {
   history.length === 0 ? drawEmpty() : render()
@@ -91,7 +94,8 @@ function render() {
       const raw  = Math.min(mags[i] / gMax, 1)
       const norm = Math.pow(Math.log1p(raw * 9) / Math.log1p(9), 0.7)
       if (norm < 0.04) continue
-      const [r, g, b] = colorRgb(norm)
+      const lutIdx = Math.min(255, Math.round(norm * 255)) * 3
+      const r = colorLut[lutIdx], g = colorLut[lutIdx + 1], b = colorLut[lutIdx + 2]
       // low freq at bottom → invert y
       const y0 = Math.floor((NUM_BINS - 1 - i) * h / NUM_BINS)
       const y1 = Math.min(h, Math.ceil((NUM_BINS - i) * h / NUM_BINS))
@@ -132,6 +136,18 @@ function colorRgb(n) {
     if (n < 0.7)  { const t = (n-0.45)/0.25;   return [Math.round(t*255),   255,                   0]                          }
     {              const t = (n-0.7)/0.3;       return [255,                  255,                   Math.round(t*255)]           }
   }
+}
+
+function buildColorLut(size = 256) {
+  const lut = new Uint8Array(size * 3)
+  for (let i = 0; i < size; i++) {
+    const norm = i / (size - 1)
+    const [r, g, b] = colorRgb(norm)
+    lut[i * 3]     = r
+    lut[i * 3 + 1] = g
+    lut[i * 3 + 2] = b
+  }
+  return lut
 }
 
 /* ── FFT ───────────────────────────────────────────────────────────────── */
