@@ -47,7 +47,6 @@
               <div class="mc-name">{{ m.name }}</div>
               <div class="mc-meta">
                 <span class="mc-type">{{ m.type }}</span>
-                <span class="mc-quant" :class="quantClass(m.quant)">{{ m.quant }}</span>
               </div>
             </div>
             <div class="mc-latency">{{ m.badge }}</div>
@@ -110,25 +109,14 @@
             <label class="field-lbl">Model Name</label>
             <input v-model="uploadName" class="field-input" type="text" placeholder="e.g. MobileNet v2" />
           </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px;">
-            <div>
-              <label class="field-lbl">Task Type</label>
-              <select v-model="uploadType" class="field-select">
-                <option>Image Classification</option>
-                <option>Object Detection</option>
-                <option>Segmentation</option>
-                <option>Keypoint Detection</option>
-                <option>Other</option>
-              </select>
-            </div>
-            <div>
-              <label class="field-lbl">Quantization</label>
-              <select v-model="uploadQuant" class="field-select">
-                <option value="INT8">INT8</option>
-                <option value="FP16">FP16</option>
-                <option value="FP32">FP32</option>
-              </select>
-            </div>
+          <div style="margin-bottom:18px;">
+            <label class="field-lbl">Task Type</label>
+            <select v-model="uploadType" class="field-select">
+              <option>Audio Classification</option>
+              <option>Speech Enhancement</option>
+              <option>Audio Feature Extraction</option>
+              <option>Other</option>
+            </select>
           </div>
 
           <div v-if="uploadStatus" class="upload-status" :class="uploadStatusType">{{ uploadStatus }}</div>
@@ -158,9 +146,15 @@ const ICON_YOLO = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" s
 const ICON_UPL  = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="13,2 3,14 12,14 11,22 21,10 12,10"/></svg>`
 
 const MODELS_STATIC = [
-  { name: 'GCRN Speech Enhancement', type: 'Speech Enhancement', quant: 'INT8', badge: 'TIDL',
+  { name: 'GCRN', type: 'Speech Enhancement', badge: 'TVM+TIDL',
     iconBg: 'radial-gradient(circle at 40% 40%,#1a2a4a,#0a1530)', iconBorder: '#2563eb', iconColor: '#93c5fd',
     file: '/Model-Inspector/GCRN.html', _icon: ICON_GRID },
+  { name: 'YAMNet', type: 'Audio Classification', badge: 'TIDL',
+    iconBg: 'radial-gradient(circle at 40% 40%,#1a2a4a,#0a1530)', iconBorder: '#2563eb', iconColor: '#93c5fd',
+    file: '/Model-Inspector/YAMNet.html', _icon: ICON_GRID },
+  { name: 'VGGish', type: 'Audio Classification', badge: 'TIDL',
+    iconBg: 'radial-gradient(circle at 40% 40%,#1a2a4a,#0a1530)', iconBorder: '#2563eb', iconColor: '#93c5fd',
+    file: '/Model-Inspector/VGGish.html', _icon: ICON_GRID },
 ]
 
 const STATIC_BY_FILE = {}
@@ -185,8 +179,7 @@ const frameEl     = ref(null)
 const uploadDialog  = ref(false)
 const uploadFile    = ref(null)
 const uploadName    = ref('')
-const uploadType    = ref('Image Classification')
-const uploadQuant   = ref('INT8')
+const uploadType    = ref('Audio Classification')
 const uploadStatus  = ref('')
 const uploadStatusType = ref('')
 const uploadBusy    = ref(false)
@@ -208,10 +201,6 @@ function applyThemeToFrame() {
 watch(() => vuetifyTheme.global.name.value, applyThemeToFrame)
 
 /* ── Helpers ── */
-function quantClass(q) {
-  return q === 'INT8' ? 'int8' : q === 'FP16' ? 'fp16' : 'fp32'
-}
-
 /* ── Load model list ── */
 async function loadModelList() {
   let serverFiles = null
@@ -234,7 +223,6 @@ async function loadModelList() {
       result.push({
         name:    meta.name  || fname.replace(/\.html?$/i, '').replace(/[_-]/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
         type:    meta.type  || 'AI Model',
-        quant:   meta.quant || 'INT8',
         badge:   'Uploaded',
         iconBg:  'radial-gradient(circle at 40% 40%,#0a2d2d,#051a1a)',
         iconBorder: '#0891b2', iconColor: '#22d3ee',
@@ -286,8 +274,7 @@ function onFrameLoad() {
 function openUpload() {
   uploadFile.value   = null
   uploadName.value   = ''
-  uploadType.value   = 'Image Classification'
-  uploadQuant.value  = 'INT8'
+  uploadType.value   = 'Audio Classification'
   uploadStatus.value = ''
   uploadBusy.value   = false
   uploadDialog.value = true
@@ -328,7 +315,6 @@ async function doUpload() {
     saveUploadedMeta(uploadFile.value.name, {
       name:  uploadName.value.trim() || uploadFile.value.name.replace(/\.html?$/i, ''),
       type:  uploadType.value,
-      quant: uploadQuant.value,
     })
     uploadStatus.value = 'Uploaded successfully!'
     uploadStatusType.value = 'status-ok'
@@ -412,10 +398,6 @@ onMounted(loadModelList)
 .mc-name    { font-size:13px; font-weight:600; color:rgb(var(--v-theme-on-surface)); margin-bottom:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .mc-meta    { display:flex; align-items:center; gap:6px; }
 .mc-type    { font-size:11px; color:#64748b; }
-.mc-quant   { font-size:10px; font-weight:700; padding:1px 6px; border-radius:4px; }
-.mc-quant.int8 { background:rgba(34,197,94,0.15); color:#4ade80; border:1px solid rgba(34,197,94,0.25); }
-.mc-quant.fp16 { background:rgba(251,191,36,0.15); color:#fbbf24; border:1px solid rgba(251,191,36,0.25); }
-.mc-quant.fp32 { background:rgba(248,113,113,0.15); color:#f87171; border:1px solid rgba(248,113,113,0.25); }
 .mc-latency { font-size:12px; font-weight:700; color:#94a3b8; flex-shrink:0; }
 
 /* ── Detail panel ── */
