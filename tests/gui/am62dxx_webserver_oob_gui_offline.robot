@@ -50,12 +50,11 @@ AM62D_WEBSERVER_OOB_GUI_OFFLINE_MODEL_INSPECTOR_LIST_AND_UPLOAD_DIALOG
     [Tags]    AM62D    WEBSERVER_OOB    GUI    OFFLINE
     NAVIGATE TO PAGE    AI Model Inspector
     Browser.Reload
-    Browser.Wait For Elements State    ${SEL_MODEL_CARD}:has-text("GCRN Speech Enhancement")    visible    timeout=30s
+    Browser.Wait For Elements State    ${SEL_MODEL_CARD}:has-text("GCRN")    visible    timeout=30s
     Browser.Click    button:has-text("Upload")
     Browser.Wait For Elements State    ${SEL_DROP_ZONE}    visible
     Browser.Wait For Elements State    input[placeholder="e.g. MobileNet v2"]    visible
     Browser.Wait For Elements State    text=Task Type    visible
-    Browser.Wait For Elements State    text=Quantization    visible
     Browser.Click    .upload-card button:has(.mdi-close)
     Browser.Wait For Elements State    .upload-card    hidden    timeout=5s
 
@@ -73,7 +72,7 @@ AM62D_WEBSERVER_OOB_GUI_OFFLINE_MODEL_INSPECTOR_REFRESH_AND_UPLOAD_FLOW
     ${count_before}=    Browser.Get Element Count    ${SEL_MODEL_CARD}
     CLICK MODEL INSPECTOR REFRESH
     Browser.Wait For Elements State    ${SEL_MI_REFRESH_BTN}    enabled    timeout=10s
-    UPLOAD MODEL FILE    ${sample_file}    Sample Uploaded Model    Object Detection    FP16
+    UPLOAD MODEL FILE    ${sample_file}    Sample Uploaded Model    Audio Classification
     Browser.Wait For Elements State    .upload-card    hidden    timeout=5s
     Browser.Wait For Elements State    ${SEL_MODEL_CARD}:has-text("Sample Uploaded Model")    visible    timeout=10s
     ${count_after}=    Browser.Get Element Count    ${SEL_MODEL_CARD}

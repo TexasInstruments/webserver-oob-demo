@@ -349,12 +349,11 @@ CLICK MODEL INSPECTOR REFRESH
 
 UPLOAD MODEL FILE
     [Documentation]    Runs the full AI Model Inspector upload flow (ModelInspector.vue).
-    [Arguments]    ${file_path}    ${model_name}    ${task_type}=Image Classification    ${quant}=INT8
+    [Arguments]    ${file_path}    ${model_name}    ${task_type}=Audio Classification
     Browser.Click    button:has-text("Upload")
     Browser.Wait For Elements State    ${SEL_DROP_ZONE}    visible
     Browser.Upload File By Selector    input[type="file"]    ${file_path}
     Browser.Fill Text    input[placeholder="e.g. MobileNet v2"]    ${model_name}
     Browser.Select Options By    select.field-select >> nth=0    label    ${task_type}
-    Browser.Select Options By    select.field-select >> nth=1    label    ${quant}
     Browser.Click    ${SEL_MI_UPLOAD_SUBMIT_BTN}
     Browser.Wait For Elements State    ${SEL_MI_UPLOAD_STATUS_OK}    visible    timeout=10s
