@@ -412,33 +412,6 @@ test('speech-enhancement ALSA parser returns empty string when no valid cards ex
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Speech enhancement — nextInputVisualizationBlock
-// ─────────────────────────────────────────────────────────────────────────────
-
-test('speech visualization returns sequential fixed-size zero-padded blocks', () => {
-    const { nextInputVisualizationBlock } = require(SPEECH_PLUGIN);
-    const state = { inputPcm: Buffer.from([1, 2, 3, 4, 5]), inputPcmOffset: 0 };
-    assert.deepEqual([...nextInputVisualizationBlock(state, 3)], [1, 2, 3]);
-    assert.deepEqual([...nextInputVisualizationBlock(state, 3)], [4, 5, 0]);
-    assert.deepEqual([...nextInputVisualizationBlock(state, 3)], [0, 0, 0]);
-    assert.equal(state.inputPcmOffset, 5);
-});
-
-test('speech visualization returns all-zero block when PCM buffer is empty', () => {
-    const { nextInputVisualizationBlock } = require(SPEECH_PLUGIN);
-    const state = { inputPcm: Buffer.alloc(0), inputPcmOffset: 0 };
-    assert.deepEqual([...nextInputVisualizationBlock(state, 4)], [0, 0, 0, 0]);
-    assert.equal(state.inputPcmOffset, 0);
-});
-
-test('speech visualization returns zeros when offset is already past end of PCM', () => {
-    const { nextInputVisualizationBlock } = require(SPEECH_PLUGIN);
-    const state = { inputPcm: Buffer.from([1, 2, 3]), inputPcmOffset: 3 };
-    assert.deepEqual([...nextInputVisualizationBlock(state, 3)], [0, 0, 0]);
-    assert.equal(state.inputPcmOffset, 3);
-});
-
-// ─────────────────────────────────────────────────────────────────────────────
 // Speech enhancement — WAV parsing
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -510,6 +483,95 @@ test('readPcmWavInfo calculates duration and total samples correctly', (t) => {
 test('readPcmWavInfo returns null for a file that cannot be parsed', () => {
     const { readPcmWavInfo } = require(SPEECH_PLUGIN);
     assert.equal(readPcmWavInfo('/non/existent/path/file.wav'), null);
+});
+
+const utils = import('../frontend/src/utils/speechVisualization.js');
+
+test('FFT windows are identical across DMA packet sizes and include the final tail', async () => {
+  const { PcmWindows, computeMagnitudes } = await utils;
+  const pcm = Int16Array.from({length: 16000}, (_,i) => Math.round(12000*Math.sin(2*Math.PI*1000*i/16000)));
+  const expected = new PcmWindows().push(pcm, true);
+  for (const size of [1, 160, 1024, 2720, 10240]) {
+    const windows = new PcmWindows(), frames = [];
+    for (let i=0;i<pcm.length;i+=size) frames.push(...windows.push(pcm.subarray(i,i+size)));
+    frames.push(...windows.push(new Int16Array(0), true));
+    assert.deepEqual(frames,expected);
+  }
+  const mags = computeMagnitudes(expected[0],96);
+  assert.equal(mags.indexOf(Math.max(...mags)),12); // 1 kHz among 96 bins to 8 kHz
+});
+
+test('silence is darkest, finite and on the same scale as attenuated speech', async () => {
+  const { computeMagnitudes, magnitudeLevel } = await utils;
+  for (const n of [0,1,160,1024]) {
+    for (const mag of computeMagnitudes(new Int16Array(n),96)) {
+      assert.ok(Number.isFinite(mag)); assert.equal(magnitudeLevel(mag),0);
+    }
+  }
+  assert.ok(magnitudeLevel(1)<magnitudeLevel(10));
+  assert.equal(magnitudeLevel(NaN),0);
+  assert.equal(magnitudeLevel(256),1);
+});
+
+test('waveform retains impulses that point sampling misses', async () => {
+  const { waveformEnvelope } = await utils;
+  const pcm = new Int16Array(10000); pcm[17]=30000; pcm[18]=-25000;
+  const bins=waveformEnvelope(pcm,100);
+  assert.deepEqual(bins[0],{min:-25000,max:30000});
+  assert.deepEqual(bins[1],{min:0,max:0});
+  assert.deepEqual(waveformEnvelope(new Int16Array(0),100),[]);
+});
+
+
+test('quiet-detail range reveals low energy without changing PCM or lighting exact silence', async () => {
+  const { magnitudeLevel } = await utils;
+  const quietBin = 256 * Math.pow(10, -95 / 20);
+  assert.equal(magnitudeLevel(quietBin, -80), 0);
+  assert.ok(magnitudeLevel(quietBin, -110) > 0);
+  assert.equal(magnitudeLevel(0, -110), 0);
+  assert.equal(magnitudeLevel(256, -110), 1);
+  assert.equal(magnitudeLevel(1, 0), magnitudeLevel(1));
+});
+
+test('overlapping FFT windows retain alignment across transport packets', async () => {
+  const { PcmWindows, computeMagnitudes } = await utils;
+  const pcm=Int16Array.from({length:4097},(_,i)=>i);
+  const whole=new PcmWindows(256).push(pcm,true);
+  const stream=new PcmWindows(256),split=[];
+  for(let i=0;i<pcm.length;i+=160)split.push(...stream.push(pcm.subarray(i,i+160)));
+  split.push(...stream.push(new Int16Array(0),true));
+  assert.deepEqual(split,whole);
+  assert.equal(whole[1][0],256);
+  const mags=computeMagnitudes(new Int16Array(1024),513);
+  assert.equal(mags.length,513);assert.ok([...mags].every(Number.isFinite));
+});
+
+test('axis cursor maps plot bounds to absolute time including scrolled history', async () => {
+  const {plotRect,timeAt,viridis}=await import('../frontend/src/utils/plotAxes.js');
+  const rect=plotRect(800,280,true);
+  assert.equal(timeAt(rect.x,rect,30,40),30);
+  assert.equal(timeAt(rect.x+rect.w/2,rect,30,40),35);
+  assert.equal(timeAt(rect.x+rect.w,rect,30,40),40);
+  assert.equal(viridis.length,256);
+});
+
+test('full-resolution spectrum maps a 1 kHz tone to the correct frequency bin', async () => {
+  const {computeMagnitudes}=await utils;
+  const tone=Int16Array.from({length:1024},(_,i)=>Math.round(12000*Math.sin(2*Math.PI*1000*i/16000)));
+  const mags=computeMagnitudes(tone,513);
+  assert.equal(mags.indexOf(Math.max(...mags))*16000/1024,1000);
+  const attenuated=computeMagnitudes(Int16Array.from(tone,x=>x/2),513);
+  assert.ok(Math.abs(20*Math.log10(attenuated[64]/mags[64])+6.0206)<0.01);
+});
+
+test('quiet-detail range reveals low energy without changing PCM or lighting exact silence', async () => {
+  const { magnitudeLevel } = await utils;
+  const quietBin = 256 * Math.pow(10, -95 / 20);
+  assert.equal(magnitudeLevel(quietBin, -80), 0);
+  assert.ok(magnitudeLevel(quietBin, -110) > 0);
+  assert.equal(magnitudeLevel(0, -110), 0);
+  assert.equal(magnitudeLevel(256, -110), 1);
+  assert.equal(magnitudeLevel(1, 0), magnitudeLevel(1));
 });
 
 // ─────────────────────────────────────────────────────────────────────────────

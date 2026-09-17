@@ -122,6 +122,14 @@
       <div class="viz-section-hdr">
         <div class="viz-section-lbl">Spectrogram</div>
         <div class="zoom-controls">
+          <v-btn size="x-small" variant="tonal" @click="spectScale = spectScale === 'relative' ? 'shared' : 'relative'"
+            title="Per-plot peak scaling resembles the Python baseline. Shared reference preserves level comparisons.">
+            {{ spectScale === 'relative' ? 'Per-plot peak' : 'Shared reference' }}
+          </v-btn>
+          <v-btn size="x-small" variant="tonal" @click="quietDetail = !quietDetail"
+            :aria-pressed="quietDetail" title="Show quieter spectral energy; same scale for input and output">
+            {{ quietDetail ? 'Quiet detail: −110 to 0 dB' : 'Standard: −80 to 0 dB' }}
+          </v-btn>
           <v-btn icon size="x-small" variant="text" :disabled="spectZoomIdx === 0" @click="spectZoomIdx--" title="Zoom out (more history)">
             <v-icon size="14">mdi-magnify-minus-outline</v-icon>
           </v-btn>
@@ -134,17 +142,17 @@
       <div class="viz-stack">
         <div class="viz-row">
           <div class="viz-ch-label" :style="{ color: inputColor }">Input (Noisy)</div>
-          <SpectrogramCanvas ref="spectInRef" :pcm-frame="ws.inputPcmFrame.value" color-map="blue" :bg-color="spectBg" :height="220" :run-key="ws.runKey.value" :max-cols="spectZoomLevels[spectZoomIdx]" />
+          <SpectrogramCanvas ref="spectInRef" :pcm-frame="ws.inputPcmFrame.value" color-map="blue" :bg-color="spectBg" :height="220" :run-key="ws.runKey.value" :max-cols="spectZoomLevels[spectZoomIdx]" :floor-db="spectFloorDb" :scale-mode="spectScale" :cursor-time="cursorTime" @cursor="cursorTime = $event" />
         </div>
         <div class="viz-row">
           <div class="viz-ch-label" :style="{ color: outputColor }">Output (Enhanced)</div>
-          <SpectrogramCanvas ref="spectOutRef" :pcm-frame="ws.outputPcmFrame.value" color-map="green" :bg-color="spectBg" :height="220" :run-key="ws.runKey.value" :max-cols="spectZoomLevels[spectZoomIdx]" />
+          <SpectrogramCanvas ref="spectOutRef" :pcm-frame="ws.outputPcmFrame.value" color-map="green" :bg-color="spectBg" :height="220" :run-key="ws.runKey.value" :max-cols="spectZoomLevels[spectZoomIdx]" :floor-db="spectFloorDb" :scale-mode="spectScale" :cursor-time="cursorTime" @cursor="cursorTime = $event" />
         </div>
       </div>
 
       <!-- Waveform row -->
       <div class="viz-section-hdr" style="margin-top:12px;">
-        <div class="viz-section-lbl">Waveform</div>
+        <div class="viz-section-lbl">Waveform <span v-if="waveZoomIdx > 0">— display gain; peaks may clip</span></div>
         <div class="zoom-controls">
           <v-btn icon size="x-small" variant="text" :disabled="waveZoomIdx === 0" @click="waveZoomIdx--" title="Zoom out">
             <v-icon size="14">mdi-magnify-minus-outline</v-icon>
@@ -158,11 +166,11 @@
       <div class="viz-stack">
         <div class="viz-row">
           <div class="viz-ch-label" :style="{ color: inputColor }">Input (Noisy)</div>
-          <WaveformCanvas ref="waveInRef" :pcm-frame="ws.inputPcm.value" :color="inputColor" :bg-color="canvasBg" :height="130" :run-key="ws.runKey.value" :y-zoom="waveZoomLevels[waveZoomIdx]" />
+          <WaveformCanvas ref="waveInRef" :pcm-frame="ws.inputPcm.value" :color="inputColor" :bg-color="canvasBg" :height="130" :run-key="ws.runKey.value" :y-zoom="waveZoomLevels[waveZoomIdx]" :cursor-time="cursorTime" @cursor="cursorTime = $event" />
         </div>
         <div class="viz-row">
           <div class="viz-ch-label" :style="{ color: outputColor }">Output (Enhanced)</div>
-          <WaveformCanvas ref="waveOutRef" :pcm-frame="ws.outputPcm.value" :color="outputColor" :bg-color="canvasBg" :height="130" :run-key="ws.runKey.value" :y-zoom="waveZoomLevels[waveZoomIdx]" />
+          <WaveformCanvas ref="waveOutRef" :pcm-frame="ws.outputPcm.value" :color="outputColor" :bg-color="canvasBg" :height="130" :run-key="ws.runKey.value" :y-zoom="waveZoomLevels[waveZoomIdx]" :cursor-time="cursorTime" @cursor="cursorTime = $event" />
         </div>
       </div>
     </v-card>
@@ -184,6 +192,7 @@ import SpectrogramCanvas from '@/components/SpectrogramCanvas.vue'
 import WaveformCanvas    from '@/components/WaveformCanvas.vue'
 import RmsTable          from '@/components/RmsTable.vue'
 import AudioPlayer       from '@/components/AudioPlayer.vue'
+import { drawWavePlot } from '@/utils/plotAxes.js'
 import JSZip             from 'jszip'
 
 const vuetifyTheme = useTheme()
@@ -235,9 +244,13 @@ const uploadedPath = ref(null)
 const uploadError  = ref(null)
 
 // Zoom controls
+const cursorTime = ref(null)
+const spectScale = ref('relative')
+const quietDetail = ref(false)
+const spectFloorDb = computed(() => quietDetail.value ? -110 : -80)
 const spectZoomLevels = [400, 200, 100, 50]    // maxCols: more = zoomed out (more history)
 const spectZoomIdx    = ref(1)                 // default 200
-const waveZoomLevels  = [1, 2, 4, 8]           // amplitude multiplier
+const waveZoomLevels  = [1, 2, 4, 8, 16, 32, 64, 128]           // amplitude multiplier
 const waveZoomIdx     = ref(0)                 // default 1×
 
 // Canvas refs for save
@@ -252,44 +265,8 @@ const saving  = ref(false)
 function renderWaveformToCanvas(pcmData, color, bgColor, width, height, yZoom) {
   const off = document.createElement('canvas')
   off.width = width; off.height = height
-  const ctx = off.getContext('2d')
-  const pcm = pcmData.pcm
-  const midY = height / 2
-
-  ctx.fillStyle = bgColor
-  ctx.fillRect(0, 0, width, height)
-
-  const r = parseInt(color.slice(1, 3), 16)
-  const g = parseInt(color.slice(3, 5), 16)
-  const b = parseInt(color.slice(5, 7), 16)
-
-  ctx.beginPath()
-  ctx.fillStyle = `rgba(${r},${g},${b},0.18)`
-  ctx.moveTo(0, midY)
-  for (let x = 0; x <= width; x++) {
-    const idx = Math.floor(x * pcm.length / width)
-    const val = Math.max(-midY, Math.min(midY, (pcm[Math.min(idx, pcm.length - 1)] / 32768) * yZoom * midY * 0.9))
-    ctx.lineTo(x, midY - val)
-  }
-  ctx.lineTo(width, midY)
-  ctx.closePath()
-  ctx.fill()
-
-  ctx.beginPath()
-  ctx.strokeStyle = color
-  ctx.lineWidth = 1.5
-  for (let x = 0; x <= width; x++) {
-    const idx = Math.floor(x * pcm.length / width)
-    const val = Math.max(-midY, Math.min(midY, (pcm[Math.min(idx, pcm.length - 1)] / 32768) * yZoom * midY * 0.9))
-    x === 0 ? ctx.moveTo(x, midY - val) : ctx.lineTo(x, midY - val)
-  }
-  ctx.stroke()
-
-  ctx.beginPath()
-  ctx.strokeStyle = `rgba(${r},${g},${b},0.25)`
-  ctx.lineWidth = 0.5
-  ctx.moveTo(0, midY); ctx.lineTo(width, midY)
-  ctx.stroke()
+  drawWavePlot(off.getContext('2d'), pcmData.pcm, width, height, color, bgColor,
+    yZoom, pcmData.sampleRate || 16000, pcmData.startSample || 0)
   return off
 }
 
@@ -385,7 +362,10 @@ async function saveArtifacts() {
       ctx.fillRect(0, 0, W, HEADER_H)
       ctx.fillStyle = '#e2e8f0'
       ctx.font = 'bold 13px system-ui, sans-serif'
-      ctx.fillText(`Speech Enhancement — ${suffix}  —  ${ts.replace(/_/, '  ').replace(/-/g, (m, o) => o > 10 ? ':' : '-')}`, PAD, HEADER_H / 2 + 5)
+      const displayScale = suffix === 'Waveform'
+        ? `${waveZoomLevels[waveZoomIdx.value]}× display gain`
+        : `${spectFloorDb.value} to 0 dB / ${spectScale.value === 'relative' ? 'plot peak' : 'fixed ref'}`
+      ctx.fillText(`Speech Enhancement — ${suffix} (${displayScale})  —  ${ts.replace(/_/, '  ').replace(/-/g, (m, o) => o > 10 ? ':' : '-')}`, PAD, HEADER_H / 2 + 5)
       const lbl = (text, y, color) => {
         ctx.font = 'bold 12px system-ui, sans-serif'
         ctx.fillStyle = color
