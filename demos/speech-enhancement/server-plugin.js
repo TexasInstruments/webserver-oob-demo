@@ -304,7 +304,15 @@ module.exports = function registerSpeechEnhancement(app, wss, device) {
         const filename = active && (channel === 'output' ? active.outputPath : active.inputPath);
         if (!filename || !fs.existsSync(filename)) return res.status(404).send('Audio is not available');
         res.type('audio/wav');
-        fs.createReadStream(filename).pipe(res);
+        // Media elements need file length and byte ranges to determine duration
+        // promptly and seek without downloading the entire recording again.
+        // URLs are reused between runs, so do not cache the previous recording.
+        res.set('Cache-Control', 'no-store');
+        res.sendFile(path.resolve(filename), { cacheControl: false }, error => {
+            if (!error || req.aborted || res.destroyed) return;
+            if (!res.headersSent) res.status(error.status || 500).end();
+            else res.destroy();
+        });
     });
 
     wss.on('connection', (ws, req) => {
