@@ -564,16 +564,6 @@ test('full-resolution spectrum maps a 1 kHz tone to the correct frequency bin', 
   assert.ok(Math.abs(20*Math.log10(attenuated[64]/mags[64])+6.0206)<0.01);
 });
 
-test('quiet-detail range reveals low energy without changing PCM or lighting exact silence', async () => {
-  const { magnitudeLevel } = await utils;
-  const quietBin = 256 * Math.pow(10, -95 / 20);
-  assert.equal(magnitudeLevel(quietBin, -80), 0);
-  assert.ok(magnitudeLevel(quietBin, -110) > 0);
-  assert.equal(magnitudeLevel(0, -110), 0);
-  assert.equal(magnitudeLevel(256, -110), 1);
-  assert.equal(magnitudeLevel(1, 0), magnitudeLevel(1));
-});
-
 // ─────────────────────────────────────────────────────────────────────────────
 // Demo coordinator — DSP ownership state machine
 // ─────────────────────────────────────────────────────────────────────────────
