@@ -1,206 +1,227 @@
 <template>
-  <canvas ref="canvasEl" :height="height" style="width:100%;border-radius:6px;display:block;" />
+  <div>
+    <canvas
+      ref="canvasEl"
+      :height="height + 60"
+      style="width: 100%; display: block"
+      @pointermove="hover"
+      @pointerleave="leave"
+    />
+    <div style="font-size: 11px; min-height: 18px">
+      {{ readout || 'Hover: time · frequency · spectral level' }}
+    </div>
+  </div>
 </template>
-
 <script setup>
-import { ref, watch, onMounted } from 'vue'
-
+import { ref, watch, onMounted, onUnmounted } from 'vue'
+import { PcmWindows, computeMagnitudes } from '../utils/speechVisualization.js'
+import {
+  viridis,
+  plotRect,
+  timeAt,
+  axes,
+  cursorLine,
+} from '../utils/plotAxes.js'
 const props = defineProps({
-  pcmFrame: { type: Object, default: null },
-  colorMap: { type: String, default: 'blue' },  // 'blue' | 'green'
-  bgColor:  { type: String, default: '#05080f' },
-  height:   { type: Number, default: 100 },
-  runKey:   { type: Number, default: 0 },
-  maxCols:  { type: Number, default: 200 },      // time-axis window (zoom)
+  pcmFrame: Object,
+  colorMap: String,
+  bgColor: { default: '#05080f' },
+  height: { default: 220 },
+  runKey: Number,
+  floorDb: { default: -80 },
+  maxCols: { default: 200 },
+  scaleMode: { default: 'shared' },
+  cursorTime: { default: null },
 })
-
-const canvasEl = ref(null)
-const history  = []      // Float32Array[] — one entry per received frame
-const NUM_BINS = 96      // more frequency bins → finer resolution
-let overrideMaxCols = null   // set by rebuildFromPcm; overrides props.maxCols for render
-let colorLut = null          // Uint8Array(256*3) — pre-built color lookup table
-
-watch(() => props.runKey, () => { history.length = 0; overrideMaxCols = null; drawEmpty() })
-
-watch(() => props.pcmFrame, (frame) => {
-  if (!frame?.pcm) return
-  history.push(computeMagnitudes(frame.pcm, NUM_BINS))
-  if (history.length > props.maxCols) history.shift()
+const emit = defineEmits(['cursor'])
+const canvasEl = ref(null),
+  readout = ref(''),
+  windows = new PcmWindows(256)
+let history = [],
+  sampleRate = 16000,
+  totalSamples = 0,
+  nextStart = 0,
+  full = false,
+  observer,
+  layout,
+  limits,
+  peakDb = 0
+const db = (mag) => (mag > 0 ? 20 * Math.log10(mag / 256) : -Infinity)
+function append(pcm, final = false) {
+  totalSamples += pcm.length
+  for (const frame of windows.push(pcm, final)) {
+    history.push({ start: nextStart, mags: computeMagnitudes(frame, 513) })
+    nextStart += 256
+  }
+  if (!full && history.length > props.maxCols)
+    history.splice(0, history.length - props.maxCols)
+}
+function reset() {
+  history = []
+  totalSamples = 0
+  nextStart = 0
+  full = false
+  windows.reset()
+  readout.value = ''
+  render()
+}
+watch(() => props.runKey, reset)
+watch(
+  () => props.pcmFrame,
+  (frame) => {
+    if (!frame?.pcm) return
+    sampleRate = frame.sampleRate || 16000
+    append(frame.pcm)
+    render()
+  },
+)
+watch(
+  () => props.maxCols,
+  () => {
+    full = false
+    if (history.length > props.maxCols)
+      history.splice(0, history.length - props.maxCols)
+    render()
+  },
+)
+watch(
+  () => [props.bgColor, props.floorDb, props.scaleMode, props.cursorTime],
+  render,
+)
+onMounted(() => {
+  observer = new ResizeObserver(render)
+  observer.observe(canvasEl.value)
   render()
 })
-
-watch(() => props.maxCols, (newCols) => {
-  overrideMaxCols = null   // user changed zoom → exit full-rebuild view
-  while (history.length > newCols) history.shift()
-  history.length === 0 ? drawEmpty() : render()
-})
-
-watch(() => props.colorMap, () => { colorLut = buildColorLut() }, { immediate: true })
-
-watch(() => [props.bgColor, props.colorMap], () => {
-  history.length === 0 ? drawEmpty() : render()
-})
-
-onMounted(() => drawEmpty())
-
+onUnmounted(() => observer?.disconnect())
 defineExpose({
   getCanvas: () => canvasEl.value,
-  rebuildFromPcm(int16Array) {
-    history.length = 0
-    const FRAME = 1024
-    for (let off = 0; off + FRAME <= int16Array.length; off += FRAME)
-      history.push(computeMagnitudes(int16Array.subarray(off, off + FRAME), NUM_BINS))
-    overrideMaxCols = history.length
+  rebuildFromPcm(pcm, rate = 16000) {
+    history = []
+    windows.reset()
+    totalSamples = 0
+    nextStart = 0
+    sampleRate = rate
+    full = true
+    append(pcm, true)
     render()
   },
 })
-
-/* ── render ────────────────────────────────────────────────────────────── */
 function render() {
-  const canvas = canvasEl.value
-  if (!canvas) return
-  const w = canvas.offsetWidth || canvas.width
-  if (canvas.width !== w) canvas.width = w
-  const h   = props.height
-  const ctx = canvas.getContext('2d')
-
-  const [br, bg, bb] = hexToRgb(props.bgColor)
-  const img = ctx.createImageData(w, h)
-  const px  = img.data
-
-  // fill background
-  for (let i = 0; i < px.length; i += 4) {
-    px[i] = br; px[i + 1] = bg; px[i + 2] = bb; px[i + 3] = 255
+  const c = canvasEl.value
+  if (!c) return
+  const w = Math.max(260, c.offsetWidth || c.width),
+    h = props.height + 60
+  if (c.width !== w) c.width = w
+  const ctx = c.getContext('2d')
+  ctx.fillStyle = props.bgColor
+  ctx.fillRect(0, 0, w, h)
+  const rect = plotRect(w, h, true)
+  layout = rect
+  const start = (history[0]?.start || 0) / sampleRate
+  const end = history.length
+    ? (full ? totalSamples : history.at(-1).start + 1024) / sampleRate
+    : start
+  limits = { start, end }
+  peakDb = 0
+  if (props.scaleMode === 'relative') {
+    let peak = 0
+    for (const col of history)
+      for (const mag of col.mags) peak = Math.max(peak, mag)
+    peakDb = peak > 0 ? db(peak) : 0
   }
-
-  if (history.length === 0) { ctx.putImageData(img, 0, 0); return }
-
-  const maxCols = overrideMaxCols ?? props.maxCols
-
-  // use 95th-percentile as ceiling so bright bins always show full color
-  const all = []
-  for (const col of history) for (const v of col) all.push(v)
-  all.sort((a, b) => a - b)
-  const gMax = all[Math.floor(all.length * 0.95)] || 0.001
-
-  for (let t = 0; t < history.length; t++) {
-    const mags = history[t]
-    const x0 = Math.floor((t + maxCols - history.length) * w / maxCols)
-    const x1 = Math.min(w, Math.floor((t + maxCols - history.length + 1) * w / maxCols))
-    if (x0 >= x1) continue
-
-    for (let i = 0; i < NUM_BINS; i++) {
-      // log scaling → pulls up quiet details; gamma → saturates bright areas faster
-      const raw  = Math.min(mags[i] / gMax, 1)
-      const norm = Math.pow(Math.log1p(raw * 9) / Math.log1p(9), 0.7)
-      if (norm < 0.04) continue
-      const lutIdx = Math.min(255, Math.round(norm * 255)) * 3
-      const r = colorLut[lutIdx], g = colorLut[lutIdx + 1], b = colorLut[lutIdx + 2]
-      // low freq at bottom → invert y
-      const y0 = Math.floor((NUM_BINS - 1 - i) * h / NUM_BINS)
-      const y1 = Math.min(h, Math.ceil((NUM_BINS - i) * h / NUM_BINS))
-      for (let y = y0; y < y1; y++) {
-        for (let x = x0; x < x1; x++) {
-          const idx = (y * w + x) * 4
-          px[idx] = r; px[idx + 1] = g; px[idx + 2] = b; px[idx + 3] = 255
-        }
-      }
+  const img = ctx.createImageData(rect.w, rect.h)
+  for (let y = 0; y < rect.h; y++)
+    for (let x = 0; x < rect.w; x++) {
+      const time = start + ((x + 0.5) / rect.w) * (end - start)
+      const col =
+        history[
+          Math.min(
+            history.length - 1,
+            Math.floor((time * sampleRate - (history[0]?.start || 0)) / 256),
+          )
+        ]
+      const bin = Math.round((1 - y / Math.max(1, rect.h - 1)) * 512)
+      const level = col ? db(col.mags[bin]) - peakDb : -Infinity
+      const norm = Math.max(
+        0,
+        Math.min(1, (level - props.floorDb) / -props.floorDb),
+      )
+      const rgb = viridis[Math.round(norm * 255)],
+        i = (y * rect.w + x) * 4
+      img.data[i] = rgb[0]
+      img.data[i + 1] = rgb[1]
+      img.data[i + 2] = rgb[2]
+      img.data[i + 3] = 255
     }
+  ctx.putImageData(img, rect.x, rect.y)
+  axes(
+    ctx,
+    rect,
+    start,
+    end,
+    0,
+    sampleRate / 2,
+    'Frequency (Hz)',
+    props.bgColor,
+  )
+  const bx = rect.x + rect.w + 12
+  for (let y = 0; y < rect.h; y++) {
+    const rgb = viridis[Math.round((1 - y / Math.max(1, rect.h - 1)) * 255)]
+    ctx.fillStyle = `rgb(${rgb})`
+    ctx.fillRect(bx, rect.y + y, 12, 1)
   }
-  ctx.putImageData(img, 0, 0)
+  ctx.fillStyle = ['#e8eef6', '#f1f5f9'].includes(props.bgColor)
+    ? '#334155'
+    : '#cbd5e1'
+  ctx.font = '10px sans-serif'
+  ctx.textAlign = 'left'
+  for (let i = 0; i <= 4; i++)
+    ctx.fillText(
+      ((props.floorDb * i) / 4).toFixed(0),
+      bx + 16,
+      rect.y + (i * rect.h) / 4 + 4,
+    )
+  ctx.textAlign = 'center'
+  ctx.fillText(
+    props.scaleMode === 'relative' ? 'dB / peak' : 'dB / ref',
+    bx + 16,
+    rect.y + rect.h + 20,
+  )
+  cursorLine(ctx, rect, props.cursorTime, start, end)
 }
-
-function drawEmpty() {
-  const canvas = canvasEl.value
-  if (!canvas) return
-  const w = canvas.offsetWidth || canvas.width
-  if (canvas.width !== w) canvas.width = w
-  const ctx = canvas.getContext('2d')
-  const [r, g, b] = hexToRgb(props.bgColor)
-  ctx.fillStyle = `rgb(${r},${g},${b})`
-  ctx.fillRect(0, 0, w, props.height)
+function hover(e) {
+  if (!layout || !history.length) return
+  const box = canvasEl.value.getBoundingClientRect(),
+    x = ((e.clientX - box.left) * canvasEl.value.width) / box.width,
+    y = e.clientY - box.top
+  if (
+    x < layout.x ||
+    x > layout.x + layout.w ||
+    y < layout.y ||
+    y > layout.y + layout.h
+  ) {
+    leave()
+    return
+  }
+  const time = timeAt(x, layout, limits.start, limits.end),
+    bin = Math.max(
+      0,
+      Math.min(512, Math.round((1 - (y - layout.y) / layout.h) * 512)),
+    )
+  const col =
+    history[
+      Math.min(
+        history.length - 1,
+        Math.floor((time * sampleRate - history[0].start) / 256),
+      )
+    ]
+  const level = db(col.mags[bin]) - peakDb
+  readout.value = `${time.toFixed(3)} s · ${((bin * sampleRate) / 1024).toFixed(1)} Hz · ${Number.isFinite(level) ? level.toFixed(1) : '−∞'} dB ${props.scaleMode === 'relative' ? 'relative to plot peak' : 'relative to fixed FFT reference'}`
+  emit('cursor', time)
 }
-
-/* ── color maps ────────────────────────────────────────────────────────── */
-function colorRgb(n) {
-  // Blue map: black → deep blue → cyan → white-hot
-  if (props.colorMap === 'blue') {
-    if (n < 0.2)  { const t = n / 0.2;         return [0,                    0,                    Math.round(t * 220)]         }
-    if (n < 0.45) { const t = (n-0.2)/0.25;    return [0,                    Math.round(t*180),    Math.round(220+t*35)]        }
-    if (n < 0.7)  { const t = (n-0.45)/0.25;   return [Math.round(t*100),   Math.round(180+t*75), 255]                         }
-    {              const t = (n-0.7)/0.3;       return [Math.round(100+t*155), 255,                 255]                         }
-  } else {
-    // Green map: black → dark green → bright green → yellow → white-hot
-    if (n < 0.2)  { const t = n / 0.2;         return [0,                    Math.round(t*130),    0]                           }
-    if (n < 0.45) { const t = (n-0.2)/0.25;    return [0,                    Math.round(130+t*125), 0]                          }
-    if (n < 0.7)  { const t = (n-0.45)/0.25;   return [Math.round(t*255),   255,                   0]                          }
-    {              const t = (n-0.7)/0.3;       return [255,                  255,                   Math.round(t*255)]           }
-  }
-}
-
-function buildColorLut(size = 256) {
-  const lut = new Uint8Array(size * 3)
-  for (let i = 0; i < size; i++) {
-    const norm = i / (size - 1)
-    const [r, g, b] = colorRgb(norm)
-    lut[i * 3]     = r
-    lut[i * 3 + 1] = g
-    lut[i * 3 + 2] = b
-  }
-  return lut
-}
-
-/* ── FFT ───────────────────────────────────────────────────────────────── */
-function computeMagnitudes(int16, numBins) {
-  const N = 1024
-  const re = new Float32Array(N)
-  const im = new Float32Array(N)
-  const len = Math.min(N, int16.length)
-  for (let i = 0; i < len; i++) {
-    const w = 0.5 * (1 - Math.cos(2 * Math.PI * i / (len - 1)))
-    re[i] = (int16[i] / 32768) * w
-  }
-  let j = 0
-  for (let i = 1; i < N; i++) {
-    let bit = N >> 1
-    for (; j & bit; bit >>= 1) j ^= bit
-    j ^= bit
-    if (i < j) { const t = re[i]; re[i] = re[j]; re[j] = t }
-  }
-  for (let half = 1; half < N; half <<= 1) {
-    const ang = -Math.PI / half
-    const wc = Math.cos(ang), ws = Math.sin(ang)
-    for (let k = 0; k < N; k += half << 1) {
-      let cr = 1, ci = 0
-      for (let n = 0; n < half; n++) {
-        const ur = re[k+n], ui = im[k+n]
-        const vr = re[k+n+half]*cr - im[k+n+half]*ci
-        const vi = re[k+n+half]*ci + im[k+n+half]*cr
-        re[k+n] = ur+vr; im[k+n] = ui+vi
-        re[k+n+half] = ur-vr; im[k+n+half] = ui-vi
-        const tmp = cr*wc - ci*ws; ci = cr*ws + ci*wc; cr = tmp
-      }
-    }
-  }
-  const half = N >> 1
-  const step = Math.floor(half / numBins)
-  const mags = new Float32Array(numBins)
-  for (let b = 0; b < numBins; b++) {
-    let sum = 0
-    const start = b * step
-    let end = start + step
-    if (end > half) end = half
-    for (let k = start; k < end; k++) {
-      sum += re[k]*re[k] + im[k]*im[k]
-    }
-    mags[b] = Math.sqrt(sum / (end - start))
-  }
-  return mags
-}
-
-function hexToRgb(hex) {
-  hex = hex.replace('#', '')
-  if (hex.length === 3) hex = hex.split('').map(c => c+c).join('')
-  return [parseInt(hex.slice(0,2),16), parseInt(hex.slice(2,4),16), parseInt(hex.slice(4,6),16)]
+function leave() {
+  readout.value = ''
+  emit('cursor', null)
 }
 </script>

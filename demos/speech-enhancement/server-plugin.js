@@ -18,26 +18,6 @@ const MOCK = process.env.MOCK === '1';
 const WS_OPEN = 1;
 const JOB_ROOT = '/tmp/webserver-oob-speech';
 
-/*
- * Return the next source-WAV block for the live input visualisation.
- *
- * The DMA input buffer is a fixed-size, reusable pipeline buffer.  On batches
- * after the first it can contain zero padding before the final file batch,
- * which makes a full 401-frame input block appear to end in a flat line.  The
- * source WAV is the authoritative input, so advance through it by exactly one
- * advertised DMA payload per input message.  Only the true final short block
- * is padded when the source data runs out.
- */
-function nextInputVisualizationBlock(state, payloadBytes) {
-    const block = Buffer.alloc(payloadBytes);
-    const start = state.inputPcmOffset;
-    const end = Math.min(start + payloadBytes, state.inputPcm.length);
-    if (end > start) state.inputPcm.copy(block, 0, start, end);
-    state.inputPcmOffset = end;
-    return block;
-}
-
-
 function rawBody(limitBytes) {
     return (req, res, next) => {
         const chunks = [];
@@ -76,7 +56,7 @@ function _parseWavChunks(wav) {
     return { fmt, data };
 }
 
-/* Validate and return PCM payload; requires 16-bit mono 48 kHz. */
+/* Validate and return PCM payload; requires 16-bit mono. */
 function readPcmWav(filename) {
     const wav = fs.readFileSync(filename);
     const { fmt, data } = _parseWavChunks(wav);
@@ -127,7 +107,7 @@ module.exports = function registerSpeechEnhancement(app, wss, device) {
     }
 
     // The RPMsg client owns this Unix socket and sends EASP binary frames at
-    // the exact DMA boundaries: 13-byte header + signed-16-bit PCM payload.
+    // finalized overlap-trimmed boundaries: 13-byte header + signed-16-bit PCM.
     function connectDmaStream() {
         const retry = () => {
             if (!job || MOCK || dmaSocket) return;
@@ -143,11 +123,7 @@ module.exports = function registerSpeechEnhancement(app, wss, device) {
                     const direction = dmaBuffer[4], sampleRate = dmaBuffer.readUInt32LE(5), bytes = dmaBuffer.readUInt32LE(9);
                     if (dmaBuffer.length < 13 + bytes) return;
                     const dmaPcm = dmaBuffer.subarray(13, 13 + bytes); dmaBuffer = dmaBuffer.subarray(13 + bytes);
-                    const useSourceInput = direction === 0 && job &&
-                        job.inputPcm && job.inputSampleRate === sampleRate;
-                    const pcm = useSourceInput
-                        ? nextInputVisualizationBlock(job, bytes)
-                        : dmaPcm;
+                    const pcm = dmaPcm;
                     if (job) job.dmaFrames = true;
                     send({ type: 'spectrum', channel: direction ? 'output' : 'input', pcm: pcm.toString('base64'), sampleRate, source: 'rpmsg-dma' });
                 }
@@ -203,13 +179,10 @@ module.exports = function registerSpeechEnhancement(app, wss, device) {
         const jobDir = fs.mkdtempSync(path.join(JOB_ROOT, 'job-'));
         const outputPath = path.join(jobDir, outputName);
 
-        const inputWav = readPcmWav(inputPath); // Validate WAV before switching C7x firmware.
+        readPcmWav(inputPath); // Validate WAV before switching C7x firmware.
         job = {
             inputPath,
             outputPath,
-            inputPcm: inputWav.pcm,
-            inputSampleRate: inputWav.sampleRate,
-            inputPcmOffset: 0,
             process: null,
             cancelled: false,
             stdout: '',
@@ -235,7 +208,9 @@ module.exports = function registerSpeechEnhancement(app, wss, device) {
         const child = spawn(binary, [jobJsonPath], { cwd: jobDir, stdio: ['pipe', 'pipe', 'pipe'] });
         job.process = child;
         connectDmaStream();
-        let totalFrames = 401; // updated from [App] GCRN configuration: TOTAL_FRAMES=N
+        const stft = baseJson.stages?.find(stage => stage.message_type === 'C7X_MSG_STFT_ANALYZE');
+        let totalFrames = Number(stft?.parameters?.total_frames) || 401;
+        const overlapFrames = Number(baseJson.overlap_frames) || 0;
         const collect = data => {
             const text = data.toString();
             if (job) job.stdout += text;
@@ -250,8 +225,8 @@ module.exports = function registerSpeechEnhancement(app, wss, device) {
                         type:       'chunk_timing',
                         chunk,
                         total:      parseInt(chunkMatch[2]),
-                        frameStart: (chunk - 1) * totalFrames,
-                        frameEnd:   chunk * totalFrames - 1,
+                        frameStart: (chunk - 1) * (totalFrames - overlapFrames),
+                        frameEnd:   (chunk - 1) * (totalFrames - overlapFrames) + totalFrames - 1,
                         stft:       parseFloat(chunkMatch[3]),
                         tvm:        parseFloat(chunkMatch[4]),
                         istft:      parseFloat(chunkMatch[5]),
@@ -301,7 +276,7 @@ module.exports = function registerSpeechEnhancement(app, wss, device) {
             fs.mkdirSync(JOB_ROOT, { recursive: true });
             const uploadPath = path.join(JOB_ROOT, 'upload.wav');
             fs.writeFileSync(uploadPath, req.body);
-            readPcmWav(uploadPath);  // validates 16-bit mono 48 kHz
+            readPcmWav(uploadPath);  // validates 16-bit mono
             const wavInfo = readPcmWavInfo(uploadPath);
             res.json({ path: uploadPath, wavInfo });
         } catch (error) { res.status(400).json({ error: error.message }); }
@@ -329,7 +304,15 @@ module.exports = function registerSpeechEnhancement(app, wss, device) {
         const filename = active && (channel === 'output' ? active.outputPath : active.inputPath);
         if (!filename || !fs.existsSync(filename)) return res.status(404).send('Audio is not available');
         res.type('audio/wav');
-        fs.createReadStream(filename).pipe(res);
+        // Media elements need file length and byte ranges to determine duration
+        // promptly and seek without downloading the entire recording again.
+        // URLs are reused between runs, so do not cache the previous recording.
+        res.set('Cache-Control', 'no-store');
+        res.sendFile(path.resolve(filename), { cacheControl: false }, error => {
+            if (!error || req.aborted || res.destroyed) return;
+            if (!res.headersSent) res.status(error.status || 500).end();
+            else res.destroy();
+        });
     });
 
     wss.on('connection', (ws, req) => {
@@ -344,7 +327,6 @@ module.exports = function registerSpeechEnhancement(app, wss, device) {
     console.log(`[speech-enhancement] Edge-AI RPMsg plugin registered${MOCK ? ' (MOCK)' : ''}`);
 };
 
-module.exports.nextInputVisualizationBlock = nextInputVisualizationBlock;
 module.exports.parseAlsaOutput             = parseAlsaOutput;
 module.exports.readPcmWav                  = readPcmWav;
 module.exports.readPcmWavInfo              = readPcmWavInfo;

@@ -10,12 +10,15 @@
       </div>
       <span class="ap-time">{{ timeStr }}</span>
     </div>
-    <audio ref="audioEl" :src="url" @timeupdate="onTime" @ended="onEnded" />
+    <audio ref="audioEl" :src="url" preload="metadata"
+      @loadedmetadata="onTime" @durationchange="onTime" @timeupdate="onTime"
+      @seeking="onTime" @seeked="onTime" @playing="onPlaying"
+      @pause="onPause" @ended="onEnded" @error="onPause" @emptied="reset" />
   </div>
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, watch, onBeforeUnmount } from 'vue'
 
 const props = defineProps({
   label:  { type: String, default: '' },
@@ -28,28 +31,82 @@ const playing  = ref(false)
 const progress = ref(0)
 const timeStr  = ref('--:--')
 
-watch(() => props.url, () => { playing.value = false; progress.value = 0; timeStr.value = '--:--' })
+let animationFrame = null
 
-function toggle() {
-  if (!audioEl.value) return
-  playing.value ? audioEl.value.pause() : audioEl.value.play()
-  playing.value = !playing.value
+function stopClock() {
+  if (animationFrame !== null) cancelAnimationFrame(animationFrame)
+  animationFrame = null
+}
+
+function reset() {
+  stopClock()
+  playing.value = false
+  progress.value = 0
+  timeStr.value = '--:--'
+}
+
+watch(() => props.url, reset)
+onBeforeUnmount(() => {
+  stopClock()
+  audioEl.value?.pause()
+})
+
+async function toggle() {
+  const el = audioEl.value
+  if (!el) return
+  if (!el.paused) {
+    el.pause()
+    return
+  }
+  try {
+    await el.play()
+  } catch {
+    // A source change or browser playback rejection must not leave a false
+    // playing state. The media events own the state on successful playback.
+    if (el === audioEl.value && el.paused) onPause()
+  }
 }
 
 function onTime() {
   const el = audioEl.value
-  if (!el || !el.duration) return
-  progress.value = (el.currentTime / el.duration) * 100
-  timeStr.value  = fmt(el.currentTime)
+  if (!el) return
+  const current = Number.isFinite(el.currentTime) ? Math.max(0, el.currentTime) : 0
+  timeStr.value = fmt(current)
+  progress.value = Number.isFinite(el.duration) && el.duration > 0
+    ? Math.min(100, Math.max(0, current / el.duration * 100)) : 0
 }
 
-function onEnded() { playing.value = false; progress.value = 0 }
+function tick() {
+  animationFrame = null
+  onTime()
+  const el = audioEl.value
+  if (el && !el.paused && !el.ended) animationFrame = requestAnimationFrame(tick)
+}
+
+function onPlaying() {
+  playing.value = true
+  stopClock()
+  tick()
+}
+
+function onPause() {
+  playing.value = false
+  stopClock()
+  onTime()
+}
+
+function onEnded() {
+  onPause()
+  // Keep the bar at the completed position; replay updates it from currentTime.
+}
 
 function seek(e) {
   const el = audioEl.value
-  if (!el || !el.duration) return
+  if (!el || !Number.isFinite(el.duration) || el.duration <= 0) return
   const rect = e.currentTarget.getBoundingClientRect()
-  el.currentTime = ((e.clientX - rect.left) / rect.width) * el.duration
+  if (rect.width <= 0) return
+  el.currentTime = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width)) * el.duration
+  onTime()
 }
 
 function fmt(s) {
@@ -65,6 +122,6 @@ function fmt(s) {
 .ap-play  { width:28px; height:28px; border-radius:50%; background:rgb(var(--v-theme-surface)); border:1px solid rgba(var(--v-border-color),1); color:rgb(var(--v-theme-on-surface)); display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; }
 .ap-play:disabled { opacity:0.35; cursor:not-allowed; }
 .ap-track { flex:1; height:3px; background:rgba(var(--v-border-color),0.5); border-radius:2px; overflow:hidden; cursor:pointer; }
-.ap-fill  { height:100%; border-radius:2px; transition:width .1s linear; pointer-events:none; }
+.ap-fill  { height:100%; border-radius:2px; pointer-events:none; }
 .ap-time  { font-size:10px; color:#475569; min-width:32px; text-align:right; }
 </style>

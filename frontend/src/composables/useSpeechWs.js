@@ -22,6 +22,7 @@ export function useSpeechWs() {
   const metrics      = ref([])
   const MAX_BUFFER_SAMPLES = 16000 * 30  // 30 seconds at 16 kHz
 
+  let inputSamples = 0, outputSamples = 0
   let ws = null
 
   function connect() {
@@ -90,33 +91,38 @@ export function useSpeechWs() {
   }
 
   function handleSpectrum(msg) {
+    if (msg.channel !== 'input' && msg.channel !== 'output') return
     const binary = atob(msg.pcm)
+    if (!binary.length || binary.length % 2) return
     const bytes  = new Uint8Array(binary.length)
     for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i)
     const int16  = new Int16Array(bytes.buffer)
 
     // For waveform: accumulate all frames; for spectrogram: show latest frame only
     if (msg.channel === 'input') {
+      inputSamples += int16.length
       inputPcmFrame.value = { pcm: int16, sampleRate: msg.sampleRate }
-      inputBuffer.push(...int16)
+      for (const sample of int16) inputBuffer.push(sample)
       if (inputBuffer.length > MAX_BUFFER_SAMPLES) {
         inputBuffer.splice(0, inputBuffer.length - MAX_BUFFER_SAMPLES)
       }
-      inputPcm.value = { pcm: new Int16Array(inputBuffer), sampleRate: msg.sampleRate }
+      inputPcm.value = { pcm: new Int16Array(inputBuffer), sampleRate: msg.sampleRate, startSample: inputSamples - inputBuffer.length }
     } else {
+      outputSamples += int16.length
       outputPcmFrame.value = { pcm: int16, sampleRate: msg.sampleRate }
-      outputBuffer.push(...int16)
+      for (const sample of int16) outputBuffer.push(sample)
       if (outputBuffer.length > MAX_BUFFER_SAMPLES) {
         outputBuffer.splice(0, outputBuffer.length - MAX_BUFFER_SAMPLES)
       }
-      outputPcm.value = { pcm: new Int16Array(outputBuffer), sampleRate: msg.sampleRate }
+      outputPcm.value = { pcm: new Int16Array(outputBuffer), sampleRate: msg.sampleRate, startSample: outputSamples - outputBuffer.length }
     }
   }
 
   async function fetchAndRebuild(inputUrl, outputUrl) {
+    const generation = runKey.value
     const decodeWav = async (url) => {
       try {
-        const resp = await fetch(url)
+        const resp = await fetch(url, { cache: 'no-store' })
         if (!resp.ok) return null
         const buf  = await resp.arrayBuffer()
         const view = new DataView(buf)
@@ -131,6 +137,7 @@ export function useSpeechWs() {
       return null
     }
     const [inPcm, outPcm] = await Promise.all([decodeWav(inputUrl), decodeWav(outputUrl)])
+    if (generation !== runKey.value) return
     if (inPcm) {
       inputPcm.value     = { pcm: inPcm,  sampleRate: 16000 }
       inputPcmFull.value = { pcm: inPcm,  sampleRate: 16000 }
@@ -143,6 +150,7 @@ export function useSpeechWs() {
 
   function reset() {
     runKey.value++
+    inputSamples = 0; outputSamples = 0
     chunkTimings.value   = []
     metrics.value        = []
     error.value          = null
