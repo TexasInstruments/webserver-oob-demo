@@ -1,6 +1,8 @@
 import AudioDsp       from './views/AudioDsp.vue'
 import DspCompute     from './views/DspCompute.vue'
 import ModelInspector from './views/ModelInspector.vue'
+import userGuideUrl from '../docs/am62d-user-guide.html?url'
+import developerGuideUrl from '../docs/am62d-developer-guide.html?url'
 
 export const routes = [
   { path: '/audio-dsp',       component: AudioDsp       },
@@ -20,6 +22,14 @@ export const navItems = [
     section: 'Tools',
     items: [
       { icon: 'mdi-magnify', title: 'AI Model Inspector', to: '/model-inspector' },
+    ],
+  },
+  {
+    section: 'Documentation',
+    items: [
+      { icon: 'mdi-book-open-outline', title: 'SDK Documentation', href: 'https://software-dl.ti.com/processor-sdk-linux/esd/AM62DX/latest/exports/docs/devices/AM62DX/index.html', target: '_blank' },
+      { icon: 'mdi-book-open-page-variant-outline', title: 'User Guide', href: userGuideUrl, target: '_blank' },
+      { icon: 'mdi-code-tags', title: 'Developer Guide', href: developerGuideUrl, target: '_blank' },
     ],
   },
 ]
@@ -54,8 +64,8 @@ export const demoCards = [
 ]
 
 export const sdkInfo = [
-  { label: 'SDK Version',      version: '12.01.00.04', icon: 'mdi-application-brackets-outline', iconBg: 'rgba(37,99,235,0.2)',   iconBd: '1px solid rgba(37,99,235,0.4)',   iconColor: '#60a5fa' },
-  { label: 'MCU+ SDK Version', version: '12.01.00.20', icon: 'mdi-chip',                         iconBg: 'rgba(5,150,105,0.2)',   iconBd: '1px solid rgba(5,150,105,0.4)',   iconColor: '#34d399' },
+  { label: 'SDK Version',      version: '12.02.00.03', icon: 'mdi-application-brackets-outline', iconBg: 'rgba(37,99,235,0.2)',   iconBd: '1px solid rgba(37,99,235,0.4)',   iconColor: '#60a5fa' },
+  { label: 'MCU+ SDK Version', version: '12.02.00.01', icon: 'mdi-chip',                         iconBg: 'rgba(5,150,105,0.2)',   iconBd: '1px solid rgba(5,150,105,0.4)',   iconColor: '#34d399' },
   { label: 'TIDL Version',     version: '11.02.16.00', icon: 'mdi-code-braces',                  iconBg: 'rgba(124,58,237,0.2)',  iconBd: '1px solid rgba(124,58,237,0.4)',  iconColor: '#c084fc' },
 ]
 

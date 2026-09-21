@@ -1,626 +1,947 @@
 <!DOCTYPE html>
-<html lang="en">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>AM62D User Guide — TI SITARA DSP + Edge AI Portal</title>
-<style>
-:root {
-  --ti-red:#c41230; --bg:#0f1117; --surface:#1a1d27; --surface2:#22263a;
-  --border:#2d3148; --text:#e2e8f0; --muted:#94a3b8; --code-bg:#141824;
-  --green:#22c55e; --blue:#60a5fa; --amber:#fbbf24; --purple:#c084fc;
-  --cyan:#22d3ee; --red:#ef4444;
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>AM62D User Guide</title>
+  <style>
+html {
+color: #1a1a1a;
+background-color: #fdfdfd;
 }
-*{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.75;display:flex;flex-direction:column;min-height:100vh;}
-a{color:var(--blue);text-decoration:none;}
-a:hover{text-decoration:underline;}
-code{font-family:'Cascadia Code','Fira Code','JetBrains Mono',monospace;background:var(--code-bg);color:var(--cyan);padding:2px 6px;border-radius:4px;font-size:.88em;}
-pre{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:16px 18px;overflow-x:auto;font-size:.84em;line-height:1.6;margin:14px 0;}
-pre code{background:none;padding:0;color:var(--text);}
-.kw{color:var(--amber);} .str{color:var(--green);} .cm{color:#4a5568;font-style:italic;}
+body {
+margin: 0 auto;
+max-width: 36em;
+padding-left: 50px;
+padding-right: 50px;
+padding-top: 50px;
+padding-bottom: 50px;
+hyphens: auto;
+overflow-wrap: break-word;
+text-rendering: optimizeLegibility;
+font-kerning: normal;
+}
+@media (max-width: 600px) {
+body {
+font-size: 0.9em;
+padding: 12px;
+}
+h1 {
+font-size: 1.8em;
+}
+}
+@media print {
+html {
+background-color: white;
+}
+body {
+background-color: transparent;
+color: black;
+font-size: 12pt;
+}
+p, h2, h3 {
+orphans: 3;
+widows: 3;
+}
+h2, h3, h4 {
+page-break-after: avoid;
+}
+}
+p {
+margin: 1em 0;
+}
+a {
+color: #1a1a1a;
+}
+a:visited {
+color: #1a1a1a;
+}
+img {
+max-width: 100%;
+}
+h1, h2, h3, h4, h5, h6 {
+margin-top: 1.4em;
+}
+h5, h6 {
+font-size: 1em;
+font-style: italic;
+}
+h6 {
+font-weight: normal;
+}
+ol, ul {
+padding-left: 1.7em;
+margin-top: 1em;
+}
+li > ol, li > ul {
+margin-top: 0;
+}
+blockquote {
+margin: 1em 0 1em 1.7em;
+padding-left: 1em;
+border-left: 2px solid #e6e6e6;
+color: #606060;
+}
+code {
+font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+font-size: 85%;
+margin: 0;
+hyphens: manual;
+}
+pre {
+margin: 1em 0;
+overflow: auto;
+}
+pre code {
+padding: 0;
+overflow: visible;
+overflow-wrap: normal;
+}
+.sourceCode {
+background-color: transparent;
+overflow: visible;
+}
+hr {
+background-color: #1a1a1a;
+border: none;
+height: 1px;
+margin: 1em 0;
+}
+table {
+margin: 1em 0;
+border-collapse: collapse;
+width: 100%;
+overflow-x: auto;
+display: block;
+font-variant-numeric: lining-nums tabular-nums;
+}
+table caption {
+margin-bottom: 0.75em;
+}
+tbody {
+margin-top: 0.5em;
+border-top: 1px solid #1a1a1a;
+border-bottom: 1px solid #1a1a1a;
+}
+th {
+border-top: 1px solid #1a1a1a;
+padding: 0.25em 0.5em 0.25em 0.5em;
+}
+td {
+padding: 0.125em 0.5em 0.25em 0.5em;
+}
+header {
+margin-bottom: 4em;
+text-align: center;
+}
+#TOC li {
+list-style: none;
+}
+#TOC ul {
+padding-left: 1.3em;
+}
+#TOC > ul {
+padding-left: 0;
+}
+#TOC a:not(:hover) {
+text-decoration: none;
+}
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
 
-/* Header */
-.site-header{background:linear-gradient(135deg,#0d0f1a 0%,#1a1230 60%,#1a0a0a 100%);border-bottom:2px solid var(--ti-red);padding:32px 40px 28px;}
-.header-inner{max-width:1100px;margin:0 auto;}
-.ti-badge{display:inline-flex;align-items:center;gap:8px;background:var(--ti-red);color:#fff;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:4px 12px;border-radius:4px;margin-bottom:14px;}
-.header-title{font-size:2rem;font-weight:800;color:#fff;letter-spacing:-.01em;line-height:1.2;}
-.header-title span{color:var(--ti-red);}
-.header-subtitle{font-size:1rem;color:var(--muted);margin-top:6px;}
-.sdk-pills{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px;}
-.sdk-pill{background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:4px 14px;font-size:11px;color:var(--muted);}
-.sdk-pill b{color:var(--text);}
-
-/* Layout */
-.page-body{display:flex;flex:1;max-width:1100px;margin:0 auto;width:100%;padding:0 20px;}
-
-/* Sidebar TOC */
-.toc{width:230px;flex-shrink:0;padding:28px 0 28px 0;position:sticky;top:0;height:100vh;overflow-y:auto;border-right:1px solid var(--border);}
-.toc-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);padding:0 16px 10px;}
-.toc a{display:block;padding:5px 16px;font-size:12.5px;color:var(--muted);border-left:2px solid transparent;transition:all .12s;}
-.toc a:hover,.toc a.active{color:var(--text);border-left-color:var(--ti-red);background:rgba(196,18,48,.06);text-decoration:none;}
-.toc-section{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#374151;padding:10px 16px 4px;margin-top:4px;}
-
-/* Content */
-.content{flex:1;padding:36px 40px;min-width:0;}
-h2{font-size:1.45rem;font-weight:700;color:#fff;margin:40px 0 14px;padding-bottom:10px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
-h2 .sec-num{background:var(--ti-red);color:#fff;font-size:11px;font-weight:800;padding:2px 8px;border-radius:4px;}
-h3{font-size:1.05rem;font-weight:700;color:var(--text);margin:26px 0 10px;}
-h4{font-size:.9rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:20px 0 8px;}
-p{margin:10px 0;color:#cbd5e1;}
-ul,ol{margin:10px 0 10px 22px;color:#cbd5e1;}
-li{margin:5px 0;}
-li b{color:var(--text);}
-
-/* Cards */
-.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px 20px;margin:14px 0;}
-.card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin:14px 0;}
-.demo-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:6px;}
-.demo-card .icon{font-size:22px;margin-bottom:4px;}
-.demo-card h4{margin:0;font-size:.82rem;}
-.demo-card p{font-size:.83rem;margin:0;}
-
-/* Steps */
-.steps{counter-reset:step;display:flex;flex-direction:column;gap:12px;margin:14px 0;}
-.step{display:flex;gap:14px;align-items:flex-start;}
-.step-num{counter-increment:step;background:var(--ti-red);color:#fff;font-size:11px;font-weight:800;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:3px;}
-.step-body{flex:1;}
-.step-body b{color:var(--text);display:block;margin-bottom:3px;}
-
-/* Callouts */
-.callout{border-radius:8px;padding:14px 16px;margin:14px 0;border-left:4px solid;}
-.callout.info{background:rgba(96,165,250,.08);border-color:var(--blue);}
-.callout.warn{background:rgba(251,191,36,.08);border-color:var(--amber);}
-.callout.tip{background:rgba(34,197,94,.08);border-color:var(--green);}
-.callout.danger{background:rgba(239,68,68,.08);border-color:var(--red);}
-.callout b{display:block;margin-bottom:4px;}
-.callout.info b{color:var(--blue);}
-.callout.warn b{color:var(--amber);}
-.callout.tip b{color:var(--green);}
-.callout.danger b{color:var(--red);}
-.callout p{margin:0;font-size:.9rem;}
-
-/* Table */
-table{width:100%;border-collapse:collapse;margin:14px 0;font-size:.875rem;}
-th{background:var(--surface2);color:var(--muted);font-weight:600;text-align:left;padding:9px 12px;border:1px solid var(--border);}
-td{padding:9px 12px;border:1px solid var(--border);color:#cbd5e1;vertical-align:top;}
-tr:nth-child(even) td{background:rgba(255,255,255,.02);}
-
-/* Badge */
-.badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:600;}
-.badge.green{background:rgba(34,197,94,.15);color:var(--green);}
-.badge.blue{background:rgba(96,165,250,.15);color:var(--blue);}
-.badge.amber{background:rgba(251,191,36,.15);color:var(--amber);}
-.badge.purple{background:rgba(192,132,252,.15);color:var(--purple);}
-.badge.red{background:rgba(239,68,68,.15);color:var(--red);}
-
-/* Nav highlight */
-.nav-path{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 14px;display:inline-flex;align-items:center;gap:6px;font-size:.85rem;margin:8px 0;}
-.nav-path span{color:var(--muted);}
-.nav-path span+span::before{content:'›';margin-right:6px;color:#4a5568;}
-.nav-path span.cur{color:var(--text);font-weight:600;}
-
-/* Footer */
-.site-footer{background:var(--surface);border-top:1px solid var(--border);padding:20px 40px;text-align:center;font-size:12px;color:var(--muted);}
+ul.task-list[class]{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+font-size: inherit;
+width: 0.8em;
+margin: 0 0.8em 0.2em -1.6em;
+vertical-align: middle;
+}
+.display.math{display: block; text-align: center; margin: 0.5rem auto;}
+</style>
+  <style>
+:root{color-scheme:light dark;--bg:#fff;--fg:#17212d;--muted:#566371;--line:#d8dee6;--panel:#f5f7fa;--accent:#b5122b}
+@media(prefers-color-scheme:dark){:root{--bg:#111620;--fg:#e3e9f0;--muted:#abb7c6;--line:#344051;--panel:#1b2432;--accent:#ff6b7e}}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{width:100%;max-width:none;margin:auto;padding:40px 32px 80px;background:var(--bg);color:var(--fg);font:16px/1.7 system-ui,-apple-system,sans-serif}a{color:var(--accent);overflow-wrap:anywhere}h1{font-size:2.4rem;border-bottom:4px solid var(--accent);padding-bottom:16px}h2{margin-top:2.4em;border-bottom:1px solid var(--line);padding-bottom:8px}h3{margin-top:1.8em}p,li{max-width:none}table{display:block;overflow-x:auto;border-collapse:collapse;margin:20px 0;width:100%;font-size:.92rem}th,td{padding:10px 14px;border:1px solid var(--line);text-align:left;vertical-align:top}th{background:var(--panel)}pre{padding:18px;overflow-x:auto;background:var(--panel);border:1px solid var(--line);border-radius:8px;line-height:1.5}code{font: .9em/1.5 ui-monospace,monospace}p code,li code,td code{background:var(--panel);padding:2px 4px;border-radius:3px}blockquote{border-left:4px solid var(--accent);padding-left:18px;margin-left:0;color:var(--muted)}img{max-width:100%}a[id]{scroll-margin-top:20px}@media(max-width:650px){body{padding:20px 16px}h1{font-size:1.9rem}}@media print{body{max-width:none;padding:0;font-size:10pt}pre,table{break-inside:avoid}a{color:inherit}}
+.doc-toolbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:10px 14px;margin:0 -32px 28px;background:color-mix(in srgb,var(--bg) 94%,transparent);border-bottom:1px solid var(--line);backdrop-filter:blur(8px)}.doc-nav{display:flex;gap:14px}.doc-nav a{font-weight:600;text-decoration:none}.doc-version{margin-left:auto;color:var(--muted);font-size:.85rem}.doc-search-toggle{width:36px;height:36px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--fg);font-size:1.1rem;cursor:pointer}.doc-search-toggle:hover,.doc-search-toggle:focus{border-color:var(--accent);outline:2px solid var(--accent);outline-offset:1px}.doc-search{display:none;flex:1 1 280px;min-width:180px;max-width:560px;padding:9px 12px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--fg);font:inherit}.doc-toolbar.search-open .doc-search{display:block}.doc-search:focus{outline:2px solid var(--accent);outline-offset:1px}.doc-search-status{color:var(--muted);font-size:.85rem}.doc-search-results{margin:0 0 24px;padding:10px 14px;background:var(--panel);border:1px solid var(--line);border-radius:6px}.doc-search-results:empty{display:none}.doc-search-results a{display:block;padding:3px 0}.public-link{font-weight:600}
+.doc-title{margin:0;border:0;padding:0;font-size:1.7rem;line-height:1.2}.doc-nav{display:none}h1#am62d-user-guide{display:none}
+@media(max-width:650px){.doc-toolbar{margin:0 -16px 20px;padding:10px 16px}.doc-nav{gap:8px}.doc-version{margin-left:auto}.doc-search{flex-basis:100%;max-width:none}}
 </style>
 </head>
 <body>
-
-<header class="site-header">
-  <div class="header-inner">
-    <div class="ti-badge">&#9632; Texas Instruments</div>
-    <div class="header-title">SITARA <span>AM62D</span> DSP + Edge AI Experience Portal</div>
-    <div class="header-subtitle">End-User Guide — Portal Navigation, Demo Operation &amp; Feature Reference</div>
-    <div class="sdk-pills">
-      <span class="sdk-pill"><b>Platform</b> AM62Dx quad Cortex-A53 + C7x DSP</span>
-    </div>
-  </div>
-</header>
-
-<div class="page-body">
-  <!-- Sidebar TOC -->
-  <nav class="toc">
-    <div class="toc-title">Contents</div>
-    <a href="#intro">1. Introduction</a>
-    <a href="#getting-started">2. Getting Started</a>
-    <a href="#layout">3. Portal Layout</a>
-    <a href="#home">4. Home Page</a>
-    <div class="toc-section">Audio Intelligence</div>
-    <a href="#speech-enhancement">5. Speech Enhancement</a>
-    <a href="#audio-classification">6. Audio Classification</a>
-    <div class="toc-section">DSP Acceleration</div>
-    <a href="#audio-offload">7. Audio DSP Offload</a>
-    <a href="#2dfft">8. 2D FFT Offload</a>
-    <a href="#biquad">9. Sigchain Biquad EQ</a>
-    <div class="toc-section">Tools</div>
-    <a href="#gst-pipeline">10. Custom Audio Pipeline</a>
-    <a href="#model-inspector">11. AI Model Inspector</a>
-    <div class="toc-section">System</div>
-    <a href="#power">12. Power Controls</a>
-    <a href="#system">13. System Panel</a>
-    <a href="#troubleshooting">14. Troubleshooting</a>
-  </nav>
-
-  <!-- Main Content -->
-  <main class="content">
-
-    <!-- 1. Introduction -->
-    <section id="intro">
-      <h2><span class="sec-num">1</span> Introduction</h2>
-      <p>The <b>TI SITARA AM62D DSP + Edge AI Experience Portal</b> is a browser-based demo portal that runs directly on the AM62D EVM. It showcases the platform's real-time audio AI and DSP offload capabilities — all driven by the on-chip <b>C7x DSP</b> and <b>TVM/TIDL inference engine</b>.</p>
-      <div class="card-grid" style="margin-top:18px;">
-        <div class="demo-card">
-          <div class="icon">🎙</div>
-          <h4>Audio Intelligence</h4>
-          <p>Real-time speech enhancement and environmental audio classification powered by C7x DSP + TVM.</p>
-        </div>
-        <div class="demo-card">
-          <div class="icon">⚡</div>
-          <h4>DSP Acceleration</h4>
-          <p>C7x DSP offload demos: 8-channel audio, 2D FFT, and parametric biquad EQ via RPMsg-DMA.</p>
-        </div>
-        <div class="demo-card">
-          <div class="icon">🔧</div>
-          <h4>Custom Pipeline</h4>
-          <p>Run and experiment with custom GStreamer pipelines using TVM artifact management.</p>
-        </div>
-        <div class="demo-card">
-          <div class="icon">🔍</div>
-          <h4>AI Model Inspector</h4>
-          <p>Upload and view AI model inspection reports for AM62D deployments.</p>
-        </div>
-      </div>
-      <h3>AM62D Platform</h3>
-      <table>
-        <tr><th>Component</th><th>Details</th></tr>
-        <tr><td>Application Processor</td><td>Quad Arm® Cortex®-A53 @ 1.4 GHz</td></tr>
-        <tr><td>DSP</td><td>C7x DSP with MMA — high-performance signal processing &amp; AI inference</td></tr>
-        <tr><td>AI Inference</td><td>TVM / TIDL — compiled neural network models running natively on C7x</td></tr>
-        <tr><td>Audio</td><td>ALSA-based capture/playback; PCM6240 ADC / TAD5212 DAC support</td></tr>
-        <tr><td>OS</td><td>Linux (Yocto-based TI SDK 12.01)</td></tr>
-      </table>
-    </section>
-
-    <!-- 2. Getting Started -->
-    <section id="getting-started">
-      <h2><span class="sec-num">2</span> Getting Started</h2>
-      <h3>Hardware Requirements</h3>
-      <ul>
-        <li><b>AM62D EVM</b> — powered and booted</li>
-        <li><b>Ethernet cable</b> — EVM connected to your local network</li>
-        <li><b>USB microphone</b> — for live audio demos (expected on ALSA device <code>hw:1,0</code>)</li>
-        <li><b>Audio files</b> — 16-bit PCM mono WAV at 16 kHz or 48 kHz for file-based demos</li>
-        <li><b>Web browser</b> — Chrome, Firefox, or Edge (latest)</li>
-      </ul>
-
-      <h3>Finding the EVM IP Address</h3>
-      <p>Connect a USB-to-UART cable and open the serial console at <b>115200 baud</b>. After boot, run:</p>
-      <pre>ip addr show eth0</pre>
-      <p>Alternatively, check your DHCP router's client list. The EVM hostname is typically <code>am62dxx-evm</code>.</p>
-
-      <h3>Opening the Portal</h3>
-      <div class="steps">
-        <div class="step"><div class="step-num">1</div><div class="step-body"><b>Open a browser on your PC</b> (on the same network as the EVM)</div></div>
-        <div class="step"><div class="step-num">2</div><div class="step-body"><b>Navigate to <code>http://&lt;EVM_IP&gt;</code></b> — the portal is served on port 80 by default</div></div>
-        <div class="step"><div class="step-num">3</div><div class="step-body"><b>The home page loads automatically</b> — no login required</div></div>
-      </div>
-
-      <div class="callout info">
-        <b>Auto-start</b>
-        <p>The portal starts automatically at boot via the <code>webserver-oob.service</code> systemd unit. No manual startup needed.</p>
-      </div>
-
-      <div class="callout warn">
-        <b>TVM Initialization</b>
-        <p>When you first navigate to Audio Intelligence, the TVM daemon initializes the C7x DSP. This takes 15–60 seconds. A loading banner is shown — wait for "TVM Ready" before running demos.</p>
-      </div>
-    </section>
-
-    <!-- 3. Portal Layout -->
-    <section id="layout">
-      <h2><span class="sec-num">3</span> Portal Layout &amp; Navigation</h2>
-      <h3>Sidebar Navigation</h3>
-      <table>
-        <tr><th>Section</th><th>Items</th><th>Description</th></tr>
-        <tr><td><b>Home</b></td><td>Home</td><td>Overview, demo cards, SDK info</td></tr>
-        <tr><td><b>Demos</b></td><td>Audio Intelligence</td><td>Speech Enhancement, Audio Classification, Custom Pipeline</td></tr>
-        <tr><td></td><td>DSP Acceleration</td><td>Audio Offload, 2D FFT, Sigchain Biquad EQ</td></tr>
-        <tr><td><b>Tools</b></td><td>AI Model Inspector</td><td>Upload and view model inspection reports</td></tr>
-        <tr><td><b>System</b></td><td>Device Info</td><td>Board, SoC, active demos, SDK versions</td></tr>
-        <tr><td></td><td>Logs</td><td>Live server-side log stream</td></tr>
-        <tr><td></td><td>Help</td><td>Documentation links</td></tr>
-      </table>
-
-      <h3>App Bar (Top Right)</h3>
-      <table>
-        <tr><th>Control</th><th>Description</th></tr>
-        <tr><td><span class="badge amber">⟳ Reboot</span></td><td>Reboots the EVM. Shows a confirmation dialog first. Portal reconnects automatically after reboot.</td></tr>
-        <tr><td><span class="badge red">⏻ Power Off</span></td><td>Shuts down the EVM. Shows a confirmation dialog first.</td></tr>
-        <tr><td>☀ / 🌙 Theme</td><td>Toggles between dark and light mode. Canvas visualizations update immediately.</td></tr>
-        <tr><td>Connected label</td><td>Shows "AM62D EVM" when the portal is connected to the backend.</td></tr>
-      </table>
-
-      <div class="callout warn">
-        <b>Power Controls</b>
-        <p>The Reboot and Power Off buttons are always visible in the top-right corner regardless of which page you are on. A confirmation dialog is shown before any action is executed.</p>
-      </div>
-    </section>
-
-    <!-- 4. Home Page -->
-    <section id="home">
-      <h2><span class="sec-num">4</span> Home Page</h2>
-      <p>The home page provides a portal overview and quick navigation to all demos.</p>
-      <ul>
-        <li><b>Hero section</b> — Platform description and "Get Started" button linking to Audio Intelligence</li>
-        <li><b>Demo cards</b> — Click any card to navigate directly to that demo</li>
-        <li><b>SDK version cards</b> — Shows installed SDK (12.01.00.04), MCU+ SDK (12.01.00.20), and TIDL (11.02.16.00) versions</li>
-        <li><b>About section</b> — Brief description of the portal and platform</li>
-      </ul>
-    </section>
-
-    <!-- 5. Speech Enhancement -->
-    <section id="speech-enhancement">
-      <h2><span class="sec-num">5</span> Speech Enhancement</h2>
-      <div class="nav-path"><span>Audio Intelligence</span><span class="cur">Speech Enhancement</span></div>
-
-      <h3>What It Does</h3>
-      <p>Removes background noise from speech audio using the <b>GCRN (Gated Convolutional Recurrent Network)</b> model running on the C7x DSP. The processing pipeline is:</p>
-      <div class="card" style="font-family:monospace;font-size:.85rem;text-align:center;color:var(--muted);">
-        Input Audio → <span style="color:var(--amber)">STFT (DSP)</span> → <span style="color:var(--purple)">Deinterleave (DSP)</span> → <span style="color:var(--blue)">TVM Inference (C7x)</span> → <span style="color:var(--purple)">Interleave (DSP)</span> → <span style="color:var(--amber)">ISTFT (DSP)</span> → Enhanced Audio
-      </div>
-
-      <h3>Input Requirements</h3>
-      <table>
-        <tr><th>Parameter</th><th>Requirement</th></tr>
-        <tr><td>Format</td><td>16-bit PCM (S16LE)</td></tr>
-        <tr><td>Channels</td><td>Mono (1 channel)</td></tr>
-        <tr><td>Sample Rate</td><td>48 kHz (microphone) or 16 kHz (file)</td></tr>
-        <tr><td>Container</td><td>WAV (.wav)</td></tr>
-      </table>
-
-      <h3>How to Use</h3>
-      <div class="steps">
-        <div class="step"><div class="step-num">1</div><div class="step-body"><b>Navigate to Audio Intelligence → Speech Enhancement tab</b><br>Wait for the TVM Ready status indicator before proceeding.</div></div>
-        <div class="step"><div class="step-num">2</div><div class="step-body"><b>Select an input source</b><br>
-          <ul style="margin-top:6px;">
-            <li><b>Microphone</b> — select an ALSA capture device from the dropdown (e.g., <code>hw:1,0</code>)</li>
-            <li><b>File</b> — click Upload to upload a WAV file from your PC</li>
-          </ul>
-        </div></div>
-        <div class="step"><div class="step-num">3</div><div class="step-body"><b>Click Run</b><br>The demo starts. A status indicator shows "Running".</div></div>
-        <div class="step"><div class="step-num">4</div><div class="step-body"><b>Watch the live spectrograms</b><br>
-          The <span style="color:var(--green)">Input Spectrogram</span> shows the raw audio frequency content. The <span style="color:var(--blue)">Output Spectrogram</span> shows the enhanced (denoised) audio.
-        </div></div>
-        <div class="step"><div class="step-num">5</div><div class="step-body"><b>Monitor timing metrics</b><br>The panel shows STFT time, TVM inference time, and ISTFT time in real time, allowing you to measure DSP performance.</div></div>
-        <div class="step"><div class="step-num">6</div><div class="step-body"><b>Click Stop</b><br>Processing halts. For file input, the enhanced WAV file can be downloaded.</div></div>
-      </div>
-
-      <div class="callout tip">
-        <b>Best results</b>
-        <p>Use a quiet recording with clear speech for the most visible enhancement effect. A recording with consistent background noise (fan, hum, traffic) works well to demonstrate noise suppression.</p>
-      </div>
-    </section>
-
-    <!-- 6. Audio Classification -->
-    <section id="audio-classification">
-      <h2><span class="sec-num">6</span> Audio Classification</h2>
-      <div class="nav-path"><span>Audio Intelligence</span><span class="cur">Audio Classification</span></div>
-
-      <h3>What It Does</h3>
-      <p>Classifies audio events in real time using pre-trained models running on the C7x DSP. Two models are available:</p>
-      <table>
-        <tr><th>Model</th><th>Classes</th><th>Input</th><th>Use Case</th></tr>
-        <tr><td><b>YAMNet</b></td><td>521 AudioSet classes</td><td>Live microphone (<code>hw:1,0</code>)</td><td>General sound recognition</td></tr>
-        <tr><td><b>VGGish</b></td><td>10 UrbanSound8K classes</td><td>WAV file (<code>urbansound_16k.wav</code>)</td><td>Urban sound classification</td></tr>
-      </table>
-
-      <h3>How to Use</h3>
-      <div class="steps">
-        <div class="step"><div class="step-num">1</div><div class="step-body"><b>Navigate to Audio Intelligence → Audio Classification tab</b></div></div>
-        <div class="step"><div class="step-num">2</div><div class="step-body"><b>Select a model</b> — YAMNet (live mic) or VGGish (file)</div></div>
-        <div class="step"><div class="step-num">3</div><div class="step-body"><b>Select input source</b><br>For YAMNet: choose an ALSA capture device.<br>For VGGish: click Upload to upload a WAV file or use the default <code>urbansound_16k.wav</code>.</div></div>
-        <div class="step"><div class="step-num">4</div><div class="step-body"><b>Click Run</b><br>Classification begins. The top-3 predictions with confidence scores appear in real time.</div></div>
-        <div class="step"><div class="step-num">5</div><div class="step-body"><b>Click Stop</b> when done.</div></div>
-      </div>
-
-      <div class="callout info">
-        <b>YAMNet Live Mode</b>
-        <p>YAMNet captures continuously from the selected ALSA microphone device. Results update every few hundred milliseconds as new audio frames are processed by the C7x DSP.</p>
-      </div>
-    </section>
-
-    <!-- 7. Audio DSP Offload -->
-    <section id="audio-offload">
-      <h2><span class="sec-num">7</span> Audio DSP Offload</h2>
-      <div class="nav-path"><span>DSP Acceleration</span><span class="cur">Audio DSP Offload</span></div>
-
-      <h3>What It Does</h3>
-      <p>Demonstrates 8-channel audio processing offloaded to the C7x DSP via RPMsg-DMA. The DSP applies FFT bandpass filtering in real time. Includes live input/output spectrum visualization and CPU vs DSP load comparison.</p>
-
-      <h3>Live Visualizations</h3>
-      <table>
-        <tr><th>Chart</th><th>Color</th><th>Description</th></tr>
-        <tr><td>Input Audio Spectrum</td><td><span class="badge green">Green</span></td><td>Frequency spectrum of raw audio before DSP processing</td></tr>
-        <tr><td>Output Audio Spectrum</td><td><span class="badge blue">Blue</span></td><td>Frequency spectrum after bandpass filtering by C7x</td></tr>
-        <tr><td>Average Amplitude</td><td><span class="badge" style="background:rgba(34,211,238,.15);color:var(--cyan);">Cyan</span></td><td>RMS amplitude trend over time</td></tr>
-        <tr><td>Frame Latency</td><td><span class="badge green">Green</span></td><td>End-to-end processing latency per frame (ms)</td></tr>
-        <tr><td>System Load</td><td><span class="badge blue">Blue</span> CPU / <span class="badge amber">Amber</span> DSP</td><td>CPU and C7x DSP utilization over time</td></tr>
-      </table>
-
-      <h3>How to Use</h3>
-      <div class="steps">
-        <div class="step"><div class="step-num">1</div><div class="step-body"><b>Navigate to DSP Acceleration → Audio DSP Offload tab</b></div></div>
-        <div class="step"><div class="step-num">2</div><div class="step-body"><b>Toggle the Filter button</b> to enable or disable the bandpass filter.<br>Filter ON shows the effect on the output spectrum. Filter OFF passes audio through unmodified.</div></div>
-        <div class="step"><div class="step-num">3</div><div class="step-body"><b>Click Run</b><br>The <code>rpmsg_audio_offload_example</code> binary starts on the EVM. All five live charts begin updating.</div></div>
-        <div class="step"><div class="step-num">4</div><div class="step-body"><b>Observe the metrics</b> — Frame count, latency (min/avg/max), CPU load, and DSP load are shown in the Live Metrics panel.</div></div>
-        <div class="step"><div class="step-num">5</div><div class="step-body"><b>Click Stop</b> to end the demo.</div></div>
-      </div>
-
-      <div class="callout warn">
-        <b>Overlay Conflict</b>
-        <p>This demo requires the DSP audio overlay (<code>k3-am62d2-evm-dsp-controlled-audio.dtbo</code>) to be <em>inactive</em>. If it is active, the portal shows a conflict banner with a "Remove Overlay &amp; Reboot" button.</p>
-      </div>
-    </section>
-
-    <!-- 8. 2D FFT -->
-    <section id="2dfft">
-      <h2><span class="sec-num">8</span> 2D FFT Offload</h2>
-      <div class="nav-path"><span>DSP Acceleration</span><span class="cur">2D FFT Offload</span></div>
-
-      <h3>What It Does</h3>
-      <p>Computes a 128×128 2D Fast Fourier Transform on the C7x DSP via RPMsg-DMA. Demonstrates raw DSP compute throughput and compares ARM vs C7x execution paths.</p>
-
-      <h3>How to Use</h3>
-      <div class="steps">
-        <div class="step"><div class="step-num">1</div><div class="step-body"><b>Navigate to DSP Acceleration → 2D FFT Offload tab</b></div></div>
-        <div class="step"><div class="step-num">2</div><div class="step-body"><b>Click Run</b> — the FFT benchmark starts on the C7x DSP.</div></div>
-        <div class="step"><div class="step-num">3</div><div class="step-body"><b>Observe live metrics</b> — throughput (MB/s), execution time (ms), and iteration count update in real time.</div></div>
-        <div class="step"><div class="step-num">4</div><div class="step-body"><b>Click Stop</b> when done.</div></div>
-      </div>
-    </section>
-
-    <!-- 9. Sigchain Biquad -->
-    <section id="biquad">
-      <h2><span class="sec-num">9</span> Sigchain Biquad EQ</h2>
-      <div class="nav-path"><span>DSP Acceleration</span><span class="cur">Sigchain Biquad EQ</span></div>
-
-      <h3>What It Does</h3>
-      <p>Runs a 3-stage cascade biquad equalizer on the C7x DSP. Audio is captured via PCM6240 ADC and played back through TAD5212 DAC with real-time EQ applied by the DSP. Live trend charts show DSP load, processing cycles, and throughput.</p>
-
-      <h3>How to Use</h3>
-      <div class="steps">
-        <div class="step"><div class="step-num">1</div><div class="step-body"><b>Navigate to DSP Acceleration → Sigchain Biquad EQ tab</b></div></div>
-        <div class="step"><div class="step-num">2</div><div class="step-body"><b>Click Run</b> — the biquad sigchain binary starts, connecting to the DSP via TCP.</div></div>
-        <div class="step"><div class="step-num">3</div><div class="step-body"><b>Watch the trend charts</b> — DSP load (%), processing cycles, and throughput (MB/s) update continuously.</div></div>
-        <div class="step"><div class="step-num">4</div><div class="step-body"><b>Click Stop</b> to end the demo.</div></div>
-      </div>
-    </section>
-
-    <!-- 10. Custom Audio Pipeline -->
-    <section id="gst-pipeline">
-      <h2><span class="sec-num">10</span> Custom Audio Pipeline (GStreamer)</h2>
-      <div class="nav-path"><span>Audio Intelligence</span><span class="cur">Custom Audio Pipeline</span></div>
-
-      <h3>What It Does</h3>
-      <p>Lets you build, run, and save any <code>gst-launch-1.0</code> pipeline on the EVM with real-time log output. Includes preset pipelines for common use cases and full management of TVM artifacts and input audio files.</p>
-
-      <h3>Pipeline Presets</h3>
-      <table>
-        <tr><th>Preset</th><th>Input</th><th>Pipeline</th><th>Output</th></tr>
-        <tr>
-          <td><span class="badge green">Speech Enhancement</span></td>
-          <td>WAV file (<code>input_audio.wav</code>)</td>
-          <td>tidspkernel STFT → deinterleave → titvm → interleave → ISTFT</td>
-          <td><code>/tmp/gst_enhanced.wav</code> + speaker</td>
-        </tr>
-        <tr>
-          <td><span class="badge purple">YAMNet Classification</span></td>
-          <td>Live mic (<code>alsasrc hw:1,0</code>)</td>
-          <td>tidspkernel STFT → titvm (top-3)</td>
-          <td>fakesink (results in log)</td>
-        </tr>
-        <tr>
-          <td><span class="badge blue">VGGish Classification</span></td>
-          <td>WAV file (<code>urbansound_16k.wav</code>)</td>
-          <td>tidspkernel STFT → titvm (top-3)</td>
-          <td><code>vggish_inference_output.bin</code></td>
-        </tr>
-      </table>
-
-      <h3>Running a Preset</h3>
-      <div class="steps">
-        <div class="step"><div class="step-num">1</div><div class="step-body"><b>Click a preset chip</b> (Speech Enhancement, Classification YAMNet, or Classification VGGish).<br>The command textarea fills automatically.</div></div>
-        <div class="step"><div class="step-num">2</div><div class="step-body"><b>Review the command</b> in the textarea — paths are pre-filled with EVM defaults.</div></div>
-        <div class="step"><div class="step-num">3</div><div class="step-body"><b>Click Run</b> (in the page header).<br>Pipeline output appears in the log panel below in real time.</div></div>
-        <div class="step"><div class="step-num">4</div><div class="step-body"><b>Click Stop</b> to kill the pipeline.</div></div>
-      </div>
-
-      <h3>Running a Custom Pipeline</h3>
-      <div class="steps">
-        <div class="step"><div class="step-num">1</div><div class="step-body"><b>Click the "Custom" preset chip</b>.<br>The textarea shows a blank <code>gst-launch-1.0</code> prompt.</div></div>
-        <div class="step"><div class="step-num">2</div><div class="step-body"><b>Type or paste your pipeline command.</b><br>Any valid <code>gst-launch-1.0</code> command is accepted.</div></div>
-        <div class="step"><div class="step-num">3</div><div class="step-body"><b>Optionally insert paths</b> using the TVM Artifacts or Input Files panels (see below).</div></div>
-        <div class="step"><div class="step-num">4</div><div class="step-body"><b>Click Run.</b></div></div>
-      </div>
-
-      <div class="callout info">
-        <b>Use button availability</b>
-        <p>The <b>Use</b> button in TVM Artifacts and Input Files panels is only enabled when <b>Custom</b> preset or a <b>Saved Pipeline</b> is selected. It is disabled for named presets to prevent accidental path injection.</p>
-      </div>
-
-      <h3>Managing TVM Artifacts</h3>
-      <p>TVM artifacts are compiled model directories stored at <code>/usr/share/tvm_inference/artifacts/</code> on the EVM.</p>
-      <div class="steps">
-        <div class="step"><div class="step-num">1</div><div class="step-body"><b>Open the TVM Artifacts panel</b> — click to expand.</div></div>
-        <div class="step"><div class="step-num">2</div><div class="step-body"><b>Click Refresh</b> to list available artifact directories.</div></div>
-        <div class="step"><div class="step-num">3</div><div class="step-body"><b>Click Use</b> on an artifact to insert its path at the cursor position in the command textarea (Custom mode only).</div></div>
-        <div class="step"><div class="step-num">4</div><div class="step-body"><b>Upload a new artifact</b> — click "Upload Archive", select a <code>.zip</code> or <code>.tar.gz</code> file. The archive is extracted to the artifacts directory.</div></div>
-      </div>
-
-      <h3>Managing Input Files</h3>
-      <p>Input files are stored at <code>/usr/share/tvm_inference/input/</code> on the EVM.</p>
-      <div class="steps">
-        <div class="step"><div class="step-num">1</div><div class="step-body"><b>Open the Input Files panel</b> — click to expand.</div></div>
-        <div class="step"><div class="step-num">2</div><div class="step-body"><b>Click Refresh</b> to list available files.</div></div>
-        <div class="step"><div class="step-num">3</div><div class="step-body"><b>Click Use</b> to insert the file path into the command (Custom mode only).</div></div>
-        <div class="step"><div class="step-num">4</div><div class="step-body"><b>Upload a file</b> — click "Upload File", select a WAV/MP3/FLAC file from your PC.</div></div>
-      </div>
-
-      <h3>Saving &amp; Loading Pipelines</h3>
-      <div class="steps">
-        <div class="step"><div class="step-num">1</div><div class="step-body"><b>Click "Save As"</b> in the Pipeline Command card header.</div></div>
-        <div class="step"><div class="step-num">2</div><div class="step-body"><b>Enter a name</b> and click Save. The pipeline is stored persistently on the EVM.</div></div>
-        <div class="step"><div class="step-num">3</div><div class="step-body"><b>Saved pipelines</b> appear as bookmark chips below the preset chips. Click any chip to reload that pipeline.</div></div>
-        <div class="step"><div class="step-num">4</div><div class="step-body"><b>To update a saved pipeline</b> — select it, edit the command, then click "Save".</div></div>
-        <div class="step"><div class="step-num">5</div><div class="step-body"><b>To delete</b> — click the × on the bookmark chip.</div></div>
-      </div>
-    </section>
-
-    <!-- 11. AI Model Inspector -->
-    <section id="model-inspector">
-      <h2><span class="sec-num">11</span> AI Model Inspector</h2>
-      <div class="nav-path"><span>Tools</span><span class="cur">AI Model Inspector</span></div>
-
-      <h3>What It Does</h3>
-      <p>Allows you to upload and view AI model inspection reports generated for AM62D deployments. Reports are HTML files that show model architecture, layer details, and performance metrics.</p>
-
-      <h3>How to Use</h3>
-      <div class="steps">
-        <div class="step"><div class="step-num">1</div><div class="step-body"><b>Navigate to Tools → AI Model Inspector.</b></div></div>
-        <div class="step"><div class="step-num">2</div><div class="step-body"><b>Click "Upload Report"</b> and select an HTML model inspection report from your PC.</div></div>
-        <div class="step"><div class="step-num">3</div><div class="step-body"><b>The report appears in the list</b> — click its name to view it in the embedded viewer.</div></div>
-        <div class="step"><div class="step-num">4</div><div class="step-body"><b>Browse the report</b> — includes model architecture, layer names, tensor shapes, and AM62D inference performance metrics.</div></div>
-      </div>
-    </section>
-
-    <!-- 12. Power Controls -->
-    <section id="power">
-      <h2><span class="sec-num">12</span> Power Controls</h2>
-      <p>Power controls are located in the <b>top-right corner of the app bar</b>, always visible on every page.</p>
-      <table>
-        <tr><th>Button</th><th>Icon</th><th>Action</th><th>What happens</th></tr>
-        <tr>
-          <td><span class="badge amber">Reboot EVM</span></td>
-          <td>⟳ (amber restart icon)</td>
-          <td>Reboots the AM62D EVM</td>
-          <td>Confirmation dialog → EVM reboots after ~500ms → portal shows "Rebooting…" → auto-reconnects when EVM comes back online</td>
-        </tr>
-        <tr>
-          <td><span class="badge red">Power Off EVM</span></td>
-          <td>⏻ (red power icon)</td>
-          <td>Shuts down the AM62D EVM</td>
-          <td>Confirmation dialog → EVM powers off after ~500ms → portal shows "Powering off…"</td>
-        </tr>
-      </table>
-      <div class="callout danger">
-        <b>Note</b>
-        <p>After Power Off, the EVM must be physically powered back on. There is no remote power-on mechanism in the portal.</p>
-      </div>
-    </section>
-
-    <!-- 13. System Panel -->
-    <section id="system">
-      <h2><span class="sec-num">13</span> System Panel</h2>
-
-      <h3>Device Info</h3>
-      <div class="nav-path"><span>System</span><span class="cur">Device Info</span></div>
-      <p>Shows the EVM's hardware information, active demos, and installed SDK versions.</p>
-      <ul>
-        <li><b>Board</b> — Board name and description (e.g., SK-AM62D)</li>
-        <li><b>SoC</b> — AM62Dx quad Cortex-A53 @ 1.4GHz + C7x DSP</li>
-        <li><b>Active Demos</b> — List of demos loaded by the portal</li>
-        <li><b>SDK Versions</b> — SDK, MCU+ SDK, TIDL version numbers</li>
-      </ul>
-
-      <h3>Logs</h3>
-      <div class="nav-path"><span>System</span><span class="cur">Logs</span></div>
-      <p>Streams live server-side logs from the Node.js backend. Useful for debugging demo issues or monitoring pipeline activity.</p>
-
-      <h3>Help</h3>
-      <div class="nav-path"><span>System</span><span class="cur">Help</span></div>
-      <p>Links to documentation including this user guide, demo guide, and developer guide.</p>
-    </section>
-
-    <!-- 14. Troubleshooting -->
-    <section id="troubleshooting">
-      <h2><span class="sec-num">14</span> Troubleshooting</h2>
-      <table>
-        <tr><th>Issue</th><th>Likely Cause</th><th>Fix</th></tr>
-        <tr>
-          <td>Portal not loading in browser</td>
-          <td>EVM not reachable or service not running</td>
-          <td>Check EVM IP. On EVM console: <code>systemctl status webserver-oob</code>. Restart: <code>systemctl restart webserver-oob</code></td>
-        </tr>
-        <tr>
-          <td>"TVM Loading" banner stuck</td>
-          <td>TVM daemon initializing C7x DSP</td>
-          <td>Wait 15–60 seconds. If still stuck after 2 minutes: <code>systemctl restart webserver-oob</code></td>
-        </tr>
-        <tr>
-          <td>No audio devices listed</td>
-          <td>Microphone not connected or ALSA not detecting it</td>
-          <td>Connect USB microphone. On EVM: <code>arecord -l</code> to verify ALSA sees the device</td>
-        </tr>
-        <tr>
-          <td>Speech Enhancement: WAV upload error</td>
-          <td>File not 16-bit mono WAV</td>
-          <td>Convert with: <code>ffmpeg -i input.wav -ar 48000 -ac 1 -sample_fmt s16 output.wav</code></td>
-        </tr>
-        <tr>
-          <td>Audio DSP Offload: conflict banner</td>
-          <td>DSP audio overlay is active</td>
-          <td>Click "Remove Overlay &amp; Reboot" in the banner. Wait for reboot.</td>
-        </tr>
-        <tr>
-          <td>Spectrograms appear black in light mode</td>
-          <td>Cached old bundle</td>
-          <td>Hard refresh: <b>Ctrl+Shift+R</b> (Chrome/Firefox) or <b>Cmd+Shift+R</b> (Mac)</td>
-        </tr>
-        <tr>
-          <td>GStreamer pipeline error in log</td>
-          <td>Missing element or wrong pipeline syntax</td>
-          <td>Check log for element name errors. Verify artifact path exists at <code>/usr/share/tvm_inference/artifacts/</code></td>
-        </tr>
-        <tr>
-          <td>Power button shows "Failed"</td>
-          <td>Server-side error or permission issue</td>
-          <td>Check logs. On EVM: <code>systemctl status webserver-oob</code></td>
-        </tr>
-        <tr>
-          <td>Page does not update after reboot</td>
-          <td>Browser not auto-reconnecting</td>
-          <td>Manually refresh the page after EVM comes back online (~30–60 seconds after reboot)</td>
-        </tr>
-      </table>
-
-      <h3>Service Management (on EVM)</h3>
-      <pre>systemctl status webserver-oob      <span class="cm"># check service status</span>
-systemctl restart webserver-oob     <span class="cm"># restart server</span>
-journalctl -u webserver-oob -f      <span class="cm"># follow live logs</span>
-journalctl -u webserver-oob -n 100  <span class="cm"># last 100 log lines</span></pre>
-    </section>
-
-  </main>
-</div>
-
-<footer class="site-footer">
-  TI SITARA AM62D DSP + Edge AI Experience Portal &mdash; User Guide &mdash; SDK 12.01.00.04
-  &nbsp;|&nbsp; &copy; 2025 Texas Instruments Incorporated
-</footer>
-
+<h1 id="am62d-user-guide">AM62D User Guide</h1>
+<p>This guide describes the repository implementation at that revision.
+Target firmware, model artifacts, SDK packaging, and measured
+performance depend on the installed SDK.</p>
+<h2 id="contents">Contents</h2>
+<ul>
+<li><a href="#intro">1 Introduction</a></li>
+<li><a href="#getting-started">2 Getting Started</a></li>
+<li><a href="#layout">3 Portal Layout &amp; Navigation</a></li>
+<li><a href="#home">4 Home Page</a></li>
+<li><a href="#speech-enhancement">5 Speech Enhancement</a></li>
+<li><a href="#audio-classification">6 Audio Classification</a></li>
+<li><a href="#audio-offload">7 Audio DSP Offload</a></li>
+<li><a href="#2dfft">8 2D FFT Offload</a></li>
+<li><a href="#biquad">9 Sigchain Biquad EQ</a></li>
+<li><a href="#gst-pipeline">10 Custom Audio Pipeline
+(GStreamer)</a></li>
+<li><a href="#model-inspector">11 AI Model Inspector</a></li>
+<li><a href="#power">12 Power Controls</a></li>
+<li><a href="#system">13 System Panel</a></li>
+<li><a href="#troubleshooting">14 Troubleshooting</a></li>
+</ul>
+<p><a id="intro"></a></p>
+<h2 id="1-introduction">1 Introduction</h2>
+<p>The <strong>TI SITARA AM62D DSP + Edge AI Experience Portal</strong>
+is a browser-based demo portal that runs directly on the AM62D EVM. It
+provides file-based speech enhancement, live or file-based audio
+classification, and DSP offload demos using C7x and the installed
+TVM/TIDL runtime.</p>
+<p>🎙</p>
+<h4 id="audio-intelligence">Audio Intelligence</h4>
+<p>File-based speech enhancement and environmental audio classification
+powered by C7x DSP + TVM.</p>
+<p>⚡</p>
+<h4 id="dsp-acceleration">DSP Acceleration</h4>
+<p>C7x DSP offload demos: 8-channel audio, 2D FFT, and parametric biquad
+EQ via RPMsg-DMA.</p>
+<p>🔧</p>
+<h4 id="custom-pipeline">Custom Pipeline</h4>
+<p>Run and experiment with custom GStreamer pipelines using TVM artifact
+management.</p>
+<p>🔍</p>
+<h4 id="ai-model-inspector">AI Model Inspector</h4>
+<p>Upload and view AI model inspection reports for AM62D
+deployments.</p>
+<h3 id="am62d-platform">AM62D Platform</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Component</th>
+<th>Details</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Application Processor</td>
+<td>Quad Arm® Cortex®-A53 @ 1.4 GHz</td>
+</tr>
+<tr class="even">
+<td>DSP</td>
+<td>C7x DSP with MMA — high-performance signal processing &amp; AI
+inference</td>
+</tr>
+<tr class="odd">
+<td>AI Inference</td>
+<td>TVM based TIDL — compiled neural network models running natively on
+C7x</td>
+</tr>
+<tr class="even">
+<td>Audio</td>
+<td>ALSA-based capture/playback; PCM6240 ADC / TAD5212 DAC support</td>
+</tr>
+<tr class="odd">
+<td>OS</td>
+<td>Linux (Yocto-based TI SDK 12.02)</td>
+</tr>
+</tbody>
+</table>
+<p><a id="getting-started"></a></p>
+<h2 id="2-getting-started">2 Getting Started</h2>
+<h3 id="hardware-requirements">Hardware Requirements</h3>
+<ul>
+<li><strong>AM62D EVM</strong> — powered and booted</li>
+<li><strong>Ethernet cable</strong> — EVM connected to your local
+network</li>
+<li><strong>Microphone</strong> — for live audio classification; select
+the ALSA device detected on your EVM rather than assuming a fixed card
+number</li>
+<li><strong>Audio files</strong> — 16-bit PCM mono WAV at 16 kHz for the
+supplied speech and classification models</li>
+<li><strong>Web browser</strong> — Chrome, Firefox, or Edge
+(latest)</li>
+</ul>
+<h3 id="finding-the-evm-ip-address">Finding the EVM IP Address</h3>
+<p>Connect a USB-to-UART cable and open the serial console at
+<strong>115200 baud</strong>. After boot, run:</p>
+<pre><code>ip addr show eth0</code></pre>
+<p>Alternatively, check your DHCP router&#39;s client list. The EVM hostname
+is typically <code>am62dxx-evm</code>.</p>
+<h3 id="opening-the-portal">Opening the Portal</h3>
+<ol type="1">
+<li><strong>Open a browser on your PC</strong> (on the same network as
+the EVM)</li>
+<li><strong>Navigate to <code>http://&lt;EVM_IP&gt;</code></strong> —
+the portal is served on port 80 by default</li>
+<li><strong>The home page loads automatically</strong> — no login
+required</li>
+</ol>
+<p><strong>Auto-start</strong></p>
+<p>The portal starts automatically at boot via the
+<code>webserver-oob.service</code> systemd unit. No manual startup
+needed.</p>
+<p><strong>TVM Initialization</strong></p>
+<p>Audio Intelligence polls C7x/TVM readiness and displays
+initialization errors. The initial readiness check times out after 90
+seconds. Model loading can also occur when starting a demo or switching
+models; follow the status banner rather than assuming a fixed
+initialization time.</p>
+<p><a id="layout"></a></p>
+<h2 id="3-portal-layout--navigation">3 Portal Layout &amp;
+Navigation</h2>
+<h3 id="sidebar-navigation">Sidebar Navigation</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Section</th>
+<th>Items</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Home</strong></td>
+<td>Home</td>
+<td>Overview, demo cards, SDK info</td>
+</tr>
+<tr class="even">
+<td><strong>Demos</strong></td>
+<td>Audio Intelligence</td>
+<td>Speech Enhancement, Audio Classification, Custom Pipeline</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>DSP Acceleration</td>
+<td>Audio Offload, 2D FFT, Sigchain Biquad EQ</td>
+</tr>
+<tr class="even">
+<td><strong>Tools</strong></td>
+<td>AI Model Inspector</td>
+<td>Upload and view model inspection reports</td>
+</tr>
+<tr class="odd">
+<td><strong>System</strong></td>
+<td>Device Info</td>
+<td>Board, SoC, active demos, SDK versions</td>
+</tr>
+<tr class="even">
+<td></td>
+<td>Logs</td>
+<td>Live server-side log stream</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>Help</td>
+<td>Documentation links</td>
+</tr>
+</tbody>
+</table>
+<h3 id="app-bar-top-right">App Bar (Top Right)</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Control</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>⟳ Reboot</td>
+<td>Reboots the EVM. Shows a confirmation dialog first. Portal
+reconnects automatically after reboot.</td>
+</tr>
+<tr class="even">
+<td>⏻ Power Off</td>
+<td>Shuts down the EVM. Shows a confirmation dialog first.</td>
+</tr>
+<tr class="odd">
+<td>☀ / 🌙 Theme</td>
+<td>Toggles between dark and light mode. Canvas visualizations update
+immediately.</td>
+</tr>
+<tr class="even">
+<td>Connected label</td>
+<td>Shows &quot;AM62D EVM&quot; when the portal is connected to the backend.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Power Controls</strong></p>
+<p>The Reboot and Power Off buttons are always visible in the top-right
+corner regardless of which page you are on. A confirmation dialog is
+shown before any action is executed.</p>
+<p><a id="home"></a></p>
+<h2 id="4-home-page">4 Home Page</h2>
+<p>The home page provides a portal overview and quick navigation to all
+demos.</p>
+<ul>
+<li><strong>Hero section</strong> — Platform description and &quot;Get
+Started&quot; button linking to Audio Intelligence</li>
+<li><strong>Demo cards</strong> — Click any card to navigate directly to
+that demo</li>
+<li><strong>SDK version cards</strong> — Shows declared reference
+versions: SDK 12.02.00.03, MCU+ SDK 12.02.00.1, and TIDL 11.02.16.00.
+These labels are configured in the frontend, not detected from the
+installed packages</li>
+<li><strong>About section</strong> — Brief description of the portal and
+platform</li>
+</ul>
+<p><a id="speech-enhancement"></a></p>
+<h2 id="5-speech-enhancement">5 Speech Enhancement</h2>
+<p>Audio Intelligence → Speech Enhancement</p>
+<h3 id="what-it-does">What It Does</h3>
+<p>Processes a WAV file using the installed
+<code>rpmsg_inference_example</code> application and speech pipeline
+JSON. The intended model is GCRN (Gated Convolutional Recurrent
+Network), running with TVM/TIDL on C7x. The dedicated speech demo uses
+the RPMsg application; the Custom Audio Pipeline tab is the separate
+GStreamer interface.</p>
+<p>The configured processing stages are input PCM, STFT, deinterleave,
+TVM inference, interleave, ISTFT, and output PCM. Confirm the deployed
+JSON and model artifacts match the intended enhancement pipeline.</p>
+<h3 id="input-requirements">Input Requirements</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Parameter</th>
+<th>Requirement</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>File format</td>
+<td>WAV containing 16-bit PCM, mono</td>
+</tr>
+<tr class="even">
+<td>Model sample rate</td>
+<td>16 kHz for the supplied speech model</td>
+</tr>
+<tr class="odd">
+<td>Default target file</td>
+<td><code>/usr/share/tvm_inference/input/input_audio.wav</code></td>
+</tr>
+<tr class="even">
+<td>Source configuration</td>
+<td><code>demoConfig.speech-enhancement.inputPath</code> in the device
+configuration</td>
+</tr>
+</tbody>
+</table>
+<p>The current speech panel displays the default audio file and its
+metadata. It does <strong>not</strong> expose a live microphone selector
+or a file-upload button. An upload API is available to developers; see
+the <a href="am62d-developer-guide.html#api-reference" target="_blank" rel="noopener noreferrer">Developer
+Guide</a>. The API&#39;s mono/16-bit validation does not replace checking
+the model&#39;s sample-rate requirement.</p>
+<h3 id="how-to-use">How to Use</h3>
+<ol type="1">
+<li>Open Audio Intelligence → Speech Enhancement.</li>
+<li>Check the Audio Source card. Ensure the default WAV exists on the
+EVM and matches the model input format.</li>
+<li>Click <strong>Run</strong> in the page header. Follow the loading
+and processing status.</li>
+<li>Compare input/output spectrograms and waveforms while data
+arrives.</li>
+<li>Review per-chunk STFT, GCRN/TVM, ISTFT, and total timing. These are
+processing measurements, not a guarantee of real-time microphone
+performance.</li>
+<li>Allow the file job to complete. Use <strong>Stop</strong> only to
+cancel a running job; cancellation does not guarantee completed
+results.</li>
+<li>Play the completed input and output WAVs using their audio players.
+Click a playback track to seek.</li>
+<li>Click <strong>Save ZIP</strong> to export available results.</li>
+</ol>
+<h3 id="visualization-and-export">Visualization and Export</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Control or result</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Per-plot peak</td>
+<td>Scales each spectrogram relative to its own peak; useful for detail,
+but not a common level reference</td>
+</tr>
+<tr class="even">
+<td>Shared reference</td>
+<td>Uses a common FFT reference to compare input and output levels</td>
+</tr>
+<tr class="odd">
+<td>Quiet detail</td>
+<td>Extends the displayed range from −80…0 dB to −110…0 dB</td>
+</tr>
+<tr class="even">
+<td>Spectrogram zoom</td>
+<td>Changes the amount of history displayed</td>
+</tr>
+<tr class="odd">
+<td>Waveform zoom and cursor</td>
+<td>Inspects amplitudes and corresponding times</td>
+</tr>
+<tr class="even">
+<td>Save ZIP</td>
+<td>Includes available <code>spectrogram.png</code>,
+<code>waveform.png</code>, <code>timings.csv</code>,
+<code>input.wav</code>, and <code>output.wav</code></td>
+</tr>
+</tbody>
+</table>
+<p>Playback progress follows the audio element&#39;s playback time. The
+completed position is retained at the end; pause, source changes, and
+leaving the component stop progress updates. WAV serving supports byte
+ranges and disables caching for reused result URLs.</p>
+<p><strong>Interpreting results:</strong> use shared-reference scaling
+and listen to both WAVs when comparing levels. Independent peak
+normalization can make a quiet output appear visually stronger than
+expected. Verify that the deployed pipeline includes working inference
+before interpreting STFT/ISTFT output as noise suppression.</p>
+<p><a id="audio-classification"></a></p>
+<h2 id="6-audio-classification">6 Audio Classification</h2>
+<p>Audio Intelligence → Audio Classification</p>
+<p>The AM62D backend uses <code>rpmsg_inference_example</code> with the
+JSON selected by the model configuration. Other devices can use a
+different backend.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Model</th>
+<th>Configured classes</th>
+<th>Pipeline JSON</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>YAMNet</td>
+<td>521 AudioSet classes</td>
+<td><code>pipeline_audio_classification_yamnet.json</code></td>
+</tr>
+<tr class="even">
+<td>VGGish</td>
+<td>10 UrbanSound8K classes</td>
+<td><code>pipeline_audio_classification_vggish.json</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="how-to-use-1">How to Use</h3>
+<ol type="1">
+<li>Select the model in the Model selector.</li>
+<li>Select an available microphone or WAV file in Audio Source. Source
+selection is separate from model selection; use a source supported by
+the deployed model JSON.</li>
+<li>To use a local recording, use the upload control and select a
+compatible WAV. The default configured file is
+<code>/usr/share/tvm_inference/input/input_audio.wav</code>.</li>
+<li>Click <strong>Run</strong>. Inspect classification labels, scores,
+and available prediction visualizations; the YAMNet UI also provides a
+patch heatmap.</li>
+<li>A file run completes after processing the selected input. For live
+microphone operation, click <strong>Stop</strong> when finished.</li>
+</ol>
+<p>For AM62D live capture, the native RPMsg application owns the ALSA
+device and processes successive windows. The server does not launch a
+separate <code>arecord</code> capture process for this path. Update
+frequency depends on the model and target performance; no fixed interval
+is guaranteed.</p>
+<p>Use 16 kHz mono PCM for the supplied model configuration. If a device
+is missing, run <code>arecord -l</code> on the EVM and check the
+selected card/device.</p>
+<p><a id="audio-offload"></a></p>
+<h2 id="7-audio-dsp-offload">7 Audio DSP Offload</h2>
+<p>DSP Acceleration → Audio DSP Offload</p>
+<h3 id="what-it-does-1">What It Does</h3>
+<p>Demonstrates 8-channel audio processing offloaded to the C7x DSP via
+RPMsg-DMA. The DSP applies FFT bandpass filtering in real time. Includes
+live input/output spectrum visualization and CPU vs DSP load
+comparison.</p>
+<h3 id="live-visualizations">Live Visualizations</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Chart</th>
+<th>Color</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Input Audio Spectrum</td>
+<td>Green</td>
+<td>Frequency spectrum of raw audio before DSP processing</td>
+</tr>
+<tr class="even">
+<td>Output Audio Spectrum</td>
+<td>Blue</td>
+<td>Frequency spectrum after bandpass filtering by C7x</td>
+</tr>
+<tr class="odd">
+<td>Average Amplitude</td>
+<td>Cyan</td>
+<td>RMS amplitude trend over time</td>
+</tr>
+<tr class="even">
+<td>Frame Latency</td>
+<td>Green</td>
+<td>End-to-end processing latency per frame (ms)</td>
+</tr>
+<tr class="odd">
+<td>System Load</td>
+<td>Blue CPU / Amber DSP</td>
+<td>CPU and C7x DSP utilization over time</td>
+</tr>
+</tbody>
+</table>
+<h3 id="how-to-use-2">How to Use</h3>
+<ol type="1">
+<li><strong>Navigate to DSP Acceleration → Audio DSP Offload
+tab</strong></li>
+<li><strong>Toggle the Filter button</strong> to enable or disable the
+bandpass filter.<br />
+Filter ON shows the effect on the output spectrum. Filter OFF passes
+audio through unmodified.</li>
+<li><strong>Click Run</strong><br />
+The <code>rpmsg_audio_offload_example</code> binary starts on the EVM.
+All five live charts begin updating.</li>
+<li><strong>Observe the metrics</strong> — Frame count, latency
+(min/avg/max), CPU load, and DSP load are shown in the Live Metrics
+panel.</li>
+<li><strong>Click Stop</strong> to end the demo.</li>
+</ol>
+<p><strong>Overlay Conflict</strong></p>
+<p>This demo requires the DSP audio overlay
+(<code>k3-am62d2-evm-dsp-controlled-audio.dtbo</code>) to be
+<em>inactive</em>. If it is active, the portal shows a conflict banner
+with a &quot;Remove Overlay &amp; Reboot&quot; button.</p>
+<p><a id="2dfft"></a></p>
+<h2 id="8-2d-fft-offload">8 2D FFT Offload</h2>
+<p>DSP Acceleration → 2D FFT Offload</p>
+<h3 id="what-it-does-2">What It Does</h3>
+<p>Computes a 128×128 2D Fast Fourier Transform on the C7x DSP via
+RPMsg-DMA. Demonstrates raw DSP compute throughput and compares ARM vs
+C7x execution paths.</p>
+<h3 id="how-to-use-3">How to Use</h3>
+<ol type="1">
+<li><strong>Navigate to DSP Acceleration → 2D FFT Offload
+tab</strong></li>
+<li><strong>Click Run</strong> — the FFT benchmark starts on the C7x
+DSP.</li>
+<li><strong>Observe live metrics</strong> — throughput (MB/s), execution
+time (ms), and iteration count update in real time.</li>
+<li><strong>Click Stop</strong> when done.</li>
+</ol>
+<p><a id="biquad"></a></p>
+<h2 id="9-sigchain-biquad-eq">9 Sigchain Biquad EQ</h2>
+<p>DSP Acceleration → Sigchain Biquad EQ</p>
+<h3 id="what-it-does-3">What It Does</h3>
+<p>Runs a 3-stage cascade biquad equalizer on the C7x DSP. Audio is
+captured via PCM6240 ADC and played back through TAD5212 DAC with
+real-time EQ applied by the DSP. Live trend charts show DSP load,
+processing cycles, and throughput.</p>
+<h3 id="how-to-use-4">How to Use</h3>
+<ol type="1">
+<li><strong>Navigate to DSP Acceleration → Sigchain Biquad EQ
+tab</strong></li>
+<li><strong>Click Run</strong> — the biquad sigchain application starts
+and the portal begins receiving its metrics.</li>
+<li><strong>Watch the trend charts</strong> — DSP load (%), processing
+cycles, and throughput (MB/s) update continuously.</li>
+<li><strong>Click Stop</strong> to end the demo.</li>
+</ol>
+<p><a id="gst-pipeline"></a></p>
+<h2 id="10-custom-audio-pipeline-gstreamer">10 Custom Audio Pipeline
+(GStreamer)</h2>
+<p>Audio Intelligence → Custom Audio Pipeline</p>
+<h3 id="what-it-does-4">What It Does</h3>
+<p>Lets you build, run, and save any <code>gst-launch-1.0</code>
+pipeline on the EVM with real-time log output. Includes preset pipelines
+for common use cases and full management of TVM artifacts and input
+audio files.</p>
+<h3 id="pipeline-presets">Pipeline Presets</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Preset</th>
+<th>Input</th>
+<th>Pipeline</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Speech Enhancement</td>
+<td>WAV file (<code>input_audio.wav</code>)</td>
+<td>tidspkernel STFT → deinterleave → titvm → interleave → ISTFT</td>
+<td><code>/tmp/gst_enhanced.wav</code> + speaker</td>
+</tr>
+<tr class="even">
+<td>YAMNet Classification</td>
+<td>Live mic (<code>alsasrc hw:1,0</code>)</td>
+<td>tidspkernel STFT → titvm (top-3)</td>
+<td>fakesink (results in log)</td>
+</tr>
+<tr class="odd">
+<td>VGGish Classification</td>
+<td>WAV file (<code>urbansound_16k.wav</code>)</td>
+<td>tidspkernel STFT → titvm (top-3)</td>
+<td><code>vggish_inference_output.bin</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="running-a-preset">Running a Preset</h3>
+<ol type="1">
+<li><strong>Click a preset chip</strong> (Speech Enhancement,
+Classification YAMNet, or Classification VGGish).<br />
+The command textarea fills automatically.</li>
+<li><strong>Review the command</strong> in the textarea — paths are
+pre-filled with EVM defaults.</li>
+<li><strong>Click Run</strong> (in the page header).<br />
+Pipeline output appears in the log panel below in real time.</li>
+<li><strong>Click Stop</strong> to kill the pipeline.</li>
+</ol>
+<h3 id="running-a-custom-pipeline">Running a Custom Pipeline</h3>
+<ol type="1">
+<li><strong>Click the &quot;Custom&quot; preset chip</strong>.<br />
+The textarea shows a blank <code>gst-launch-1.0</code> prompt.</li>
+<li><strong>Type or paste your pipeline command.</strong><br />
+Use the supported <code>gst-launch-1.0</code> command syntax. The
+backend validates the command and launches it without a shell; shell
+expansion, redirection, and command chaining are not supported.</li>
+<li><strong>Optionally insert paths</strong> using the TVM Artifacts or
+Input Files panels (see below).</li>
+<li><strong>Click Run.</strong></li>
+</ol>
+<p><strong>Use button availability</strong></p>
+<p>The <strong>Use</strong> button in TVM Artifacts and Input Files
+panels is only enabled when <strong>Custom</strong> preset or a
+<strong>Saved Pipeline</strong> is selected. It is disabled for named
+presets to prevent accidental path injection.</p>
+<h3 id="managing-tvm-artifacts">Managing TVM Artifacts</h3>
+<p>TVM artifacts are compiled model directories stored at
+<code>/usr/share/tvm_inference/artifacts/</code> on the EVM.</p>
+<ol type="1">
+<li><strong>Open the TVM Artifacts panel</strong> — click to
+expand.</li>
+<li><strong>Click Refresh</strong> to list available artifact
+directories.</li>
+<li><strong>Click Use</strong> on an artifact to insert its path at the
+cursor position in the command textarea (Custom mode only).</li>
+<li><strong>Upload a new artifact</strong> — click &quot;Upload Archive&quot;,
+select a <code>.zip</code> or <code>.tar.gz</code> file. The archive is
+extracted to the artifacts directory.</li>
+</ol>
+<h3 id="managing-input-files">Managing Input Files</h3>
+<p>Input files are stored at
+<code>/usr/share/tvm_inference/input/</code> on the EVM.</p>
+<ol type="1">
+<li><strong>Open the Input Files panel</strong> — click to expand.</li>
+<li><strong>Click Refresh</strong> to list available files.</li>
+<li><strong>Click Use</strong> to insert the file path into the command
+(Custom mode only).</li>
+<li><strong>Upload a file</strong> — click &quot;Upload File&quot;, select a
+WAV/MP3/FLAC file from your PC.</li>
+</ol>
+<h3 id="saving--loading-pipelines">Saving &amp; Loading Pipelines</h3>
+<ol type="1">
+<li><strong>Click &quot;Save As&quot;</strong> in the Pipeline Command card
+header.</li>
+<li><strong>Enter a name</strong> and click Save. The pipeline is stored
+persistently on the EVM.</li>
+<li><strong>Saved pipelines</strong> appear as bookmark chips below the
+preset chips. Click any chip to reload that pipeline.</li>
+<li><strong>To update a saved pipeline</strong> — select it, edit the
+command, then click &quot;Save&quot;.</li>
+<li><strong>To delete</strong> — click the × on the bookmark chip.</li>
+</ol>
+<p><a id="model-inspector"></a></p>
+<h2 id="11-ai-model-inspector">11 AI Model Inspector</h2>
+<p>Tools → AI Model Inspector</p>
+<h3 id="what-it-does-5">What It Does</h3>
+<p>Allows you to upload and view AI model inspection reports generated
+for AM62D deployments. Reports are HTML files that show model
+architecture, layer details, and performance metrics.</p>
+<h3 id="how-to-use-5">How to Use</h3>
+<ol type="1">
+<li><strong>Navigate to Tools → AI Model Inspector.</strong></li>
+<li><strong>Click &quot;Upload Report&quot;</strong> and select an HTML model
+inspection report from your PC.</li>
+<li><strong>The report appears in the list</strong> — click its name to
+view it in the embedded viewer.</li>
+<li><strong>Browse the report</strong> — includes model architecture,
+layer names, tensor shapes, and AM62D inference performance
+metrics.</li>
+</ol>
+<p><a id="power"></a></p>
+<h2 id="12-power-controls">12 Power Controls</h2>
+<p>Power controls are located in the <strong>top-right corner of the app
+bar</strong>, always visible on every page.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Button</th>
+<th>Icon</th>
+<th>Action</th>
+<th>What happens</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Reboot EVM</td>
+<td>⟳ (amber restart icon)</td>
+<td>Reboots the AM62D EVM</td>
+<td>Confirmation dialog → EVM reboots after ~500ms → portal shows
+&quot;Rebooting…&quot; → auto-reconnects when EVM comes back online</td>
+</tr>
+<tr class="even">
+<td>Power Off EVM</td>
+<td>⏻ (red power icon)</td>
+<td>Shuts down the AM62D EVM</td>
+<td>Confirmation dialog → EVM powers off after ~500ms → portal shows
+&quot;Powering off…&quot;</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Note</strong></p>
+<p>After Power Off, the EVM must be physically powered back on. There is
+no remote power-on mechanism in the portal.</p>
+<p><a id="system"></a></p>
+<h2 id="13-system-panel">13 System Panel</h2>
+<h3 id="device-info">Device Info</h3>
+<p>System → Device Info</p>
+<p>Shows configured device information and active demos. SDK version
+labels are declared frontend reference values, not a runtime package
+inventory.</p>
+<ul>
+<li><strong>Board</strong> — Board name and description (e.g.,
+SK-AM62D)</li>
+<li><strong>SoC</strong> — AM62Dx quad Cortex-A53 @ 1.4GHz + C7x
+DSP</li>
+<li><strong>Active Demos</strong> — List of demos loaded by the
+portal</li>
+<li><strong>SDK Versions</strong> — SDK, MCU+ SDK, TIDL version
+numbers</li>
+</ul>
+<h3 id="logs">Logs</h3>
+<p>System → Logs</p>
+<p>Streams live server-side logs from the Node.js backend. Useful for
+debugging demo issues or monitoring pipeline activity.</p>
+<h3 id="help">Help</h3>
+<p>System → Help</p>
+<p>Links to documentation including this user guide, demo guide, and
+developer guide.</p>
+<p><a id="troubleshooting"></a></p>
+<h2 id="14-troubleshooting">14 Troubleshooting</h2>
+<table>
+<thead>
+<tr class="header">
+<th>Issue</th>
+<th>Likely Cause</th>
+<th>Fix</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Portal not loading in browser</td>
+<td>EVM not reachable or service not running</td>
+<td>Check EVM IP. On EVM console:
+<code>systemctl status webserver-oob</code>. Restart:
+<code>systemctl restart webserver-oob</code></td>
+</tr>
+<tr class="even">
+<td>&quot;TVM Loading&quot; banner stuck</td>
+<td>TVM daemon initializing C7x DSP</td>
+<td>Inspect the readiness error after the 90-second timeout; check C7x
+remoteproc, <code>tvm-model-daemon</code>, model artifacts, and service
+logs</td>
+</tr>
+<tr class="odd">
+<td>No audio devices listed</td>
+<td>Microphone not connected or ALSA not detecting it</td>
+<td>Connect USB microphone. On EVM: <code>arecord -l</code> to verify
+ALSA sees the device</td>
+</tr>
+<tr class="even">
+<td>Speech Enhancement API: WAV upload error</td>
+<td>File not 16-bit mono WAV</td>
+<td>Convert with:
+<code>ffmpeg -i input.wav -ar 16000 -ac 1 -c:a pcm_s16le output.wav</code></td>
+</tr>
+<tr class="odd">
+<td>Audio DSP Offload: conflict banner</td>
+<td>DSP audio overlay is active</td>
+<td>Click &quot;Remove Overlay &amp; Reboot&quot; in the banner. Wait for
+reboot.</td>
+</tr>
+<tr class="even">
+<td>Spectrograms appear black in light mode</td>
+<td>Cached old bundle</td>
+<td>Hard refresh: <strong>Ctrl+Shift+R</strong> (Chrome/Firefox) or
+<strong>Cmd+Shift+R</strong> (Mac)</td>
+</tr>
+<tr class="odd">
+<td>GStreamer pipeline error in log</td>
+<td>Missing element or wrong pipeline syntax</td>
+<td>Check log for element name errors. Verify artifact path exists at
+<code>/usr/share/tvm_inference/artifacts/</code></td>
+</tr>
+<tr class="even">
+<td>Power button shows &quot;Failed&quot;</td>
+<td>Server-side error or permission issue</td>
+<td>Check logs. On EVM: <code>systemctl status webserver-oob</code></td>
+</tr>
+<tr class="odd">
+<td>Page does not update after reboot</td>
+<td>Browser not auto-reconnecting</td>
+<td>Manually refresh the page after EVM comes back online (~30–60
+seconds after reboot)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="service-management-on-evm">Service Management (on EVM)</h3>
+<pre><code>systemctl status webserver-oob      # check service status
+systemctl restart webserver-oob     # restart server
+journalctl -u webserver-oob -f      # follow live logs
+journalctl -u webserver-oob -n 100  # last 100 log lines</code></pre>
+<p>TI SITARA AM62D DSP + Edge AI Experience Portal — User Guide — SDK
+12.02.00.03  |  © 2026 Texas Instruments Incorporated</p>
+<h3 id="shared-dsp-and-missing-results">Shared DSP and Missing
+Results</h3>
+<p>Only one coordinated DSP demo can own C7x at a time. Stop the active
+demo before starting another. A stop request from a different client IP
+can be rejected; return to the client that started the run.</p>
+<p>If speech output is missing, inspect the server log for a missing
+binary, JSON, artifacts, or <code>processed_output.wav</code>. If
+waveform or spectrogram updates are absent, check the native
+application&#39;s visualization socket and browser connection. Mock-mode
+results are synthetic and cannot validate target inference quality or
+timing.</p>
 <script>
-// Highlight active TOC link on scroll
-const sections = document.querySelectorAll('section[id]')
-const links = document.querySelectorAll('.toc a')
-function onScroll() {
-  let cur = ''
-  sections.forEach(s => { if (window.scrollY >= s.offsetTop - 80) cur = s.id })
-  links.forEach(a => {
-    a.classList.toggle('active', a.getAttribute('href') === '#' + cur)
+(() => {
+  const toolbar = document.createElement('div')
+  toolbar.className = 'doc-toolbar'
+   toolbar.innerHTML = '<h1 class="doc-title">AM62D User Guide</h1><span class="doc-version">Version 1.0</span><button class="doc-search-toggle" type="button" aria-label="Search this guide" title="Search this guide">⌕</button><input class="doc-search" type="search" placeholder="Search this guide" aria-label="Search this guide"><span class="doc-search-status" aria-live="polite"></span>'
+  document.body.prepend(toolbar)
+  const toggle = toolbar.querySelector('.doc-search-toggle')
+  const input = toolbar.querySelector('.doc-search')
+  const status = toolbar.querySelector('.doc-search-status')
+  const results = document.createElement('div')
+  results.className = 'doc-search-results'
+  toolbar.after(results)
+  toggle.addEventListener('click', () => { toolbar.classList.toggle('search-open'); if (toolbar.classList.contains('search-open')) input.focus() })
+  input.addEventListener('input', () => {
+    const query = input.value.trim().toLowerCase()
+    results.replaceChildren()
+    if (!query) { status.textContent = ''; return }
+    const matches = [...document.querySelectorAll('h2[id],h3[id],h4[id]')].filter(h => h.textContent.toLowerCase().includes(query))
+    status.textContent = `${matches.length} section${matches.length === 1 ? '' : 's'} found`
+    matches.forEach(h => { const link = document.createElement('a'); link.href = `#${h.id}`; link.textContent = h.textContent.trim(); results.append(link) })
   })
-}
-window.addEventListener('scroll', onScroll, { passive: true })
-onScroll()
+})()
 </script>
 </body>
 </html>

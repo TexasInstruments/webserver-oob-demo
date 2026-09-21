@@ -25,10 +25,14 @@
           <v-list-subheader class="nav-lbl">{{ group.section }}</v-list-subheader>
           <v-list-item
             v-for="item in group.items"
-            :key="item.to"
+            :key="item.to || item.href"
             :prepend-icon="item.icon"
             :title="item.title"
             :to="item.to"
+            :href="item.href"
+            :target="item.target"
+            :rel="item.target === '_blank' ? 'noopener noreferrer' : undefined"
+            :aria-label="item.target === '_blank' ? `${item.title} (opens in a new tab)` : item.title"
             class="nav-item"
           />
         </template>
@@ -136,16 +140,10 @@
             RAM: <span class="sb-ram">{{ stats.ramUsed.value }} / {{ stats.ramFree.value }}</span>
           </div>
           <div class="sb-spacer" />
-          <span class="sb-version">v{{ appVersion }}&ensp;&middot;&ensp;{{ buildDate }}</span>
-          <span class="sb-copy">&copy; 2026 Texas Instruments Incorporated</span>
-          <a
-            href="https://software-dl.ti.com/processor-sdk-linux/esd/AM62DX/latest/exports/docs/devices/AM62DX/index.html"
-            target="_blank"
-            class="sb-doc"
-          >
-            Documentation
-            <v-icon size="11">mdi-open-in-new</v-icon>
-          </a>
+          <div class="sb-meta">
+            <span class="sb-version">v{{ appVersion }}&ensp;&middot;&ensp;{{ buildDate }}</span>
+            <span class="sb-copy">&copy; 2026 Texas Instruments Incorporated</span>
+          </div>
         </div>
       </div>
     </v-main>
@@ -413,8 +411,8 @@ async function doPowerAction() {
 .sb-spacer { flex:1; }
 .sb-version { color:#475569; font-size:11px; font-family:monospace; white-space:nowrap; }
 .sb-copy   { color:#475569; font-size:12px; }
-.sb-doc    { color:#4da6ff; text-decoration:none; display:flex; align-items:center; gap:4px; font-size:12px; }
-.sb-doc:hover { color:#93c5fd; }
+.sb-meta   { display:flex; align-items:center; gap:16px; margin-left:auto; }
+@media (max-width: 900px) { .sb-meta { gap:8px; } .sb-copy { display:none; } }
 
 /* System dialogs */
 .sys-card { background:rgb(var(--v-theme-surface)) !important; }
