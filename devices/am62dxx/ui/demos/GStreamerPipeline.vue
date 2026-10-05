@@ -270,7 +270,7 @@ const PRESETS = [
     icon: 'mdi-microphone-outline',
     color: '#34d399',
     command:
-      'gst-launch-1.0 -v filesrc location=/usr/share/tvm_inference/input/input_audio.wav ! wavparse ! audio/x-raw,format=S16LE,rate=16000,channels=1 ! tidspkernel name=stft msg-type=0x1020 model-path=/usr/share/tvm_inference/artifacts/gcrn hop-size=160 fft-size=320 window-frames=401 batch-size=64 ! tidspkernel name=deinterleave msg-type=0x1040 interleave_direction=0 model-path=/usr/share/tvm_inference/artifacts/gcrn fft-size=320 window-frames=401 ! titvm model-path=/usr/share/tvm_inference/artifacts/gcrn ! tidspkernel name=interleave msg-type=0x1040 interleave_direction=1 model-path=/usr/share/tvm_inference/artifacts/gcrn fft-size=320 window-frames=401 ! tidspkernel name=istft msg-type=0x1030 model-path=/usr/share/tvm_inference/artifacts/gcrn hop-size=160 fft-size=320 window-frames=401 batch-size=64 ! audio/x-raw,format=S16LE,rate=16000,channels=1 ! tee name=t ! queue ! wavenc ! filesink location=/tmp/gst_enhanced.wav t. ! queue ! audioconvert ! audioresample ! autoaudiosink',
+      'gst-launch-1.0 -v filesrc location=/usr/share/tvm_inference/input/input_audio.wav ! wavparse ! audio/x-raw,format=S16LE,rate=16000,channels=1 ! tidspkernel name=stft msg-type=0x1020 model-path=/usr/share/tvm_inference/artifacts/gcrn hop-size=160 fft-size=320 window-frames=401 batch-size=64 max-stream-samples=160480 ! tidspkernel name=deinterleave msg-type=0x1040 interleave_direction=0 model-path=/usr/share/tvm_inference/artifacts/gcrn fft-size=320 window-frames=401 ! titvm model-path=/usr/share/tvm_inference/artifacts/gcrn ! tidspkernel name=interleave msg-type=0x1040 interleave_direction=1 model-path=/usr/share/tvm_inference/artifacts/gcrn fft-size=320 window-frames=401 ! tidspkernel name=istft msg-type=0x1030 model-path=/usr/share/tvm_inference/artifacts/gcrn hop-size=160 fft-size=320 window-frames=401 batch-size=64 ! audio/x-raw,format=S16LE,rate=16000,channels=1 ! tee name=t ! queue ! wavenc ! filesink location=/tmp/gst_enhanced.wav t. ! queue ! audioconvert ! audioresample ! autoaudiosink',
   },
   {
     id: 'audio-class-yamnet',
@@ -286,7 +286,7 @@ const PRESETS = [
     icon: 'mdi-chart-bar',
     color: '#a78bfa',
     command:
-      'gst-launch-1.0 filesrc location=/usr/share/tvm_inference/input/urbansound_16k.wav ! wavparse ! audio/x-raw,format=S16LE,rate=16000,channels=1 ! tidspkernel name=stft msg-type=0x1020 model-path=/usr/share/tvm_inference/artifacts/vggish/ hop-size=160 window-frames=126 batch-size=64 ! titvm model-path=/usr/share/tvm_inference/artifacts/vggish/ class-map-path=/usr/share/tvm_inference/labels/vggish_label_list.txt top-k=3 ! filesink location=vggish_inference_output.bin',
+      'gst-launch-1.0 filesrc location=/usr/share/tvm_inference/input/urbansound_16k.wav ! wavparse ! audio/x-raw,format=S16LE,rate=16000,channels=1 ! tidspkernel name=stft msg-type=0x1020 model-path=/usr/share/tvm_inference/artifacts/vggish/ hop-size=160 window-frames=126 batch-size=64 ! titvm model-path=/usr/share/tvm_inference/artifacts/vggish/ class-map-path=/usr/share/tvm_inference/labels/vggish_label_list.txt top-k=3 ! fakesink',
   },
   // {
   //   id: 'tvm-inference',
