@@ -286,7 +286,7 @@ const PRESETS = [
     icon: 'mdi-chart-bar',
     color: '#a78bfa',
     command:
-      'gst-launch-1.0 filesrc location=/usr/share/tvm_inference/input/urbansound_16k.wav ! wavparse ! audio/x-raw,format=S16LE,rate=16000,channels=1 ! tidspkernel name=stft msg-type=0x1020 model-path=/usr/share/tvm_inference/artifacts/vggish/ hop-size=160 window-frames=126 batch-size=64 ! titvm model-path=/usr/share/tvm_inference/artifacts/vggish/ class-map-path=/usr/share/tvm_inference/labels/vggish_label_list.txt top-k=3 ! fakesink',
+      'gst-launch-1.0 filesrc location=/usr/share/tvm_inference/input/urbansound_16k.wav ! wavparse ! audio/x-raw,format=S16LE,rate=16000,channels=1 ! tidspkernel name=stft msg-type=0x1020 model-path=/usr/share/tvm_inference/artifacts/vggish/ hop-size=512 window-frames=126 batch-size=64 ! titvm model-path=/usr/share/tvm_inference/artifacts/vggish/ class-map-path=/usr/share/tvm_inference/labels/vggish_label_list.txt top-k=3 ! fakesink',
   },
   // {
   //   id: 'tvm-inference',
