@@ -42,19 +42,20 @@ const SAVED_FILE = '/var/lib/webserver-oob/gst-saved-pipelines.json';
 const ALLOWED_EXECUTABLES = new Set(['gst-launch-1.0', 'gst-launch-0.10']);
 
 /**
- * Parse a GStreamer command string into [executable, ...args] without
+ * Parse GStreamer commands separated by unquoted && into argument arrays without
  * invoking a shell. Handles single-quoted, double-quoted, and backslash-
  * escaped tokens so paths with spaces work correctly.
  *
- * Shell metacharacters (;, &&, |, $(), backticks) are treated as literal
- * characters because the result is passed directly to spawn(), never to sh.
+ * Unquoted, unescaped && separates sequential commands. Other shell
+ * metacharacters are passed literally to spawn().
  *
  * @param {string} cmd - Raw command string from the request body.
- * @returns {string[]} Token array where index 0 is the executable.
+ * @returns {string[][]} Commands with the executable at index 0.
  * @throws {Error} On unterminated quotes or a trailing backslash.
  */
-function tokenizeGstCommand(cmd) {
-    const tokens = [];
+function tokenizeGstCommands(cmd) {
+    const commands = [];
+    let tokens = [];
     let current = '';
     let i = 0;
     while (i < cmd.length) {
@@ -62,6 +63,11 @@ function tokenizeGstCommand(cmd) {
         if (ch === ' ' || ch === '\t' || ch === '\n' || ch === '\r') {
             if (current.length) { tokens.push(current); current = ''; }
             i++;
+        } else if (ch === '&' && cmd[i + 1] === '&') {
+            if (current.length) { tokens.push(current); current = ''; }
+            commands.push(tokens);
+            tokens = [];
+            i += 2;
         } else if (ch === "'") {
             /* single-quoted: every character is literal */
             i++;
@@ -93,22 +99,25 @@ function tokenizeGstCommand(cmd) {
         }
     }
     if (current.length) tokens.push(current);
-    return tokens;
+    commands.push(tokens);
+    return commands;
 }
 
 /**
- * Tokenize a command and validate that the executable is on the allowlist.
+ * Tokenize a sequence and validate every executable before starting any command.
  *
  * @param {string} command - Raw command string.
- * @returns {string[]} Token array ready for spawn(tokens[0], tokens.slice(1)).
+ * @returns {string[][]} Validated commands ready for direct spawn().
  * @throws {Error} If the command is empty or the executable is not allowed.
  */
 function validateGstCommand(command) {
-    const tokens = tokenizeGstCommand(command);
-    if (!tokens.length) throw new Error('Empty command');
-    if (!ALLOWED_EXECUTABLES.has(tokens[0]))
-        throw new Error('Only gst-launch-1.0 commands are permitted');
-    return tokens;
+    const commands = tokenizeGstCommands(command);
+    for (const tokens of commands) {
+        if (!tokens.length) throw new Error('Empty command in sequence');
+        if (!ALLOWED_EXECUTABLES.has(tokens[0]))
+            throw new Error('Only gst-launch-1.0 commands are permitted');
+    }
+    return commands;
 }
 
 /**
@@ -199,6 +208,7 @@ module.exports = function registerGstPipeline(app, wss, device, { express } = {}
     const clients     = new Set();
     let activeProc    = null;
     let activeOwnerIp = null;
+    let stopping = false;
 
     /* ── helpers ────────────────────────────────────────────────── */
 
@@ -211,12 +221,10 @@ module.exports = function registerGstPipeline(app, wss, device, { express } = {}
     }
 
     function killActive() {
-        if (!activeProc) return;
+        if (!activeProc || stopping) return;
+        stopping = true;
         try { activeProc.kill('SIGINT');  } catch (_) {}
         try { activeProc.kill('SIGTERM'); } catch (_) {}
-        activeProc    = null;
-        activeOwnerIp = null;
-        demoCoordinator.releaseDsp('gst-pipeline');
     }
 
     /* ── GET /gst/artifacts ─────────────────────────────────────── */
@@ -383,44 +391,63 @@ module.exports = function registerGstPipeline(app, wss, device, { express } = {}
         const command = ((req.body || {}).command || '').trim();
         if (!command) return res.status(400).json({ error: 'No command provided' });
 
-        let tokens;
-        try { tokens = validateGstCommand(command); }
+        let commands;
+        try { commands = validateGstCommand(command); }
         catch (e) { return res.status(400).json({ error: e.message }); }
 
         const dspError = demoCoordinator.acquireDsp('gst-pipeline', req.ip);
         if (dspError) return res.status(409).json({ error: dspError });
 
-        try {
-            /* spawn the GStreamer binary directly — no shell, no metacharacter expansion */
+        function finishRun() {
+            activeProc = null;
+            activeOwnerIp = null;
+            stopping = false;
+            demoCoordinator.releaseDsp('gst-pipeline');
+        }
+
+        function startStage(index) {
+            const tokens = commands[index];
             const proc = spawn(tokens[0], tokens.slice(1), { stdio: ['ignore', 'pipe', 'pipe'] });
-            activeProc    = proc;
-            activeOwnerIp = req.ip;
-            broadcast({ type: 'started', command, pid: proc.pid });
+            activeProc = proc;
 
             const relay = stream => chunk => broadcast({ type: 'log', stream, text: chunk.toString() });
             proc.stdout.on('data', relay('stdout'));
             proc.stderr.on('data', relay('stderr'));
 
-            proc.on('error', err => {
-                if (activeProc === proc) {
-                    activeProc = null; activeOwnerIp = null;
-                    demoCoordinator.releaseDsp('gst-pipeline');
+            let spawnError;
+            proc.on('error', err => { spawnError = err; });
+            proc.on('close', (code, signal) => {
+                if (!stopping && !spawnError && code === 0 && index + 1 < commands.length) {
+                    try {
+                        startStage(index + 1);
+                        return;
+                    } catch (err) {
+                        spawnError = err;
+                    }
                 }
-                broadcast({ type: 'error', message: err.message });
-            });
-            proc.on('close', code => {
-                if (activeProc === proc) {
-                    activeProc = null; activeOwnerIp = null;
-                    demoCoordinator.releaseDsp('gst-pipeline');
-                }
-                broadcast({ type: 'exit', code });
-            });
 
+                const wasStopped = stopping;
+                finishRun();
+                if (wasStopped) {
+                    broadcast({ type: 'exit', code: null, reason: 'user stopped' });
+                } else if (spawnError) {
+                    broadcast({ type: 'error', message: spawnError.message });
+                } else {
+                    broadcast({ type: 'exit', code: code ?? 1, signal });
+                }
+            });
+            broadcast({ type: 'log', stream: 'stdout',
+                text: 'Starting command ' + (index + 1) + ' of ' + commands.length + '\n' });
+            return proc;
+        }
+
+        try {
+            activeOwnerIp = req.ip;
+            const proc = startStage(0);
+            broadcast({ type: 'started', command, pid: proc.pid });
             res.json({ status: 'started', pid: proc.pid });
         } catch (e) {
-            activeProc    = null;
-            activeOwnerIp = null;
-            demoCoordinator.releaseDsp('gst-pipeline');
+            finishRun();
             res.status(500).json({ error: e.message });
         }
     });
@@ -432,7 +459,6 @@ module.exports = function registerGstPipeline(app, wss, device, { express } = {}
         if (activeOwnerIp && activeOwnerIp !== req.ip)
             return res.status(403).json({ error: `Pipeline was started from ${activeOwnerIp} — only that client may stop it` });
         killActive();
-        broadcast({ type: 'exit', code: null, reason: 'user stopped' });
         res.json({ status: 'stopped' });
     });
 
