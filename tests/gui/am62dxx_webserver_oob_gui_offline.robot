@@ -142,7 +142,7 @@ AM62D_WEBSERVER_OOB_GUI_OFFLINE_LOGS_TOOLBAR_FILTER_REFRESH_PAUSE_AND_SAVE
     END
 
 AM62D_WEBSERVER_OOB_GUI_OFFLINE_HOME_INFO_AND_RUNTIME_CARDS_PRESENT
-    [Documentation]    Verifies the Home page's Info card (SDK/MCU+ SDK/TIDL versions) and the
+    [Documentation]    Verifies the Home page's Info card (SDK/MCU+ SDK/TITVM versions) and the
     ...    Device Info + Runtime Status card labels are present against the mock backend. Checks
     ...    presence only, not real (non "—") values, since MOCK responses for /device-info may
     ...    leave some fields blank.
@@ -152,4 +152,4 @@ AM62D_WEBSERVER_OOB_GUI_OFFLINE_HOME_INFO_AND_RUNTIME_CARDS_PRESENT
     Browser.Wait For Elements State    text="SDK Version"    visible    timeout=10s
     Browser.Wait For Elements State    text=Runtime Status    visible
     Browser.Wait For Elements State    text="MCU+ SDK Version"    visible
-    Browser.Wait For Elements State    text="TIDL Version"    visible
+    Browser.Wait For Elements State    text="TITVM Version"    visible
