@@ -29,6 +29,7 @@ const demoCoordinator = require('../demo-coordinator');
 
 const UENV_PATH   = '/run/media/boot-mmcblk1p1/uEnv.txt';
 const OVERLAY_DTB = 'ti/k3-am62d2-evm-dsp-controlled-audio.dtbo';
+const TVM_SERVICES = ['tvm-model-daemon.service', 'tvm-model-preload.service'];
 
 const WS_OPEN = 1;
 const MOCK    = process.env.MOCK === '1';
@@ -54,6 +55,13 @@ module.exports = function registerSigchainBiquad(app, wss, device) {
                       device.demoConfig['sigchain-biquad'] &&
                       device.demoConfig['sigchain-biquad'].binPath)
                      || '/usr/bin/rpmsg_sigchain_biquad_example';
+
+    function setTvmServicesEnabled(enabled) {
+        const action = enabled ? 'enable' : 'disable';
+        exec(`systemctl ${action} ${TVM_SERVICES.join(' ')}`, err => {
+            if (err) console.error(`[sigchain-biquad] systemctl ${action} failed:`, err.message);
+        });
+    }
 
     function broadcast(msg) {
         const s = JSON.stringify(msg);
@@ -306,6 +314,7 @@ module.exports = function registerSigchainBiquad(app, wss, device) {
                 fs.writeFileSync(UENV_PATH, lines.join('\n'), 'utf8');
             }
 
+            setTvmServicesEnabled(false);
             res.json({ success: true });
             setTimeout(() => exec('reboot', err => {
                 if (err) console.error('[sigchain-biquad] reboot failed:', err.message);
@@ -337,6 +346,7 @@ module.exports = function registerSigchainBiquad(app, wss, device) {
                 }
             }
 
+            setTvmServicesEnabled(true);
             res.json({ success: true });
             setTimeout(() => exec('reboot', err => {
                 if (err) console.error('[sigchain-biquad] reboot failed:', err.message);
