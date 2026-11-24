@@ -64,8 +64,8 @@ export const demoCards = [
 ]
 
 export const sdkInfo = [
-  { label: 'SDK Version',      version: '12.02.00.06', icon: 'mdi-application-brackets-outline', iconBg: 'rgba(37,99,235,0.2)',   iconBd: '1px solid rgba(37,99,235,0.4)',   iconColor: '#60a5fa' },
-  { label: 'MCU+ SDK Version', version: '12.02.00.02', icon: 'mdi-chip',                         iconBg: 'rgba(5,150,105,0.2)',   iconBd: '1px solid rgba(5,150,105,0.4)',   iconColor: '#34d399' },
+  { label: 'SDK Version',      version: '12.02.00.07', icon: 'mdi-application-brackets-outline', iconBg: 'rgba(37,99,235,0.2)',   iconBd: '1px solid rgba(37,99,235,0.4)',   iconColor: '#60a5fa' },
+  { label: 'MCU+ SDK Version', version: '12.02.00.13', icon: 'mdi-chip',                         iconBg: 'rgba(5,150,105,0.2)',   iconBd: '1px solid rgba(5,150,105,0.4)',   iconColor: '#34d399' },
   { label: 'TITVM Version',     version: '3.0.0', icon: 'mdi-code-braces',                  iconBg: 'rgba(124,58,237,0.2)',  iconBd: '1px solid rgba(124,58,237,0.4)',  iconColor: '#c084fc' },
 ]
 
